@@ -32,12 +32,13 @@ coverage/
 .DS_Store
 Thumbs.db
 
-# Local application data
-data/raw/
-data/interim/
-data/processed/
-data/local/
-data/downloads/
+# Local application data and dataset folders
+data/
+notebooks/data/
+notebooks/ml/
+**/data/
+car-damage-dataset/
+.cache/
 uploads/
 
 # ML artifacts and experiment trackers
@@ -60,6 +61,7 @@ mlruns/
 *.tar
 *.tar.gz
 *.7z
+*.archive
 
 # Logs and temporary files
 *.log

@@ -180,3 +180,70 @@ Known limitations:
 - Frontend shows a "coming soon" landing page only. Full UI is Phase 14.
 
 Follow-up: Phase 1 — DATA-001 fraud dataset feasibility audit (Member 2).
+
+---
+
+### DATA-001 — Validate fraud dataset feasibility
+
+- Date/time IST: 2026-09-20 16:20–16:35
+- Agent: Antigravity
+- Operator: Member 2 (Fraud ML) / Amitava Datta
+- Base commit: abf99fb
+- Phase: 1
+
+Files read:
+- `README.md` (§10 Notebook 01, §11.1 Fraud dataset, §19 Phase 1)
+- `AGENTS.md` (§8 Dataset contract, §10 Model-specific rules, §11 OpenCV rules)
+- `docs/DATASET_CARD_TEMPLATE.md`
+- `PROJECT_STATUS.md`
+- `TASKS.md`
+- `TASK_LOCKS.md`
+
+Files created:
+- `ml/src/claimvision_ml/quality/image_checks.py` (safe image loading, Laplacian blur, brightness, contrast)
+- `ml/src/claimvision_ml/data/audit.py` (CSV validation, image reconciliation, SHA-256 deduplication, dHash clustering, shortcut risk analysis)
+- `ml/src/claimvision_ml/data/manifest.py` (group-aware stratified splitting, programmatic anti-leakage assertions, manifest saving)
+- `ml/tests/test_data_audit.py` (11 unit tests covering all quality, audit, split, and anti-leakage functions)
+- `docs/DATASET_CARD_FRAUD.md` (complete dataset card following template)
+- `scripts/build_notebook_01.py` (generator script for Notebook 01)
+- `data/samples/fraud_sample/` (12 synthetic sample images and sample CSV for offline/test execution)
+- `data/manifests/fraud_train.csv`, `fraud_val.csv`, `fraud_test.csv`, `fraud_manifest_summary.json` (frozen audit manifests)
+- `ml/results/fraud_class_distribution.png`, `fraud_quality_metrics_distribution.png`, `fraud_sample_grid.png` (exported plot figures)
+
+Files modified:
+- `.gitignore` (added `car-damage-dataset/` and `.cache/` ignore rules)
+- `ml/requirements.txt` (added `kagglehub`, `pandas`, `imagehash`)
+- `ml/requirements-dev.txt` (added `nbconvert`)
+- `ml/src/claimvision_ml/quality/__init__.py` (exported image check functions)
+- `ml/src/claimvision_ml/data/__init__.py` (exported audit and manifest functions)
+- `notebooks/01_fraud_dataset_audit.ipynb` (full 18-section implementation with kagglehub snippet)
+- `PROJECT_STATUS.md` (updated Phase 1 in-progress/ready status, objectives)
+- `TASKS.md` (updated DATA-001 status to READY for review)
+- `TASK_LOCKS.md` (released CFG-002, active lock DATA-001)
+
+Decisions made:
+- Ingest Vinay Jose Car Damage Dataset via `kagglehub.dataset_download("vinayjose/car-damage-dataset")` as specified by user.
+- Route Kagglehub cache (`KAGGLEHUB_CACHE`) and direct download (`output_dir`) into the project directory (`data/raw/` on D: drive) to completely avoid consuming C: drive space.
+- Added `*.archive` to `.gitignore` so dataset archives and downloads are completely ignored by Git.
+- Add fallback to `data/samples/fraud_sample` so notebook and unit tests execute reliably in offline CI/test environments without requiring immediate 1GB download.
+- Enforce strict anti-leakage splitting: claim ID and duplicate clusters are never split across train, val, or test.
+- Treat visual model as a "suspicious-image signal" for human review routing, not legal proof of fraud.
+
+Commands run:
+- `.\.venv\Scripts\pip install kagglehub pandas opencv-python-headless Pillow matplotlib seaborn scikit-learn imagehash ipykernel nbconvert`
+- `.\.venv\Scripts\python scripts/build_notebook_01.py`
+- `.\.venv\Scripts\pytest ml/tests/ -v` (20 passed in 0.67s)
+- `.\.venv\Scripts\ruff check ml/` (All checks passed)
+- `.\.venv\Scripts\ruff format --check ml/` (All 14 files formatted)
+
+Validation results:
+- 20 unit tests passed covering image decoding, Laplacian blur, brightness, contrast, SHA-256 exact deduplication, dHash clustering, group-aware splitting, and negative test confirming leakage assertion triggers on contaminated splits.
+- Notebook 01 smoke execution passed top-to-bottom without errors.
+- Visual plots saved in `ml/results/`.
+- Frozen manifests exported in `data/manifests/`.
+
+Known limitations:
+- Full 1GB dataset download will be executed by user/friend directly in VS Code by running the first cells of `01_fraud_dataset_audit.ipynb`.
+
+Follow-up: Phase 2 — ML-001 train and evaluate MobileNetV2 fraud baseline (Member 2).
+

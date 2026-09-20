@@ -1,8 +1,21 @@
 """quality — OpenCV-based image-quality and evidence-integrity checks.
 
-Implemented in Phase 3 (OpenCV quality and integrity notebook 04).
-
-Planned public API:
-    check_image_quality(image_path) -> QualityResult
-    is_duplicate(hash_a, hash_b) -> bool
+Deterministic quality checks, blur estimation, brightness/contrast calculation,
+and duplicate identification.
 """
+
+from claimvision_ml.quality.image_checks import (
+    calculate_blur_score,
+    calculate_brightness,
+    calculate_contrast,
+    compute_image_metrics,
+    read_image_safely,
+)
+
+__all__ = [
+    "read_image_safely",
+    "calculate_blur_score",
+    "calculate_brightness",
+    "calculate_contrast",
+    "compute_image_metrics",
+]

@@ -20,7 +20,9 @@ def test_package_version():
 
     assert hasattr(claimvision_ml, "__version__"), "__version__ attribute missing"
     parts = claimvision_ml.__version__.split(".")
-    assert len(parts) == 3, f"Version must be MAJOR.MINOR.PATCH, got {claimvision_ml.__version__!r}"
+    assert len(parts) == 3, (
+        f"Version must be MAJOR.MINOR.PATCH, got {claimvision_ml.__version__!r}"
+    )
     assert claimvision_ml.__version__ == "0.1.0"
 
 

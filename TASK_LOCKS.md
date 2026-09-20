@@ -16,7 +16,8 @@ This file substitutes for branch isolation because all seven members work direct
 | Task ID | Owner | Scope/files | Started IST | Expected release IST | Base commit | State |
 | --- | --- | --- | --- | --- | --- | --- |
 | Example only | — | — | — | — | — | RELEASED |
-| CFG-002 | Antigravity | backend/, frontend/, ml/, notebooks/, data/, artifacts/, scripts/, annotated/, reports/, demo/, docs/agent-work-log.md, CHANGELOG.md, CONTRIBUTING.md, config/project.yaml, .github/workflows/ci.yml, PROJECT_STATUS.md, TASKS.md | 2026-09-20 14:16 | 2026-09-20 17:00 | 787c999 | ACTIVE |
+| CFG-002 | Antigravity | backend/, frontend/, ml/, notebooks/, data/, artifacts/, scripts/, annotated/, reports/, demo/, docs/agent-work-log.md, CHANGELOG.md, CONTRIBUTING.md, config/project.yaml, .github/workflows/ci.yml, PROJECT_STATUS.md, TASKS.md | 2026-09-20 14:16 | 2026-09-20 16:15 | 787c999 | RELEASED |
+| DATA-001 | Member 2 / Antigravity | ml/src/claimvision_ml/data/, ml/src/claimvision_ml/quality/, notebooks/01_fraud_dataset_audit.ipynb, data/manifests/, docs/DATASET_CARD_FRAUD.md, ml/tests/test_data_audit.py, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, ml/requirements.txt, .gitignore | 2026-09-20 16:20 | 2026-09-20 18:30 | abf99fb | ACTIVE |
 
 ## Lock template
 

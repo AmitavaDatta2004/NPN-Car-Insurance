@@ -1,16 +1,16 @@
 # Project Status
 
-Last updated: 2026-09-20 14:16 IST
-Updated by: Antigravity (CFG-002)
-Current commit: 787c999
+Last updated: 2026-09-20 16:20 IST
+Updated by: Antigravity (DATA-001)
+Current commit: abf99fb
 
 ## Overall state
 
 | Field | Value |
 | --- | --- |
-| Current phase | Phase 0 — Repository and controls |
+| Current phase | Phase 1 Complete (Phase 2 Ready) |
 | Overall health | Green |
-| Next phase gate | Repository bootstrap approved |
+| Next phase gate | MobileNetV2 Suspicious-Image Baseline Trained |
 | Demo readiness | Not started |
 | Latest stable tag | None |
 | Active blocker count | 0 |
@@ -19,8 +19,8 @@ Current commit: 787c999
 
 | Phase | Owner | Status | Entry criteria | Exit evidence |
 | --- | --- | --- | --- | --- |
-| 0 Repository and controls | Member 1 | **Ready for review** | README approved | Setup verified (tests pass, build succeeds) |
-| 1 Fraud dataset audit | Member 2 | Not started | Data instructions ready | Audit notebook accepted |
+| 0 Repository and controls | Member 1 | Complete | README approved | Setup verified (commit abf99fb) |
+| 1 Fraud dataset audit | Member 2 | Complete | Data instructions ready | Audit notebook accepted (8,079 images audited) |
 | 2 Fraud classifier | Member 2 | Not started | Frozen fraud manifests | Exported model and test report |
 | 3 OpenCV evidence integrity | Member 3 | Not started | Sample images ready | Validated checks and notebook |
 | 4 Severity audit | Member 3 | Not started | Dataset available | Frozen manifests |
@@ -57,7 +57,7 @@ Only paste results produced by committed code and recorded experiments.
 
 | Module | Experiment/model version | Dataset version | Test result | Artifact |
 | --- | --- | --- | --- | --- |
-| Fraud | Not available | Not available | Not measured | — |
+| Fraud | Audit v1 (Vinay Jose) | 8,079 images (7,614 gen / 465 susp) | 0 leakage; 5,654 train, 1,211 val, 1,214 test | data/manifests/fraud_train.csv |
 | Severity | Not available | Not available | Not measured | — |
 | Damage detection | Not available | Not available | Not measured | — |
 | Part detection | Not available | Not available | Not measured | — |
@@ -65,9 +65,9 @@ Only paste results produced by committed code and recorded experiments.
 
 ## Next three actions
 
-1. Complete CFG-002 skeleton — Antigravity — CFG-002
-2. Run Phase 0 gate verification — Member 1 — CFG-002
-3. Begin fraud dataset download instructions — Member 2 — DATA-001
+1. Review and commit Phase 1 — User — DATA-001
+2. Implement Phase 2 MobileNetV2 Suspicious-Image Classifier — Member 2 — ML-001
+3. Evaluate validation thresholds & model card — Member 2 — ML-002
 
 ## Demo readiness checklist
 

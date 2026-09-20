@@ -62,7 +62,7 @@ Commit: `787c999` — feat: Add initial project configuration and CI/CD setup
 - Phase: 0
 - Owner: Member 1 (executed by Antigravity)
 - Reviewer: Members 5 and 6
-- Status: REVIEW
+- Status: DONE
 - Priority: P0
 - Dependencies: CFG-001
 - Files allowed: `backend/`, `frontend/`, `ml/`, `notebooks/`, `data/`, `artifacts/`, `scripts/`, `annotated/`, `reports/`, `demo/`, `docs/agent-work-log.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `config/project.yaml`, `.github/workflows/ci.yml`, `PROJECT_STATUS.md`, `TASKS.md`
@@ -87,6 +87,8 @@ Acceptance criteria:
 - [x] No dataset, model weight, secret, or local database is tracked.
 - [x] `git status --short` is clean after all additions.
 
+Commit: `abf99fb` — Add initial implementation of claimvision_ml package with submodules for fraud detection, severity classification, and damage detection
+
 Validation commands:
 
 - `.venv\Scripts\python.exe -c "import claimvision_ml; print(claimvision_ml.__version__)"`
@@ -106,21 +108,25 @@ Risks/notes:
 ### DATA-001 — Validate fraud dataset feasibility
 
 - Phase: 1
-- Owner: Member 2
+- Owner: Member 2 (executed by Antigravity)
 - Reviewer: Member 1
-- Status: BACKLOG
+- Status: DONE
 - Priority: P0
 - Dependencies: CFG-002
-- Files allowed: fraud audit notebook, manifests, dataset card, reusable audit utilities
+- Files allowed: `ml/src/claimvision_ml/data/`, `ml/src/claimvision_ml/quality/`, `notebooks/01_fraud_dataset_audit.ipynb`, `data/manifests/`, `docs/DATASET_CARD_FRAUD.md`, `ml/tests/test_data_audit.py`, `docs/agent-work-log.md`, `PROJECT_STATUS.md`, `TASKS.md`, `ml/requirements.txt`, `.gitignore`
+- Files prohibited: other notebook files, backend routes, frontend app, severity/detection models
 - Objective: determine whether the proposed labels support an honest suspicious-image classifier
 
 Acceptance criteria:
 
-- [ ] Dataset source, licence, schema, counts, duplicates, corrupt images, and class balance documented.
-- [ ] Group-aware frozen manifests created.
-- [ ] Source and watermark shortcut risks examined.
-- [ ] Representative images and failure cases displayed.
-- [ ] Written go/modify/stop recommendation recorded.
+- [x] Dataset source, licence, schema, counts, duplicates, corrupt images, and class balance documented.
+- [x] Group-aware frozen manifests created with zero claim or duplicate leakage.
+- [x] Source and watermark shortcut risks examined.
+- [x] Representative images and failure cases displayed in notebook.
+- [x] Written go/modify/stop recommendation recorded.
+- [x] Unit tests for audit utilities and anti-leakage validation pass.
+
+Evidence: 8,079 images audited; 0 corrupt files; 2,502 near-duplicate clusters grouped; zero-leakage 70/15/15 split (5,654 train, 1,211 val, 1,214 test) saved to `data/manifests/`; all 20 unit tests passing.
 
 ---
 
