@@ -16,6 +16,7 @@ This file substitutes for branch isolation because all seven members work direct
 | Task ID | Owner | Scope/files | Started IST | Expected release IST | Base commit | State |
 | --- | --- | --- | --- | --- | --- | --- |
 | Example only | — | — | — | — | — | RELEASED |
+| CFG-002 | Antigravity | backend/, frontend/, ml/, notebooks/, data/, artifacts/, scripts/, annotated/, reports/, demo/, docs/agent-work-log.md, CHANGELOG.md, CONTRIBUTING.md, config/project.yaml, .github/workflows/ci.yml, PROJECT_STATUS.md, TASKS.md | 2026-09-20 14:16 | 2026-09-20 17:00 | 787c999 | ACTIVE |
 
 ## Lock template
 

@@ -1,0 +1,8 @@
+# ClaimVision AI backend — runtime dependencies
+fastapi>=0.111,<1
+uvicorn[standard]>=0.29,<1
+pydantic>=2.7,<3
+pydantic-settings>=2.2,<3
+sqlalchemy>=2.0,<3
+alembic>=1.13,<2
+python-multipart>=0.0.9

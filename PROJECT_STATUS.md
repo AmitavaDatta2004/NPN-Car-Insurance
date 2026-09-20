@@ -1,15 +1,15 @@
 # Project Status
 
-Last updated: YYYY-MM-DD HH:MM IST  
-Updated by: NAME  
-Current commit: COMMIT_HASH
+Last updated: 2026-09-20 14:16 IST
+Updated by: Antigravity (CFG-002)
+Current commit: 787c999
 
 ## Overall state
 
 | Field | Value |
 | --- | --- |
 | Current phase | Phase 0 — Repository and controls |
-| Overall health | Green / Amber / Red |
+| Overall health | Green |
 | Next phase gate | Repository bootstrap approved |
 | Demo readiness | Not started |
 | Latest stable tag | None |
@@ -19,7 +19,7 @@ Current commit: COMMIT_HASH
 
 | Phase | Owner | Status | Entry criteria | Exit evidence |
 | --- | --- | --- | --- | --- |
-| 0 Repository and controls | Member 1 | In progress | README approved | Setup works on two laptops |
+| 0 Repository and controls | Member 1 | **Ready for review** | README approved | Setup verified (tests pass, build succeeds) |
 | 1 Fraud dataset audit | Member 2 | Not started | Data instructions ready | Audit notebook accepted |
 | 2 Fraud classifier | Member 2 | Not started | Frozen fraud manifests | Exported model and test report |
 | 3 OpenCV evidence integrity | Member 3 | Not started | Sample images ready | Validated checks and notebook |
@@ -41,9 +41,9 @@ Current commit: COMMIT_HASH
 
 ## Current sprint objectives
 
-- [ ] Objective 1
-- [ ] Objective 2
-- [ ] Objective 3
+- [x] CFG-001 — Install repository configuration pack (done in commit 787c999)
+- [x] CFG-002 — Create application skeleton (directory structure, ML package, backend placeholder, frontend placeholder, 16 notebook stubs)
+- [x] Phase 0 gate — Backend health endpoint returns 200, ML package imports, frontend builds
 
 ## Active blockers
 
@@ -65,9 +65,9 @@ Only paste results produced by committed code and recorded experiments.
 
 ## Next three actions
 
-1. ACTION — OWNER — TASK-ID
-2. ACTION — OWNER — TASK-ID
-3. ACTION — OWNER — TASK-ID
+1. Complete CFG-002 skeleton — Antigravity — CFG-002
+2. Run Phase 0 gate verification — Member 1 — CFG-002
+3. Begin fraud dataset download instructions — Member 2 — DATA-001
 
 ## Demo readiness checklist
 
@@ -79,4 +79,3 @@ Only paste results produced by committed code and recorded experiments.
 - [ ] Four judge scenarios pass three consecutive times
 - [ ] Offline fallback assets are available
 - [ ] Seven member speaking roles rehearsed
-
