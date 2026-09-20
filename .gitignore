@@ -54,6 +54,8 @@ mlruns/
 *.pth
 *.ckpt
 *.onnx
+*.onnx.data
+*.onnx_data
 *.tflite
 *.h5
 *.joblib

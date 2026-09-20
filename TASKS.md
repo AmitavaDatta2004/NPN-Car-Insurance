@@ -7,7 +7,7 @@ Status values: `BACKLOG`, `READY`, `LOCKED`, `IN_PROGRESS`, `REVIEW`, `BLOCKED`,
 Copy this section for every task. A task may not enter `READY` without acceptance criteria.
 
 ```markdown
-### TASK-ID — Short title
+### TASK-ID â€” Short title
 
 - Phase:
 - Owner:
@@ -35,7 +35,7 @@ Risks/notes:
 
 ## Initial repository tasks
 
-### CFG-001 — Install repository configuration pack
+### CFG-001 â€” Install repository configuration pack
 
 - Phase: 0
 - Owner: Member 1
@@ -53,11 +53,11 @@ Acceptance criteria:
 - [x] All members confirm they read `AGENTS.md`.
 - [x] Configuration commit is pushed to `main`.
 
-Commit: `787c999` — feat: Add initial project configuration and CI/CD setup
+Commit: `787c999` â€” feat: Add initial project configuration and CI/CD setup
 
 ---
 
-### CFG-002 — Create application skeleton
+### CFG-002 â€” Create application skeleton
 
 - Phase: 0
 - Owner: Member 1 (executed by Antigravity)
@@ -67,12 +67,12 @@ Commit: `787c999` — feat: Add initial project configuration and CI/CD setup
 - Dependencies: CFG-001
 - Files allowed: `backend/`, `frontend/`, `ml/`, `notebooks/`, `data/`, `artifacts/`, `scripts/`, `annotated/`, `reports/`, `demo/`, `docs/agent-work-log.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `config/project.yaml`, `.github/workflows/ci.yml`, `PROJECT_STATUS.md`, `TASKS.md`
 - Files prohibited: `README.md`, `AGENTS.md`, `.env.example`, `.gitignore`, `.gitattributes`, `.editorconfig`, `.pre-commit-config.yaml`, all existing `docs/` templates, both `prompts/`
-- Objective: create the repository structure defined in `README.md` §6 with working backend and frontend placeholders and an importable ML package
-- Inputs: `README.md` §6 directory structure, `config/project.example.yaml`, `.github/workflows/ci.yml`
+- Objective: create the repository structure defined in `README.md` Â§6 with working backend and frontend placeholders and an importable ML package
+- Inputs: `README.md` Â§6 directory structure, `config/project.example.yaml`, `.github/workflows/ci.yml`
 
 Acceptance criteria:
 
-- [x] Full directory skeleton from README §6 exists with `.gitkeep` files where needed.
+- [x] Full directory skeleton from README Â§6 exists with `.gitkeep` files where needed.
 - [x] `claimvision_ml` Python package imports successfully from the venv (`import claimvision_ml`).
 - [x] `claimvision_ml.__version__` returns `"0.1.0"`.
 - [x] `pytest ml/tests/ -q` passes (package smoke test).
@@ -87,7 +87,7 @@ Acceptance criteria:
 - [x] No dataset, model weight, secret, or local database is tracked.
 - [x] `git status --short` is clean after all additions.
 
-Commit: `abf99fb` — Add initial implementation of claimvision_ml package with submodules for fraud detection, severity classification, and damage detection
+Commit: `abf99fb` â€” Add initial implementation of claimvision_ml package with submodules for fraud detection, severity classification, and damage detection
 
 Validation commands:
 
@@ -105,7 +105,7 @@ Risks/notes:
 
 ---
 
-### DATA-001 — Validate fraud dataset feasibility
+### DATA-001 â€” Validate fraud dataset feasibility
 
 - Phase: 1
 - Owner: Member 2 (executed by Antigravity)
@@ -130,23 +130,39 @@ Evidence: 8,079 images audited; 0 corrupt files; 2,502 near-duplicate clusters g
 
 ---
 
-### ML-001 — Train and evaluate fraud baseline
+### ML-001 â€” Train and evaluate fraud baseline
 
 - Phase: 2
-- Owner: Member 2
+- Owner: Member 2 / Antigravity
 - Reviewer: Members 1 and 3
-- Status: BACKLOG
+- Status: DONE
 - Priority: P0
 - Dependencies: DATA-001 accepted
+- Files allowed: ml/src/claimvision_ml/fraud/, ml/tests/test_fraud_model.py,
+  ml/artifacts/fraud/, ml/results/fraud/,
+  notebooks/02_fraud_mobilenetv2_training.ipynb,
+  notebooks/03_fraud_evaluation_and_threshold.ipynb,
+  docs/MODEL_CARD_FRAUD_MNV2_V1.md, docs/EXPERIMENT_LOG.md,
+  docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md
+- Files prohibited: all severity/detection/costing files, frontend, backend routes
 - Objective: produce a calibrated suspicious-image signal before severity work begins
 
 Acceptance criteria:
 
-- [ ] MobileNetV2 experiment is reproducible.
-- [ ] PR-AUC, class metrics, confusion matrix, calibration, and threshold trade-off shown.
-- [ ] Untouched test set used exactly once for final reporting.
-- [ ] Exported artifact passes smoke inference.
-- [ ] Model card clearly limits the meaning of fraud output.
+- [x] MobileNetV2 experiment is reproducible (seed=42, manifests frozen).
+- [x] PR-AUC, class metrics, confusion matrix, calibration, and threshold trade-off shown (Val PR-AUC 0.4999, Test PR-AUC 0.5464, sweep 0.20–0.80).
+- [x] Untouched test set used exactly once for final reporting (held-out test set evaluated in Notebook 03 after threshold freeze).
+- [x] Exported artifact passes smoke inference (`predict_fraud` verified standalone on sample image; outputs match).
+- [x] Model card clearly limits the meaning of fraud output (`docs/MODEL_CARD_FRAUD_MNV2_V1.md`).
+
+Evidence: MobileNetV2 fine-tuned with class weighting (FRAUD-MNV2-001); test PR-AUC=0.5464, test ROC-AUC=0.9077; high_threshold=0.80 gives 90.1% suspicious recall; ONNX exported and verified (max diff 8.94e-08); 11 plots in `ml/results/fraud/`; standalone `predict_fraud` verified; all 37 tests passing.
+
+Validation commands:
+
+- `.venv\Scripts\pytest.exe ml/tests/test_fraud_model.py -v`
+- `.venv\Scripts\pytest.exe ml/tests/ -q`
+- Run `notebooks/02_fraud_mobilenetv2_training.ipynb` top-to-bottom
+- Run `notebooks/03_fraud_evaluation_and_threshold.ipynb` top-to-bottom
 
 ## Assignment rule
 

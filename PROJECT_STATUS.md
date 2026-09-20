@@ -1,16 +1,16 @@
 # Project Status
 
-Last updated: 2026-09-20 16:20 IST
-Updated by: Antigravity (DATA-001)
-Current commit: abf99fb
+Last updated: 2026-09-20 19:41 IST
+Updated by: Antigravity (ML-001)
+Current commit: de7100c
 
 ## Overall state
 
 | Field | Value |
 | --- | --- |
-| Current phase | Phase 1 Complete (Phase 2 Ready) |
+| Current phase | Phase 2 Complete (Phase 3 Ready) |
 | Overall health | Green |
-| Next phase gate | MobileNetV2 Suspicious-Image Baseline Trained |
+| Next phase gate | OpenCV Evidence Integrity Checks (Phase 3) |
 | Demo readiness | Not started |
 | Latest stable tag | None |
 | Active blocker count | 0 |
@@ -21,7 +21,7 @@ Current commit: abf99fb
 | --- | --- | --- | --- | --- |
 | 0 Repository and controls | Member 1 | Complete | README approved | Setup verified (commit abf99fb) |
 | 1 Fraud dataset audit | Member 2 | Complete | Data instructions ready | Audit notebook accepted (8,079 images audited) |
-| 2 Fraud classifier | Member 2 | Not started | Frozen fraud manifests | Exported model and test report |
+| 2 Fraud classifier | Member 2 | Complete | Frozen fraud manifests | FRAUD-MNV2-001 trained; test PR-AUC=0.5464; thresholds frozen; predict_fraud verified |
 | 3 OpenCV evidence integrity | Member 3 | Not started | Sample images ready | Validated checks and notebook |
 | 4 Severity audit | Member 3 | Not started | Dataset available | Frozen manifests |
 | 5 Severity CNN | Member 3 | Not started | Severity audit accepted | Baseline report |
@@ -44,6 +44,8 @@ Current commit: abf99fb
 - [x] CFG-001 — Install repository configuration pack (done in commit 787c999)
 - [x] CFG-002 — Create application skeleton (directory structure, ML package, backend placeholder, frontend placeholder, 16 notebook stubs)
 - [x] Phase 0 gate — Backend health endpoint returns 200, ML package imports, frontend builds
+- [x] DATA-001 — Fraud dataset audit (8,079 images; frozen manifests; 20 unit tests pass)
+- [x] ML-001 — Fraud MobileNetV2 classifier (FRAUD-MNV2-001 trained; test PR-AUC 0.5464; high_threshold 0.80; recall 90.1%; ONNX export; 37 unit tests pass)
 
 ## Active blockers
 
@@ -57,7 +59,8 @@ Only paste results produced by committed code and recorded experiments.
 
 | Module | Experiment/model version | Dataset version | Test result | Artifact |
 | --- | --- | --- | --- | --- |
-| Fraud | Audit v1 (Vinay Jose) | 8,079 images (7,614 gen / 465 susp) | 0 leakage; 5,654 train, 1,211 val, 1,214 test | data/manifests/fraud_train.csv |
+| Fraud (Audit) | Audit v1 (Vinay Jose) | 8,079 images (7,614 gen / 465 susp) | 0 leakage; 5,654 train, 1,211 val, 1,214 test | data/manifests/fraud_train.csv |
+| Fraud (Classifier) | FRAUD-MNV2-001 | Vinay Jose v1 (1,214 test images) | PR-AUC: 0.5464, Recall: 90.1%, ROC-AUC: 0.9077, 22.6ms/img | ml/artifacts/fraud/thresholds_v1.json |
 | Severity | Not available | Not available | Not measured | — |
 | Damage detection | Not available | Not available | Not measured | — |
 | Part detection | Not available | Not available | Not measured | — |

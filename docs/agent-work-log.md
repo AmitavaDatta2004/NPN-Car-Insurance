@@ -23,7 +23,52 @@ Required by README §7.1 rule 5.
 
 ## Log
 
+### ML-001 — Train and evaluate fraud MobileNetV2 classifier (Phase 2)
+
+- Date/time IST: 2026-09-20 19:27–21:00
+- Agent: Antigravity
+- Operator: Amitava Datta (to review diff, run notebooks 02 and 03, and commit)
+- Base commit: de7100c
+- Files read: README.md, AGENTS.md, PROJECT_STATUS.md, TASKS.md, docs/DECISIONS.md,
+  ml/src/claimvision_ml/data/, notebooks/01_fraud_dataset_audit.ipynb,
+  notebooks/data/manifests/fraud_train.csv, fraud_val.csv, fraud_test.csv
+- Files changed:
+  - ml/src/claimvision_ml/fraud/__init__.py (updated with full exports)
+  - ml/src/claimvision_ml/fraud/model.py (NEW — FraudClassifier, build/load/export)
+  - ml/src/claimvision_ml/fraud/dataset.py (NEW — FraudDataset, get_class_weights, get_transforms)
+  - ml/src/claimvision_ml/fraud/predict.py (NEW — FraudResult, predict_fraud)
+  - ml/tests/test_fraud_model.py (NEW — 17 CPU-only smoke tests)
+  - notebooks/02_fraud_mobilenetv2_training.ipynb (full implementation replacing stub)
+  - notebooks/03_fraud_evaluation_and_threshold.ipynb (full implementation replacing stub)
+  - docs/MODEL_CARD_FRAUD_MNV2_V1.md (NEW)
+  - docs/EXPERIMENT_LOG.md (FRAUD-MNV2-001 entry)
+  - docs/agent-work-log.md (this entry)
+  - TASKS.md (ML-001 → IN_PROGRESS)
+  - TASK_LOCKS.md (DATA-001 RELEASED, ML-001 ACTIVE)
+  - PROJECT_STATUS.md (Phase 2 in progress)
+- Decisions made:
+  - BCEWithLogitsLoss pos_weight chosen as n_genuine/n_suspicious (inverse frequency).
+  - WeightedRandomSampler used in addition to pos_weight for better minority sampling.
+  - Stage A freezes all backbone; Stage B unfreezes final 2 InvertedResidual blocks.
+  - Early stopping patience=5 on val PR-AUC (primary metric for imbalanced classes).
+  - CPU training: batch_size=16, Stage A max 10 epochs, Stage B max 20 epochs.
+  - Export both .pt (reproducibility) and ONNX (backend inference).
+  - Thresholds selected from validation PR curve; test set used exactly once.
+- Commands run:
+  - `.venv\Scripts\pytest.exe ml/tests/test_fraud_model.py -v` — 17 passed
+  - `.venv\Scripts\pytest.exe ml/tests/ -q` — all prior tests still pass
+- Validation results: 17/17 new tests pass; 0 regressions in prior test suite.
+- Known limitations / follow-up:
+  - Notebook 02 and 03 must be run by the human operator to produce the real
+    trained checkpoint and thresholds. The notebooks contain all training code.
+  - EXPERIMENT_LOG.md results marked TBD — update after notebooks run.
+  - MODEL_CARD metrics marked TBD — fill after Notebook 03 completes.
+  - ONNX output difference must be checked after training (cell 15 in notebook 02).
+  - If PR-AUC < 0.30 after full run, reassess shortcut-learning risk and flag
+    classifier as experimental per AGENTS.md §10.
+
 ### CFG-002 — Create application skeleton
+
 
 - Date/time IST: 2026-09-20 14:16–17:00
 - Agent: Antigravity

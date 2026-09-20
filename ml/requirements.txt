@@ -36,3 +36,7 @@ tqdm>=4.66
 numpy>=1.26,<3
 kagglehub>=0.2.0
 
+# ONNX export and runtime
+onnx>=1.16,<2
+onnxruntime>=1.17,<2
+

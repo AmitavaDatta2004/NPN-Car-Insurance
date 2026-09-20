@@ -1,0 +1,8 @@
+{
+  "version": "v1",
+  "model_version": "FRAUD-MNV2-001",
+  "selected_from": "validation",
+  "low_threshold": 0.4,
+  "high_threshold": 0.8,
+  "notes": "high_threshold chosen as the highest threshold achieving recall >= 0.80 on the validation set. low_threshold = high_threshold / 2. Test set was NOT consulted during threshold selection. Best val F1 threshold was 0.8."
+}
