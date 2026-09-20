@@ -1,0 +1,90 @@
+name: ClaimVision CI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: claimvision-main-ci
+  cancel-in-progress: false
+
+jobs:
+  detect-components:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.detect.outputs.backend }}
+      frontend: ${{ steps.detect.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: detect
+        name: Detect initialized applications
+        shell: bash
+        run: |
+          if [[ -f apps/api/requirements-dev.txt ]]; then echo 'backend=true' >> "$GITHUB_OUTPUT"; else echo 'backend=false' >> "$GITHUB_OUTPUT"; fi
+          if [[ -f apps/web/package-lock.json ]]; then echo 'frontend=true' >> "$GITHUB_OUTPUT"; else echo 'frontend=false' >> "$GITHUB_OUTPUT"; fi
+
+  repository-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject accidentally committed ML artifacts
+        run: |
+          if find . -type f \( -name '*.pt' -o -name '*.pth' -o -name '*.onnx' -o -name '*.ckpt' \) -print -quit | grep -q .; then
+            echo 'Model weights must not be committed to Git.'
+            exit 1
+          fi
+      - name: Check conflict markers
+        run: |
+          if git grep -n -E '^(<<<<<<<|=======|>>>>>>>)' -- ':!*.ipynb'; then
+            echo 'Merge-conflict markers found.'
+            exit 1
+          fi
+
+  backend:
+    needs: detect-components
+    if: needs.detect-components.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: apps/api/requirements*.txt
+      - name: Install
+        run: pip install -r requirements-dev.txt
+      - name: Lint
+        run: ruff check .
+      - name: Format check
+        run: ruff format --check .
+      - name: Test
+        run: pytest -q
+
+  frontend:
+    needs: detect-components
+    if: needs.detect-components.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Test
+        run: npm test -- --run
+      - name: Build
+        run: npm run build

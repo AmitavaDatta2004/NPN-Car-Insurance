@@ -1,0 +1,62 @@
+name: ClaimVision implementation task
+description: One bounded task for a human member or coding agent
+title: "[TASK-ID] "
+labels: ["task"]
+body:
+  - type: input
+    id: phase
+    attributes:
+      label: Phase
+    validations:
+      required: true
+  - type: input
+    id: owner
+    attributes:
+      label: Owner and reviewer
+    validations:
+      required: true
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Allowed and prohibited files
+      description: State exact paths to avoid direct-to-main collisions.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies and inputs
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      value: |
+        - [ ] Observable result
+        - [ ] Required tests pass
+        - [ ] Documentation is updated
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation commands
+    validations:
+      required: true
+  - type: checkboxes
+    id: acknowledgement
+    attributes:
+      label: Operating agreement
+      options:
+        - label: I read README.md and AGENTS.md.
+          required: true
+        - label: I will add a task lock before editing.
+          required: true
+        - label: I will not force push or fabricate results.
+          required: true
+
