@@ -33,13 +33,16 @@ coverage/
 Thumbs.db
 
 # Local application data and dataset folders
-data/
+data/raw/
 notebooks/data/
 notebooks/ml/
-**/data/
 car-damage-dataset/
 .cache/
 uploads/
+
+# Never ignore claimvision_ml Python packages
+!ml/src/claimvision_ml/data/
+!ml/src/claimvision_ml/data/*.py
 
 # ML artifacts and experiment trackers
 artifacts/models/
