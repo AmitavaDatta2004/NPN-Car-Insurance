@@ -22,6 +22,34 @@ _IMAGENET_MEAN = [0.485, 0.456, 0.406]
 _IMAGENET_STD = [0.229, 0.224, 0.225]
 
 
+def _resolve_image_path(raw_path: str) -> Path:
+    """Resolve image path across Windows, Linux, Colab, and local environments."""
+    p = Path(raw_path)
+    if p.is_file():
+        return p
+    norm = str(raw_path).replace("\\", "/")
+    for marker in ["data/raw/", "data/samples/", "data/"]:
+        if marker in norm:
+            rel = norm[norm.index(marker):]
+            for base in [Path.cwd(), Path("/content/NPN-Car-Insurance"), Path.cwd().parent]:
+                candidate = (base / rel).resolve()
+                if candidate.is_file():
+                    return candidate
+                candidate_nb = (base / "notebooks" / rel).resolve()
+                if candidate_nb.is_file():
+                    return candidate_nb
+    fname = Path(norm).name
+    for img_dir in [
+        Path("data/raw/vinayjose_car_damage/images"),
+        Path("/content/NPN-Car-Insurance/data/raw/vinayjose_car_damage/images"),
+        Path("notebooks/data/raw/vinayjose_car_damage/images"),
+    ]:
+        candidate = (img_dir / fname).resolve()
+        if candidate.is_file():
+            return candidate
+    return p
+
+
 class FraudDataset(Dataset):
     """Dataset that reads a fraud manifest CSV and returns (image_tensor, label_tensor).
 
@@ -53,7 +81,8 @@ class FraudDataset(Dataset):
                 f"Found: {df.columns.tolist()}"
             )
 
-        # Keep only rows whose image file actually exists
+        # Resolve image paths cross-platform (handles Colab vs Windows differences)
+        df["path"] = df["path"].apply(lambda p: str(_resolve_image_path(p)))
         df["_exists"] = df["path"].apply(lambda p: Path(p).is_file())
         missing_count = (~df["_exists"]).sum()
         if missing_count > 0:
