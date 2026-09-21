@@ -10,5 +10,22 @@ Public API:
 """
 
 from claimvision_ml.detection.coco_converter import COCOtoYOLOConverter, ValidationResult
+from claimvision_ml.detection.damage import (
+    DamageDetection,
+    DamageDetector,
+    detect_damage,
+    export_damage_onnx,
+    normalized_to_xyxy,
+    xyxy_to_normalized,
+)
 
-__all__ = ["COCOtoYOLOConverter", "ValidationResult"]
+__all__ = [
+    "COCOtoYOLOConverter",
+    "ValidationResult",
+    "DamageDetection",
+    "DamageDetector",
+    "detect_damage",
+    "export_damage_onnx",
+    "xyxy_to_normalized",
+    "normalized_to_xyxy",
+]

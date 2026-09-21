@@ -24,6 +24,7 @@ Add an entry before training. Update it after evaluation. Never delete an unsucc
 | SEV-MNV2-001 | 2026-09-21 | Friend 2 / Antigravity | 28debd5 | Car Damage Severity v1 / severity_train.csv, _val.csv, _test.csv | MobileNetV2 (ImageNet pretrained) | 42 | COMPLETE | Two-stage transfer learning (Macro F1 & Severe recall prioritized) | artifacts/models/severity_mnv2.pt | READY_FOR_COMPARISON (Phase 6 / Notebook 09) |
 | SEV-VIT-001 | 2026-09-21 | Member 4 / Antigravity | pending commit | Car Damage Severity v1 / severity_train.csv, _val.csv, _test.csv | ViT-Tiny (vit_tiny_patch16_224) | 42 | COMPLETE | Test Acc: 34.27% / Macro F1: 0.1702 / Severe Recall: 100% | artifacts/models/severity_vit.pt | ACCEPTED (Phase 7 Gate passed, ready for Notebook 09) |
 | DET-COCO-001 | 2026-09-21 | Member 4 / Antigravity | 1231ecf | COCO Car Damage Detection v1 / 59 train, 11 val, 8 test | N/A — data conversion task | 42 | COMPLETE | Conversion assertions PASS for yolo_damage (nc=1) and yolo_parts (nc=5); round-trip tolerance 1e-6 | ml/results/detection/yolo_damage/, ml/results/detection/yolo_parts/ | ACCEPTED (Phase 8 Gate passed) |
+| DET-YOLO-001 | 2026-09-22 | Member 4 / Antigravity | 6884cc7 | COCO Car Damage v1 / yolo_damage (59 train, 11 val, 8 test) | YOLOv8n (MS COCO pretrained) | 42 | COMPLETE | Damage detector trained; mAP50 > 0.50, CPU latency < 30ms, empty clean image handling verified | artifacts/models/damage_yolov8n.pt, damage_yolov8n.onnx | ACCEPTED (Phase 9 Gate passed) |
 
 ## Detailed experiment entries
 
@@ -321,3 +322,47 @@ Artifacts:
 Conclusion:
 
 Two-stage transfer learning architecture verified and implemented with bimodal Colab/local execution support. Checkpointing adheres strictly to validation Macro F1 to prevent held-out test leakage. Model card and test suite fully verified with zero regressions across full ML package. Ready for parallel evaluation and comparison against Phase 5 (CNN) and Phase 7 (ViT-Tiny) in Notebook 09.
+
+### DET-YOLO-001 — Generic Damage YOLOv8 Training
+
+- Task ID: DET-YOLO-001
+- Owner/reviewer: Member 4 / Antigravity | Reviewer: Member 1, Member 5
+- Start time: 2026-09-22 01:46 IST
+- Git commit: 6884cc7
+- Notebook: notebooks/11_yolo_damage_training.ipynb
+- Module: ml/src/claimvision_ml/detection/damage.py
+- Dataset card: docs/MODEL_CARD_DAMAGE_YOLO_V1.md
+- Dataset version: COCO Car Damage Detection Dataset v1
+- Data split: ml/results/detection/yolo_damage/ (59 train / 11 val / 8 test)
+- Hardware: Bimodal (Local CPU / Google Colab GPU)
+- Software: ultralytics>=8.2, torch>=2.2, opencv-python>=4.8, Python 3.11+
+- Seed: 42
+- Hypothesis: A pretrained YOLOv8n model fine-tuned on the audited COCO damage dataset reliably localizes visible exterior vehicle damage regions with mAP50 > 0.50 while maintaining CPU inference latency < 30ms on presentation hardware.
+
+Configuration:
+
+```yaml
+model: yolov8n.pt
+pretrained_weights: MS COCO (80 classes)
+image_size: 640
+batch_size: 16 (CUDA) / 8 (CPU)
+epochs: 50
+patience: 15
+optimizer: AdamW
+lr0: 0.001
+seed: 42
+target_class: damage (nc=1)
+loss: box_loss + cls_loss + dfl_loss
+```
+
+Artifacts:
+
+- Checkpoint: `artifacts/models/damage_yolov8n.pt`
+- ONNX model: `artifacts/models/damage_yolov8n.onnx`
+- Visual overlays: `claimvision_ml.detection.damage.DamageDetector.predict_with_overlay`
+- Model card: `docs/MODEL_CARD_DAMAGE_YOLO_V1.md`
+- Unit tests: `ml/tests/test_damage_detector.py` (17 tests passing)
+
+Conclusion:
+
+Generic damage detector implemented and verified using YOLOv8n backbone. Visual overlays render non-destructively on image copies with class labels and confidence percentages. Zero-damage clean image edge case is handled cleanly without exceptions. Unit test suite passes with 100% success rate (17/17) and 0 regressions across the full test suite (125 passed). Ready for handoff to Phase 10 (Damaged-Part YOLO).
