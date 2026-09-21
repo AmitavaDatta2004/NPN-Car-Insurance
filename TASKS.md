@@ -167,3 +167,40 @@ Validation commands:
 ## Assignment rule
 
 Only move one task per member into `IN_PROGRESS` at a time. Add the lock first, then update its status. When complete, link the commit and evidence under the task before marking `DONE`.
+
+---
+
+### CV-001 — OpenCV evidence-integrity runtime checker
+
+- Phase: 3
+- Owner: Member 3 (Severity ML A) / Antigravity
+- Reviewer: Member 1
+- Status: DONE
+- Priority: P0
+- Dependencies: ML-001 (fraud module), DATA-001 (quality module base)
+- Files allowed: ml/src/claimvision_ml/quality/, ml/tests/test_quality_runtime.py, notebooks/04_opencv_quality_and_integrity.ipynb, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md
+- Files prohibited: fraud/, severity/, detection/, backend routes, frontend app
+- Objective: implement deterministic runtime evidence-integrity checks before any ML inference
+
+Acceptance criteria:
+
+- [x] `run_quality_checks()` returns `QualityResult` with route, reasons, and scores.
+- [x] Corrupt/unreadable → `MORE_EVIDENCE_REQUIRED`.
+- [x] Resolution below 224×224 → `MORE_EVIDENCE_REQUIRED`.
+- [x] Blurry/dark/overexposed/low-contrast → `rejection_reasons` populated.
+- [x] Exact SHA-256 duplicate → `DUPLICATE_REVIEW`.
+- [x] Near dHash duplicate (Hamming ≤ 4) → `DUPLICATE_REVIEW`.
+- [x] EXIF absent → `warnings["exif_absent"]` only; never sets `passed=False` or `route=FRAUD_REVIEW`.
+- [x] `draw_bounding_boxes()` and `save_annotated_image()` work and preserve original.
+- [x] 19 unit tests pass; full suite (56 tests) passes with no regression.
+- [x] Notebook 04 has 12 sections using real Colab dataset images.
+- [x] `ruff check ml/` — only 1 pre-existing Phase 2 warning remains (not our files).
+
+Evidence: 19 new tests pass (56 total); `quality/runtime_checker.py` and extended `image_checks.py` committed; notebook 04 fully implemented with real dataset path configuration.
+
+Validation commands:
+
+- `.venv\Scripts\pytest.exe ml/tests/test_quality_runtime.py -v`
+- `.venv\Scripts\pytest.exe ml/tests/ -q`
+- Run `notebooks/04_opencv_quality_and_integrity.ipynb` top-to-bottom in Colab
+

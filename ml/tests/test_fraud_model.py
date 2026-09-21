@@ -14,8 +14,6 @@ Run with:
 from __future__ import annotations
 
 import json
-import tempfile
-from pathlib import Path
 
 import pytest
 import torch
@@ -29,7 +27,6 @@ from claimvision_ml.fraud import (
     get_transforms,
     predict_fraud,
 )
-
 
 # ---------------------------------------------------------------------------
 # Model architecture
@@ -114,7 +111,6 @@ class TestGetTransforms:
 
     def test_test_transform_same_as_val(self):
         """Test transform behaves identically to val transform."""
-        import numpy as np
         rng = 42
         img = Image.fromarray(_make_rgb_array())
         t_val = get_transforms("val")

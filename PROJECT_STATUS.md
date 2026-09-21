@@ -1,16 +1,16 @@
 # Project Status
 
-Last updated: 2026-09-20 19:41 IST
-Updated by: Antigravity (ML-001)
-Current commit: de7100c
+Last updated: 2026-09-21 01:45 IST
+Updated by: Antigravity (CV-001)
+Current commit: de7f653 (pending user commit for Phase 3)
 
 ## Overall state
 
 | Field | Value |
 | --- | --- |
-| Current phase | Phase 2 Complete (Phase 3 Ready) |
+| Current phase | Phase 3 Complete (Phase 4 Ready) |
 | Overall health | Green |
-| Next phase gate | OpenCV Evidence Integrity Checks (Phase 3) |
+| Next phase gate | Severity Dataset Audit — frozen 70/15/15 manifests |
 | Demo readiness | Not started |
 | Latest stable tag | None |
 | Active blocker count | 0 |
@@ -22,7 +22,7 @@ Current commit: de7100c
 | 0 Repository and controls | Member 1 | Complete | README approved | Setup verified (commit abf99fb) |
 | 1 Fraud dataset audit | Member 2 | Complete | Data instructions ready | Audit notebook accepted (8,079 images audited) |
 | 2 Fraud classifier | Member 2 | Complete | Frozen fraud manifests | FRAUD-MNV2-001 trained; test PR-AUC=0.5464; thresholds frozen; predict_fraud verified |
-| 3 OpenCV evidence integrity | Member 3 | Not started | Sample images ready | Validated checks and notebook |
+| 3 OpenCV evidence integrity | Member 3 | Complete | Sample images ready | runtime_checker.py + 19 tests pass (56 total); notebook 04 12 sections |
 | 4 Severity audit | Member 3 | Not started | Dataset available | Frozen manifests |
 | 5 Severity CNN | Member 3 | Not started | Severity audit accepted | Baseline report |
 | 6 Severity MobileNetV2 | Member 3 | Not started | Same split available | Transfer-learning report |
@@ -46,6 +46,7 @@ Current commit: de7100c
 - [x] Phase 0 gate — Backend health endpoint returns 200, ML package imports, frontend builds
 - [x] DATA-001 — Fraud dataset audit (8,079 images; frozen manifests; 20 unit tests pass)
 - [x] ML-001 — Fraud MobileNetV2 classifier (FRAUD-MNV2-001 trained; test PR-AUC 0.5464; high_threshold 0.80; recall 90.1%; ONNX export; 37 unit tests pass)
+- [x] CV-001 — OpenCV evidence-integrity runtime checker (run_quality_checks(); QualityResult; 19 new tests; 56 total pass; notebook 04 12 sections)
 
 ## Active blockers
 
@@ -61,6 +62,7 @@ Only paste results produced by committed code and recorded experiments.
 | --- | --- | --- | --- | --- |
 | Fraud (Audit) | Audit v1 (Vinay Jose) | 8,079 images (7,614 gen / 465 susp) | 0 leakage; 5,654 train, 1,211 val, 1,214 test | data/manifests/fraud_train.csv |
 | Fraud (Classifier) | FRAUD-MNV2-001 | Vinay Jose v1 (1,214 test images) | PR-AUC: 0.5464, Recall: 90.1%, ROC-AUC: 0.9077, 22.6ms/img | ml/artifacts/fraud/thresholds_v1.json |
+| Quality (Runtime) | CV-001 | Synthetic (tests) + real (notebook) | 19/19 tests pass; all 9 checks verified; EXIF rule confirmed | ml/src/claimvision_ml/quality/runtime_checker.py |
 | Severity | Not available | Not available | Not measured | — |
 | Damage detection | Not available | Not available | Not measured | — |
 | Part detection | Not available | Not available | Not measured | — |
@@ -68,9 +70,10 @@ Only paste results produced by committed code and recorded experiments.
 
 ## Next three actions
 
-1. Review and commit Phase 1 — User — DATA-001
-2. Implement Phase 2 MobileNetV2 Suspicious-Image Classifier — Member 2 — ML-001
-3. Evaluate validation thresholds & model card — Member 2 — ML-002
+1. Review and commit Phase 3 — User — CV-001
+2. Implement Phase 4 Severity Dataset Audit — Member 3 — SDATA-001
+3. Create frozen 70/15/15 severity manifests — Member 3 — SDATA-001
+
 
 ## Demo readiness checklist
 

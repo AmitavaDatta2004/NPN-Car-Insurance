@@ -292,3 +292,63 @@ Known limitations:
 
 Follow-up: Phase 2 — ML-001 train and evaluate MobileNetV2 fraud baseline (Member 2).
 
+---
+
+### CV-001 — OpenCV evidence-integrity runtime checker
+
+- Date/time IST: 2026-09-21 01:37–01:50
+- Agent: Antigravity
+- Operator: Member 3 (Severity ML A) / Amitava Datta (to review diff and commit)
+- Base commit: de7f653
+- Phase: 3
+
+Files read:
+- `README.md` (§10 Notebook 04, §12 OpenCV responsibilities, §19 Phase 3 gate)
+- `AGENTS.md` (§11 OpenCV rules)
+- `ml/src/claimvision_ml/quality/image_checks.py` (existing Phase 1 base)
+- `ml/src/claimvision_ml/quality/__init__.py`
+- `ml/src/claimvision_ml/fraud/predict.py` (FraudResult contract for consistency)
+- `config/project.yaml`
+- `ml/tests/test_data_audit.py` (test pattern reference)
+- `TASKS.md`, `TASK_LOCKS.md`, `PROJECT_STATUS.md`, `docs/DECISIONS.md`
+
+Files created:
+- `ml/src/claimvision_ml/quality/runtime_checker.py` — `QualityResult` dataclass + `run_quality_checks()` 9-step orchestrator
+- `ml/tests/test_quality_runtime.py` — 19 unit tests covering all 9 check stages + helpers
+- (notebook 04 fully implemented — see below)
+
+Files modified:
+- `ml/src/claimvision_ml/quality/image_checks.py` — added 5 new runtime functions: `check_minimum_resolution`, `correct_orientation`, `extract_exif_summary`, `draw_bounding_boxes`, `save_annotated_image`
+- `ml/src/claimvision_ml/quality/__init__.py` — exported all Phase 1 + Phase 3 public API
+- `notebooks/04_opencv_quality_and_integrity.ipynb` — full 12-section implementation (Colab, real dataset)
+- `TASK_LOCKS.md` — added and released CV-001 lock
+- `PROJECT_STATUS.md` — Phase 3 marked Complete; next actions updated
+- `TASKS.md` — CV-001 task added and marked DONE
+
+Decisions made:
+- Notebook uses real Colab dataset (no synthetic fallback) via `DATASET_ROOT` env variable.
+- Blur threshold: `50.0` (Laplacian variance) — illustrative default, overridable.
+- Brightness thresholds: `< 30.0` (too_dark), `> 240.0` (overexposed) — illustrative defaults.
+- Contrast threshold: `< 15.0` (low_contrast) — illustrative default.
+- EXIF absent → `warnings["exif_absent"]` only. Never sets `passed=False` or `route=FRAUD_REVIEW`. Confirmed by README §12.
+- Duplicate detection → `DUPLICATE_REVIEW` route (not `FRAUD_REVIEW`). Human review required.
+- Denoising shown as experiment only; NOT enabled in runtime pipeline.
+
+Commands run:
+- `.venv\Scripts\pytest.exe ml/tests/test_quality_runtime.py -v` → 19 passed
+- `.venv\Scripts\pytest.exe ml/tests/ -q` → 56 passed (no regressions)
+- `.venv\Scripts\ruff check ml/ --fix` → 10 auto-fixed; 1 pre-existing Phase 2 warning remains (test_fraud_model.py rng=42 unused)
+
+Validation results:
+- 19 new tests all pass; 56 total (Phase 1 + Phase 2 + Phase 3) pass with no regressions.
+- All 9 check stages verified by dedicated tests.
+- EXIF rule confirmed: `test_exif_absent_never_causes_failure` passes — exif_absent never sets passed=False.
+- Duplicate routing confirmed: exact and near-duplicate routes correctly to DUPLICATE_REVIEW, not FRAUD_REVIEW.
+
+Known limitations:
+- Blur/brightness/contrast thresholds are illustrative defaults not calibrated on labelled real data.
+- Near-duplicate detection is O(n²); replace with FAISS index at production scale.
+- EXIF correction depends on Pillow `_getexif()` — may not work on all non-JPEG formats.
+- Notebook must run in Colab with real dataset mounted at `DATASET_ROOT`.
+
+Follow-up: Phase 4 — SDATA-001 Severity dataset audit — 1,631 images, frozen 70/15/15 manifests (Member 3).
