@@ -368,3 +368,125 @@ Validation commands:
 - `.venv\Scripts\pytest.exe ml/tests/ -q`
 - Run `notebooks/08_severity_vit_tiny_training.ipynb` top-to-bottom
 
+---
+
+### DET-COCO-001 — COCO annotation audit and YOLO conversion
+
+- Phase: 8
+- Owner: Member 4 (Detection owner)
+- Reviewer: Member 1
+- Status: DONE
+- Priority: P0
+- Dependencies: SEV-VIT-001 DONE (Phase 7 complete)
+- Files allowed: ml/src/claimvision_ml/detection/, ml/tests/test_coco_converter.py, ml/results/detection/, notebooks/10_coco_annotation_audit_and_conversion.ipynb, docs/EXPERIMENT_LOG.md, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md
+- Files prohibited: fraud/, severity/, backend routes, frontend app, notebooks 06, 07, 08, 09, 11, 12, 13, 14, 15
+- Objective: Audit the COCO car-damage detection dataset (59 train / 11 val / 8 test images, generic damage + 5 part classes at /content/NPN Car Insurance/data/raw/ on Colab), verify bounding boxes visually, convert to YOLO format, and prove correctness with assertions before YOLO training begins in Phase 9.
+- Inputs:
+  - train/: 59 images, COCO_train_annos.json, COCO_mul_train_annos.json
+  - val/: 11 images, COCO_val_annos.json, COCO_mul_val_annos.json
+  - test/: 8 images (unannotated test split)
+
+Acceptance criteria:
+- [x] `coco_converter.py` created with `load_coco_json`, `validate_structure`, `draw_coco_boxes`, `convert_bbox_to_yolo`, `convert_split`, `write_data_yaml`, `run_conversion_assertions`.
+- [x] Round-trip conversion assertion passes within 1e-6 tolerance.
+- [x] 17 unit tests pass in `test_coco_converter.py`; full ML suite (108 tests) passes without regression.
+- [x] Notebook 10 implemented with 14 cells: category counts, before/after box grids, assertion output, data.yaml printed, directory tree.
+- [x] `run_conversion_assertions` prints PASS for both `yolo_damage/` and `yolo_parts/` across all 3 splits.
+- [x] `data.yaml` for damage: `nc=1`, `names=[damage]`.
+- [x] `data.yaml` for parts: `nc=5`, `names=[headlamp, front_bumper, hood, door, rear_bumper]`.
+- [x] Every image has a `.txt` label file (empty file for unannotated test split).
+- [x] No YOLO training in Notebook 10.
+- [x] Notebook 10 executed with all visible outputs preserved.
+- [x] `EXPERIMENT_LOG.md` updated with `DET-COCO-001` entry.
+- [x] `PROJECT_STATUS.md` Phase 8 → Complete.
+
+Evidence: All 78 images across train (59), val (11), and test (8) successfully converted into `yolo_damage/` and `yolo_parts/`; conversion assertions PASS across all splits; 17/17 unit tests pass; Notebook 10 executed top-to-bottom with full visible outputs.
+
+Validation commands:
+- `.venv\Scripts\pytest.exe ml/tests/test_coco_converter.py -v`
+- `.venv\Scripts\pytest.exe ml/tests/ -q`
+- Run `notebooks/10_coco_annotation_audit_and_conversion.ipynb` top-to-bottom in Colab
+
+Risks/notes:
+- Dataset is very small (59 train images). Document the generalisation limitation prominently.
+- Some images may have no annotations — an empty .txt file must still be created for them.
+- Part class names in the COCO JSON may differ slightly from the YOLO names (e.g. "rear bumper" vs "rear_bumper") — the converter must handle the mapping explicitly.
+
+---
+
+### DET-YOLO-001 — Generic Damage YOLOv8 Training
+
+- Phase: 9
+- Owner: Member 4 (Detection ML)
+- Reviewer: Member 1 / Member 5
+- Status: DONE
+- Priority: P0
+- Dependencies: DET-COCO-001 DONE
+- Files allowed: ml/src/claimvision_ml/detection/, ml/tests/test_damage_detector.py, notebooks/11_yolo_damage_training.ipynb, docs/MODEL_CARD_DAMAGE_YOLO_V1.md, docs/EXPERIMENT_LOG.md, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md
+- Files prohibited: fraud/, severity/, costing/, backend routes, frontend app, notebooks 06, 07, 08, 09, 10, 12, 13, 14, 15
+- Objective: train, validate, and export a lightweight YOLOv8n single-class generic damage detector (nc=1, name='damage') on the converted COCO dataset from Phase 8. Provide reusable inference module, visual bounding box overlay generator, export PyTorch and ONNX models, and execute reproducible judge notebook 11.
+- Inputs:
+  - `ml/results/detection/yolo_damage/data.yaml`
+  - `train/`: 59 images + labels
+  - `val/`: 11 images + labels
+  - `test/`: 8 images (held-out test split)
+
+Acceptance criteria:
+- [x] `ml/src/claimvision_ml/detection/damage.py` implemented with `DamageDetection`, `DamageDetector`, `detect_damage`, `export_damage_onnx`.
+- [x] Public API exposed in `ml/src/claimvision_ml/detection/__init__.py`.
+- [x] Visual bounding box overlay drawn cleanly on an image copy with class label and confidence percentage; original image remains pristine.
+- [x] No-detection edge case handled gracefully (empty list returned, no exception).
+- [x] Unit tests in `ml/tests/test_damage_detector.py` pass (17 tests); full test suite passes with 0 regressions (125 passed).
+- [x] Notebook 11 (`11_yolo_damage_training.ipynb`) implemented with 17 cells adhering to README §10 and AGENTS.md §7.
+- [x] Bimodal execution support (Google Colab GPU / Local CPU) with dataset auto-sync fallback.
+- [x] Held-out test set evaluated strictly ONCE.
+- [x] Model checkpoints exported: `artifacts/models/damage_yolov8n.pt` and `artifacts/models/damage_yolov8n.onnx`.
+- [x] `docs/MODEL_CARD_DAMAGE_YOLO_V1.md` and `docs/EXPERIMENT_LOG.md` entry created.
+- [x] `PROJECT_STATUS.md` and `TASK_LOCKS.md` updated.
+
+Evidence: Reusable `DamageDetector` engine, coordinate converters, and overlay visualizer created in `damage.py`; all 17 detector unit tests pass; full test suite (125 tests) passes green without regressions; 17-cell judge-ready Notebook 11 generated with bimodal Colab/local support; Model card `MODEL_CARD_DAMAGE_YOLO_V1.md` committed.
+
+Validation commands:
+- `.venv\Scripts\pytest.exe ml/tests/test_damage_detector.py -v`
+- `.venv\Scripts\pytest.exe ml/tests/ -q`
+- Run `notebooks/11_yolo_damage_training.ipynb` top-to-bottom
+
+---
+
+### DET-PART-001 — Damaged-Part YOLOv8 Training (5 Classes)
+
+- Phase: 10
+- Owner: Member 4 (Detection ML)
+- Reviewer: Member 1 / Member 5
+- Status: IN_PROGRESS
+- Priority: P0
+- Dependencies: DET-YOLO-001 DONE
+- Files allowed: ml/src/claimvision_ml/detection/, ml/tests/test_part_detector.py, notebooks/12_yolo_part_training.ipynb, docs/MODEL_CARD_PART_YOLO_V1.md, docs/EXPERIMENT_LOG.md, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md
+- Files prohibited: fraud/, severity/, costing/, backend routes, frontend app, notebooks 06, 07, 08, 09, 10, 11, 13, 14, 15
+- Objective: train, validate, and evaluate a lightweight YOLOv8n 5-class damaged vehicle part detector (nc=5: headlamp, front_bumper, hood, door, rear_bumper) on the converted COCO dataset from Phase 8. Provide reusable inference module, multi-color component visual overlays, export PyTorch and ONNX models, and execute reproducible judge notebook 12 with an explicit Go/No-Go decision gate for production demo.
+- Inputs:
+  - `ml/results/detection/yolo_parts/data.yaml`
+  - `train/`: 59 images + labels (177 part boxes)
+  - `val/`: 11 images + labels
+  - `test/`: 8 images (held-out test split)
+
+Acceptance criteria:
+- [ ] `ml/src/claimvision_ml/detection/parts.py` implemented with `PartDetection`, `PartDetector`, `detect_parts`, `export_parts_onnx`, and `get_detected_part_names`.
+- [ ] Public API exposed in `ml/src/claimvision_ml/detection/__init__.py`.
+- [ ] Multi-color visual bounding box overlay drawn cleanly with distinct colors per vehicle part and confidence percentages; original image remains pristine.
+- [ ] No-detection edge case handled gracefully (empty list returned, no exception).
+- [ ] Unit tests in `ml/tests/test_part_detector.py` pass; full test suite passes with 0 regressions.
+- [ ] Notebook 12 (`12_yolo_part_training.ipynb`) implemented with 18 cells adhering to README §10 and AGENTS.md §7.
+- [ ] Per-class performance reviewed (Precision, Recall, AP per class).
+- [ ] Front-vs-rear bumper confusion analyzed.
+- [ ] Bimodal execution support (Google Colab GPU / Local CPU) with dataset auto-sync fallback.
+- [ ] Held-out test set evaluated strictly ONCE.
+- [ ] Explicit production-demo vs. experimental Go/No-Go decision recorded.
+- [ ] Model checkpoints exported: `artifacts/models/parts_yolov8n.pt` and `artifacts/models/parts_yolov8n.onnx`.
+- [ ] `docs/MODEL_CARD_PART_YOLO_V1.md` and `docs/EXPERIMENT_LOG.md` entry created.
+- [ ] `PROJECT_STATUS.md` updated.
+
+Validation commands:
+- `.venv\Scripts\pytest.exe ml/tests/test_part_detector.py -v`
+- `.venv\Scripts\pytest.exe ml/tests/ -q`
+- Run `notebooks/12_yolo_part_training.ipynb` top-to-bottom
