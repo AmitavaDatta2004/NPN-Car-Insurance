@@ -106,8 +106,14 @@ def evaluate_model(model, loader, criterion, device):
     macro_rec = recall_score(all_labels, all_preds, average="macro", zero_division=0)
     macro_prec = precision_score(all_labels, all_preds, average="macro", zero_division=0)
 
+    minor_mask = (all_labels == 0)
+    minor_rec = float((all_preds[minor_mask] == 0).mean()) if minor_mask.sum() > 0 else 0.0
+
+    mod_mask = (all_labels == 1)
+    mod_rec = float((all_preds[mod_mask] == 1).mean()) if mod_mask.sum() > 0 else 0.0
+
     severe_mask = (all_labels == 2)
-    severe_rec = (all_preds[severe_mask] == 2).mean() if severe_mask.sum() > 0 else 0.0
+    severe_rec = float((all_preds[severe_mask] == 2).mean()) if severe_mask.sum() > 0 else 0.0
 
     return {
         "loss": mean_loss,
@@ -116,6 +122,8 @@ def evaluate_model(model, loader, criterion, device):
         "weighted_f1": weighted_f1,
         "macro_recall": macro_rec,
         "macro_precision": macro_prec,
+        "minor_recall": minor_rec,
+        "moderate_recall": mod_rec,
         "severe_recall": severe_rec,
         "predictions": all_preds,
         "labels": all_labels,
@@ -125,11 +133,18 @@ def evaluate_model(model, loader, criterion, device):
 
 def main():
     parser = argparse.ArgumentParser(description="Train Severity MobileNetV2")
-    parser.add_argument("--epochs-a", type=int, default=5, help="Stage A epochs (head only)")
-    parser.add_argument("--epochs-b", type=int, default=10, help="Stage B epochs (fine-tuning)")
+    parser.add_argument("--epochs-a", type=int, default=10, help="Stage A epochs (head only)")
+    parser.add_argument("--epochs-b", type=int, default=15, help="Stage B epochs (fine-tuning)")
     parser.add_argument("--batch-size", type=int, default=32, help="Batch size")
     parser.add_argument("--lr-a", type=float, default=1e-3, help="Stage A learning rate")
-    parser.add_argument("--lr-b", type=float, default=1e-5, help="Stage B learning rate")
+    parser.add_argument("--lr-b-backbone", type=float, default=2e-5, help="Stage B backbone learning rate")
+    parser.add_argument("--lr-b-head", type=float, default=2e-4, help="Stage B head learning rate")
+    parser.add_argument("--lr-b", type=float, default=None, help="Stage B single fallback learning rate")
+    parser.add_argument("--unfreeze-blocks", type=int, default=4, help="Number of terminal feature blocks to unfreeze in Stage B")
+    parser.add_argument("--label-smoothing", type=float, default=0.05, help="CrossEntropy label smoothing")
+    parser.add_argument("--severe-weight-mult", type=float, default=1.15, help="Multiplier for severe class weight")
+    parser.add_argument("--moderate-weight-mult", type=float, default=1.10, help="Multiplier for moderate class weight")
+    parser.add_argument("--patience", type=int, default=3, help="Early stopping patience")
     parser.add_argument("--device", type=str, default="", help="cuda or cpu")
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
     args = parser.parse_args()
@@ -166,9 +181,13 @@ def main():
 
     logger.info(f"Loaded: Train={len(train_dataset)}, Val={len(val_dataset)}, Test={len(test_dataset)}")
 
-    # Loss with balanced weights
+    # Loss with balanced weights, moderate/severe multipliers & label smoothing
     class_weights = get_severity_class_weights(train_csv).to(device)
-    criterion = nn.CrossEntropyLoss(weight=class_weights)
+    class_weights[1] *= args.moderate_weight_mult
+    class_weights[2] *= args.severe_weight_mult
+    class_weights = class_weights / class_weights.mean()
+    logger.info(f"Class weights: minor={class_weights[0]:.4f}, moderate={class_weights[1]:.4f}, severe={class_weights[2]:.4f}")
+    criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=args.label_smoothing)
 
     # Model
     model = build_severity_mobilenet(pretrained=True, num_classes=3, dropout=0.3).to(device)
@@ -178,12 +197,21 @@ def main():
         "train_loss": [], "val_loss": [],
         "train_acc": [], "val_acc": [],
         "val_macro_f1": [], "val_severe_recall": [],
+        "val_moderate_recall": [], "val_minor_recall": [],
     }
+
+    best_val_f1 = 0.0
+    best_epoch = 0
+    best_weights = copy.deepcopy(model.state_dict())
+
+    ckpt_path = alt_models_dir / "severity_mnv2_v1.pt"
+    local_pt = models_dir / "severity_mnv2.pt"
 
     # Stage A
     logger.info(f"Starting Stage A ({args.epochs_a} epochs, backbone frozen)...")
     optimizer_a = torch.optim.AdamW(model.classifier.parameters(), lr=args.lr_a, weight_decay=1e-4)
 
+    patience_a = 0
     for epoch in range(1, args.epochs_a + 1):
         t0 = time.time()
         tr_loss, tr_acc = train_one_epoch(model, train_loader, criterion, optimizer_a, device)
@@ -196,32 +224,67 @@ def main():
         history["val_acc"].append(val_m["accuracy"])
         history["val_macro_f1"].append(val_m["macro_f1"])
         history["val_severe_recall"].append(val_m["severe_recall"])
+        history["val_moderate_recall"].append(val_m["moderate_recall"])
+        history["val_minor_recall"].append(val_m["minor_recall"])
+
+        is_best = val_m["macro_f1"] > best_val_f1
+        if is_best:
+            best_val_f1 = val_m["macro_f1"]
+            best_epoch = epoch
+            best_weights = copy.deepcopy(model.state_dict())
+            patience_a = 0
+            save_severity_checkpoint(
+                model=model,
+                save_path=ckpt_path,
+                epoch=best_epoch,
+                metrics=val_m,
+            )
+            save_severity_checkpoint(
+                model=model,
+                save_path=local_pt,
+                epoch=best_epoch,
+                metrics=val_m,
+            )
+        else:
+            patience_a += 1
 
         logger.info(
             f"Stage A Ep {epoch:2d}/{args.epochs_a:2d} ({elapsed:.1f}s) | "
             f"TrLoss: {tr_loss:.4f} TrAcc: {tr_acc:.1%} | "
             f"ValLoss: {val_m['loss']:.4f} ValAcc: {val_m['accuracy']:.1%} | "
-            f"ValF1: {val_m['macro_f1']:.4f} | SevRec: {val_m['severe_recall']:.1%}"
+            f"ValF1: {val_m['macro_f1']:.4f} | ModRec: {val_m['moderate_recall']:.1%} | SevRec: {val_m['severe_recall']:.1%}"
+            f"{' [BEST]' if is_best else ''}"
         )
 
-    # Stage B
-    logger.info(f"Starting Stage B ({args.epochs_b} epochs, fine-tuning top blocks)...")
-    model.unfreeze_final_blocks(n_blocks=2)
+        if patience_a >= args.patience and epoch >= 4:
+            logger.info(f"Stage A early stopping triggered after {epoch} epochs (best epoch: {best_epoch}).")
+            break
+
+    # Restore best Stage A weights before starting Stage B
+    model.load_state_dict(best_weights)
+    logger.info(f"Loaded best Stage A weights from epoch {best_epoch} (Val F1: {best_val_f1:.4f}) for Stage B")
+
+    # Stage B: Unfreeze top blocks and apply differential learning rates
+    n_blocks = args.unfreeze_blocks
+    logger.info(f"Starting Stage B ({args.epochs_b} epochs, fine-tuning top {n_blocks} blocks)...")
+    model.unfreeze_final_blocks(n_blocks=n_blocks)
+
+    lr_backbone = args.lr_b if args.lr_b is not None else args.lr_b_backbone
+    lr_head = args.lr_b if args.lr_b is not None else args.lr_b_head
+
+    backbone_params = [p for p in model.features.parameters() if p.requires_grad]
+    head_params = [p for p in model.classifier.parameters() if p.requires_grad]
 
     optimizer_b = torch.optim.AdamW(
-        [p for p in model.parameters() if p.requires_grad],
-        lr=args.lr_b,
-        weight_decay=1e-4
+        [
+            {"params": backbone_params, "lr": lr_backbone},
+            {"params": head_params, "lr": lr_head},
+        ],
+        weight_decay=1e-4,
     )
-    scheduler_b = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer_b, T_max=args.epochs_b, eta_min=1e-7)
+    scheduler_b = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer_b, T_max=args.epochs_b, eta_min=1e-6)
 
-    best_val_f1 = max(history["val_macro_f1"])
-    best_epoch = len(history["val_macro_f1"])
-    best_weights = copy.deepcopy(model.state_dict())
-
-    ckpt_path = alt_models_dir / "severity_mnv2_v1.pt"
-    local_pt = models_dir / "severity_mnv2.pt"
-
+    patience_b = 0
     for epoch in range(1, args.epochs_b + 1):
         tot_epoch = args.epochs_a + epoch
         t0 = time.time()
@@ -236,44 +299,43 @@ def main():
         history["val_acc"].append(val_m["accuracy"])
         history["val_macro_f1"].append(val_m["macro_f1"])
         history["val_severe_recall"].append(val_m["severe_recall"])
+        history["val_moderate_recall"].append(val_m["moderate_recall"])
+        history["val_minor_recall"].append(val_m["minor_recall"])
 
         is_best = val_m["macro_f1"] > best_val_f1
         if is_best:
             best_val_f1 = val_m["macro_f1"]
             best_epoch = tot_epoch
             best_weights = copy.deepcopy(model.state_dict())
+            patience_b = 0
             save_severity_checkpoint(
                 model=model,
                 save_path=ckpt_path,
                 epoch=best_epoch,
-                metrics={
-                    "val_loss": val_m["loss"],
-                    "val_accuracy": val_m["accuracy"],
-                    "val_macro_f1": val_m["macro_f1"],
-                    "val_severe_recall": val_m["severe_recall"],
-                }
+                metrics=val_m,
             )
             save_severity_checkpoint(
                 model=model,
                 save_path=local_pt,
                 epoch=best_epoch,
-                metrics={
-                    "val_loss": val_m["loss"],
-                    "val_accuracy": val_m["accuracy"],
-                    "val_macro_f1": val_m["macro_f1"],
-                    "val_severe_recall": val_m["severe_recall"],
-                }
+                metrics=val_m,
             )
+        else:
+            patience_b += 1
 
         logger.info(
             f"Stage B Ep {tot_epoch:2d}/{args.epochs_a + args.epochs_b:2d} ({elapsed:.1f}s) | "
             f"TrLoss: {tr_loss:.4f} TrAcc: {tr_acc:.1%} | "
             f"ValLoss: {val_m['loss']:.4f} ValAcc: {val_m['accuracy']:.1%} | "
-            f"ValF1: {val_m['macro_f1']:.4f} | SevRec: {val_m['severe_recall']:.1%}"
+            f"ValF1: {val_m['macro_f1']:.4f} | ModRec: {val_m['moderate_recall']:.1%} | SevRec: {val_m['severe_recall']:.1%}"
             f"{' [BEST]' if is_best else ''}"
         )
 
-    # Restore best weights
+        if patience_b >= args.patience and epoch >= 4:
+            logger.info(f"Stage B early stopping triggered after {epoch} epochs (best epoch: {best_epoch}).")
+            break
+
+    # Restore best weights across all stages
     model.load_state_dict(best_weights)
     logger.info(f"Restored best weights from epoch {best_epoch} (Val Macro F1 = {best_val_f1:.4f})")
 
@@ -401,6 +463,8 @@ def main():
             "macro_precision": round(float(val_m["macro_precision"]), 4),
             "macro_recall": round(float(val_m["macro_recall"]), 4),
             "macro_f1": round(float(val_m["macro_f1"]), 4),
+            "minor_recall": round(float(val_m["minor_recall"]), 4),
+            "moderate_recall": round(float(val_m["moderate_recall"]), 4),
             "severe_recall": round(float(val_m["severe_recall"]), 4),
         },
         "test": {
@@ -410,7 +474,10 @@ def main():
             "macro_recall": round(float(test_m["macro_recall"]), 4),
             "macro_f1": round(float(test_m["macro_f1"]), 4),
             "weighted_f1": round(float(test_m["weighted_f1"]), 4),
+            "minor_recall": round(float(test_m["minor_recall"]), 4),
+            "moderate_recall": round(float(test_m["moderate_recall"]), 4),
             "severe_recall": round(float(test_m["severe_recall"]), 4),
+            "confusion_matrix": cm_test.tolist(),
         },
         "latency": {
             "cpu_mean_ms": round(mean_lat, 2),
@@ -428,9 +495,12 @@ def main():
     }
 
     metrics_json_path = REPO_ROOT / "ml" / "results" / "severity_mnv2_metrics.json"
+    alt_metrics_json_path = REPO_ROOT / "ml" / "results" / "severity" / "mnv2_metrics.json"
     with open(metrics_json_path, "w", encoding="utf-8") as f:
         json.dump(metrics_summary, f, indent=2)
-    logger.info(f"Summary metrics exported to {metrics_json_path}")
+    with open(alt_metrics_json_path, "w", encoding="utf-8") as f:
+        json.dump(metrics_summary, f, indent=2)
+    logger.info(f"Summary metrics exported to {metrics_json_path} and {alt_metrics_json_path}")
 
     # Standalone smoke test
     sample_img = REPO_ROOT / "data" / "raw" / "car_damage_severity" / "data3a" / "training" / "01-minor" / "0001.JPEG"

@@ -85,10 +85,23 @@ class SeverityMobileNetV2(nn.Module):
         x = torch.flatten(x, 1)
         return self.classifier(x)
 
+    def train(self, mode: bool = True) -> SeverityMobileNetV2:
+        """Set module in training mode, keeping frozen BatchNorm layers in eval mode."""
+        super().train(mode)
+        if mode:
+            for module in self.features.modules():
+                if isinstance(module, nn.BatchNorm2d):
+                    if not any(p.requires_grad for p in module.parameters()):
+                        module.eval()
+        return self
+
     def freeze_backbone(self) -> None:
         """Freeze all parameters in the feature extractor (Stage A)."""
         for param in self.features.parameters():
             param.requires_grad = False
+        for module in self.features.modules():
+            if isinstance(module, nn.BatchNorm2d):
+                module.eval()
 
     def unfreeze_final_blocks(self, n_blocks: int = 2) -> None:
         """Unfreeze the last n_blocks InvertedResidual layers for fine-tuning (Stage B).
@@ -134,6 +147,18 @@ def save_severity_checkpoint(
     path = Path(save_path)
     path.parent.mkdir(parents=True, exist_ok=True)
 
+    # Convert metrics to plain Python types
+    clean_metrics: dict[str, Any] = {}
+    for k, v in (metrics or {}).items():
+        if isinstance(v, (float, int, str, bool)):
+            clean_metrics[k] = v
+        elif hasattr(v, "tolist"):
+            clean_metrics[k] = v.tolist()
+        elif hasattr(v, "item"):
+            clean_metrics[k] = v.item()
+        elif isinstance(v, (list, dict)):
+            clean_metrics[k] = v
+
     checkpoint = {
         "model_architecture": "mobilenet_v2",
         "experiment_id": "SEV-MNV2-001",
@@ -145,7 +170,7 @@ def save_severity_checkpoint(
         "mean": IMAGENET_MEAN,
         "std": IMAGENET_STD,
         "epoch": epoch,
-        "metrics": metrics,
+        "metrics": clean_metrics,
         "state_dict": model.state_dict(),
         "extra_meta": extra_meta or {},
     }
@@ -171,7 +196,11 @@ def load_severity_checkpoint(
     if not path.is_file():
         raise FileNotFoundError(f"Checkpoint file not found: {path}")
 
-    chk = torch.load(str(path), map_location=device)
+    try:
+        chk = torch.load(str(path), map_location=device, weights_only=False)
+    except TypeError:
+        chk = torch.load(str(path), map_location=device)
+
     num_classes = chk.get("num_classes", 3)
 
     model = SeverityMobileNetV2(pretrained=False, num_classes=num_classes)

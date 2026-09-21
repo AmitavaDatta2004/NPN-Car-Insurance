@@ -150,7 +150,10 @@ class SeverityDataset(Dataset):
 
 
 def get_severity_transforms(split: str = "train", img_size: int = 224) -> transforms.Compose:
-    """Return standard torchvision image transformations for severity classification.
+    """Return torchvision image transformations for severity classification.
+
+    Full-canvas field of view is preserved without destructive CenterCrop,
+    retaining all corner and bumper collision damage features.
 
     Args:
         split: One of 'train', 'val', or 'test'.
@@ -162,25 +165,24 @@ def get_severity_transforms(split: str = "train", img_size: int = 224) -> transf
     if split == "train":
         return transforms.Compose(
             [
-                transforms.RandomResizedCrop(img_size, scale=(0.8, 1.0)),
+                transforms.Resize((img_size, img_size)),
                 transforms.RandomHorizontalFlip(p=0.5),
-                transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.1),
-                transforms.RandomRotation(degrees=15),
+                transforms.ColorJitter(brightness=0.15, contrast=0.15, saturation=0.10),
+                transforms.RandomAffine(degrees=8, translate=(0.04, 0.04)),
                 transforms.ToTensor(),
                 transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
             ]
         )
     else:
-        # val or test
-        resize_dim = int(img_size * 256 / 224)
+        # val or test — preserve full vehicle canvas
         return transforms.Compose(
             [
-                transforms.Resize(resize_dim),
-                transforms.CenterCrop(img_size),
+                transforms.Resize((img_size, img_size)),
                 transforms.ToTensor(),
                 transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
             ]
         )
+
 
 
 def get_severity_class_weights(manifest_path: str | Path) -> torch.Tensor:
