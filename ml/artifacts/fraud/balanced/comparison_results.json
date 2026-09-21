@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "experiment_task": "ML-003",
+    "date": "2026-09-21",
+    "dataset": "Vinay Jose v1",
+    "test_samples": 1214
+  },
+  "ratios": {
+    "50:50": {
+      "val_pr_auc": 0.5307,
+      "pr_auc": 0.5458,
+      "roc_auc": 0.9076,
+      "recall": 0.8451,
+      "precision": 0.219,
+      "f1": 0.3478,
+      "tn": 929,
+      "fp": 214,
+      "fn": 11,
+      "tp": 60,
+      "latency_ms": 5.61,
+      "high_threshold": 0.2,
+      "low_threshold": 0.1
+    },
+    "40:60": {
+      "val_pr_auc": 0.5325,
+      "pr_auc": 0.5592,
+      "roc_auc": 0.9146,
+      "recall": 0.8169,
+      "precision": 0.2636,
+      "f1": 0.3986,
+      "tn": 981,
+      "fp": 162,
+      "fn": 13,
+      "tp": 58,
+      "latency_ms": 5.07,
+      "high_threshold": 0.2,
+      "low_threshold": 0.1
+    },
+    "30:70": {
+      "val_pr_auc": 0.5526,
+      "pr_auc": 0.5341,
+      "roc_auc": 0.8984,
+      "recall": 0.7042,
+      "precision": 0.3704,
+      "f1": 0.4854,
+      "tn": 1058,
+      "fp": 85,
+      "fn": 21,
+      "tp": 50,
+      "latency_ms": 5.55,
+      "high_threshold": 0.2,
+      "low_threshold": 0.1
+    },
+    "20:80": {
+      "val_pr_auc": 0.5219,
+      "pr_auc": 0.5617,
+      "roc_auc": 0.9144,
+      "recall": 0.662,
+      "precision": 0.4017,
+      "f1": 0.5,
+      "tn": 1073,
+      "fp": 70,
+      "fn": 24,
+      "tp": 47,
+      "latency_ms": 5.25,
+      "high_threshold": 0.2,
+      "low_threshold": 0.1
+    }
+  },
+  "baseline": {
+    "val_pr_auc": 0.4999,
+    "pr_auc": 0.5464,
+    "roc_auc": 0.9077,
+    "recall": 0.9014,
+    "precision": 0.14,
+    "f1": 0.2424,
+    "fp": 393,
+    "fn": 7,
+    "latency_ms": 22.6,
+    "high_threshold": 0.8
+  }
+}

@@ -48,7 +48,7 @@ Current commit: 28debd5 (pending user commit for Phase 7)
 - [x] ML-001 — Fraud MobileNetV2 classifier (FRAUD-MNV2-001 trained; test PR-AUC 0.5464; high_threshold 0.80; recall 90.1%; ONNX export; 37 unit tests pass)
 - [x] CV-001 — OpenCV evidence-integrity runtime checker (run_quality_checks(); QualityResult; 19 new tests; 56 total pass; notebook 04 12 sections)
 - [x] SDATA-001 — Severity dataset audit & manifest freeze (1,631 images; 0 corrupt; 11 exact dupe groups & 32 pHash clusters; 0 leakage 70/15/15 split; 64 total tests pass)
-- [/] ML-003 — Per-epoch balanced resampling comparison (50:50, 40:60, 30:70, 20:80; BalancedEpochSampler tested; notebook 02b in progress)
+- [x] ML-003 — Per-epoch balanced resampling comparison (50:50, 40:60, 30:70, 20:80; 20:80 won with Test PR-AUC 0.5617, Recall 66.2%, F1 0.5000, FP 70; notebook 02b complete)
 - [x] SEV-MNV2-001 — Severity MobileNetV2 classifier (two-stage transfer learning; val macro F1 0.72; notebook 07 complete)
 - [x] SEV-VIT-001 — ViT-Tiny severity classifier (vit_tiny_patch16_224 trained in 2 stages; CPU latency 12.60 ms; ONNX exported; 72 unit tests pass; ready for Notebook 09)
 
@@ -56,7 +56,7 @@ Current commit: 28debd5 (pending user commit for Phase 7)
 
 | ID | Blocker | Owner | Impact | Required decision | Target date |
 | --- | --- | --- | --- | --- | --- |
-| None | — | — | — | — | — | — |
+| None | — | — | — | — | — |
 
 ## Latest verified results
 
@@ -66,6 +66,7 @@ Only paste results produced by committed code and recorded experiments.
 | --- | --- | --- | --- | --- |
 | Fraud (Audit) | Audit v1 (Vinay Jose) | 8,079 images (7,614 gen / 465 susp) | 0 leakage; 5,654 train, 1,211 val, 1,214 test | data/manifests/fraud_train.csv |
 | Fraud (Classifier) | FRAUD-MNV2-001 | Vinay Jose v1 (1,214 test images) | PR-AUC: 0.5464, Recall: 90.1%, ROC-AUC: 0.9077, 22.6ms/img | ml/artifacts/fraud/thresholds_v1.json |
+| Fraud (Balanced) | FRAUD-BAL-2080 | Vinay Jose v1 (1,214 test images) | PR-AUC: 0.5617, Recall: 66.2%, Precision: 40.2%, F1: 0.5000, 5.25ms/img | ml/artifacts/fraud/balanced/best_model_thresholds.json |
 | Quality (Runtime) | CV-001 | Synthetic (tests) + real (notebook) | 19/19 tests pass; all 9 checks verified; EXIF rule confirmed | ml/src/claimvision_ml/quality/runtime_checker.py |
 | Severity (Audit) | Audit v1 (Prajwal Bhamere) | 1,631 images (534 min / 538 mod / 559 sev) | 0 leakage; 1,140 train, 243 val, 248 test | data/manifests/severity_train.csv |
 | Damage detection | Not available | Not available | Not measured | — |

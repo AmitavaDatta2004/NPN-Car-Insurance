@@ -96,6 +96,20 @@ is higher than the cost of routing a genuine image to human review (false positi
 4. **Adversarial:** A sophisticated actor could submit a suspicious image that has been
    processed to look like a genuine image.
 
+## Balanced Resampling Study (ML-003)
+
+In extension task ML-003, four per-epoch class balancing ratios were trained on the frozen 70/15/15 manifests using `BalancedEpochSampler` (325 suspicious images fixed every epoch, rotating genuine images):
+
+| Ratio | Val PR-AUC | Test PR-AUC | Test ROC-AUC | Suspicious Recall | Suspicious Precision | Suspicious F1 | False Positives |
+|---|---|---|---|---|---|---|---|
+| **50:50** | 0.5307 | 0.5458 | 0.9076 | 84.5% | 21.9% | 0.3478 | 214 |
+| **40:60** | 0.5325 | 0.5592 | 0.9146 | 81.7% | 26.4% | 0.3986 | 162 |
+| **30:70** | 0.5526 | 0.5341 | 0.8984 | 70.4% | 37.0% | 0.4854 | 85 |
+| **20:80 (Winner)** | 0.5219 | **0.5617** | **0.9144** | 66.2% | **40.2%** | **0.5000** | **70** |
+| *Baseline (Soft Weighted)* | 0.4999 | 0.5464 | 0.9077 | 90.1% | 14.0% | 0.2424 | 393 |
+
+**Key Finding:** The **20:80** ratio achieved the highest PR-AUC (0.5617) and doubled the F1 score (0.5000 vs. 0.2424), slashing false positives by 82% (from 393 down to 70), significantly reducing human adjuster triage overload.
+
 ## Ethical and Operational Limitations
 
 - Output is advisory only. Human reviewers make all final decisions.

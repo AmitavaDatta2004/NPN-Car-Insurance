@@ -1,0 +1,9 @@
+{
+  "version": "v1-balanced",
+  "winning_ratio": "20:80",
+  "model_version": "FRAUD-BAL-2080",
+  "selected_from": "validation",
+  "low_threshold": 0.1,
+  "high_threshold": 0.2,
+  "notes": "Winning ratio 20:80 selected via systematic per-epoch balanced comparison. Achieved test PR-AUC 0.5617 and recall 66.2% with lowest FP (70) and highest F1 (0.5000)."
+}

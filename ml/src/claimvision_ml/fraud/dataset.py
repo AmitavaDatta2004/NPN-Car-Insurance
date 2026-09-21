@@ -43,6 +43,9 @@ def _resolve_image_path(raw_path: str) -> Path:
         Path("data/raw/vinayjose_car_damage/images"),
         Path("/content/NPN-Car-Insurance/data/raw/vinayjose_car_damage/images"),
         Path("notebooks/data/raw/vinayjose_car_damage/images"),
+        Path("data/raw/vinayjose_car_damage"),
+        Path("/content/NPN-Car-Insurance/data/raw/vinayjose_car_damage"),
+        Path("notebooks/data/raw/vinayjose_car_damage"),
     ]:
         candidate = (img_dir / fname).resolve()
         if candidate.is_file():

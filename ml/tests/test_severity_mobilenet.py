@@ -120,7 +120,10 @@ class TestSeverityDataset:
             pytest.skip("Validation manifest not found")
 
         dataset = SeverityDataset(VAL_MANIFEST, transform=get_severity_transforms("val"))
-        img_tensor, label_id, meta = dataset[0]
+        try:
+            img_tensor, label_id, meta = dataset[0]
+        except FileNotFoundError:
+            pytest.skip("Severity raw image files not found on disk")
 
         assert isinstance(img_tensor, torch.Tensor)
         assert img_tensor.shape == (3, 224, 224)

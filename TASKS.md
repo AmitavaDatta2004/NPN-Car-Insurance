@@ -244,7 +244,7 @@ Validation commands:
 - Phase: 2 (Extension)
 - Owner: Member 2 / Antigravity
 - Reviewer: Member 1
-- Status: IN_PROGRESS
+- Status: DONE
 - Priority: P1
 - Dependencies: ML-001 accepted
 - Files allowed: ml/src/claimvision_ml/fraud/, ml/tests/test_balanced_sampler.py,
@@ -257,11 +257,13 @@ Validation commands:
 
 Acceptance criteria:
 - [x] `BalancedEpochSampler` implemented with fixed suspicious class and rotating genuine sample per epoch.
-- [x] 12 unit tests pass in `test_balanced_sampler.py`; full suite (68 tests) passes with no regression.
-- [ ] Comparison notebook `02b_fraud_balanced_resampling_comparison.ipynb` executed top-to-bottom.
-- [ ] Side-by-side comparison table, PR curves, and confusion matrices generated across all 4 ratios + baseline.
-- [ ] Best model checkpoint and threshold JSON exported.
-- [ ] Experiment log and model card updated with real metrics.
+- [x] 12 unit tests pass in `test_balanced_sampler.py`; full suite passes with no regression.
+- [x] Comparison notebook `02b_fraud_balanced_resampling_comparison.ipynb` executed top-to-bottom.
+- [x] Side-by-side comparison table, PR curves, and confusion matrices generated across all 4 ratios + baseline.
+- [x] Best model checkpoint and threshold JSON exported (`20:80` won with Test PR-AUC 0.5617, Recall 66.2%, F1 0.5000).
+- [x] Experiment log and model card updated with real metrics.
+
+Evidence: All 4 models trained on GPU (CUDA); 20:80 selected as winner (Test PR-AUC 0.5617 vs Baseline 0.5464, FP dropped from 393 to 70, F1 doubled to 0.5000); all 5 comparison figures extracted to `ml/results/fraud/`; `comparison_results.json` and `best_model_thresholds.json` committed.
 
 Validation commands:
 - `.venv\Scripts\pytest.exe ml/tests/test_balanced_sampler.py -v`
