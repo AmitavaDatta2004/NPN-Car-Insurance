@@ -30,6 +30,7 @@ This file substitutes for branch isolation because all seven members work direct
 | SEV-CNN-001 | Member 3 / Antigravity | notebooks/06_severity_cnn_training.ipynb, ml/src/claimvision_ml/severity/cnn.py, ml/src/claimvision_ml/severity/__init__.py, ml/tests/test_severity_cnn.py, ml/results/severity/cnn_metrics.json, docs/EXPERIMENT_LOG.md, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md | 2026-09-21 17:51 | 2026-09-21 21:00 | 28debd5 | RELEASED |
 | DET-COCO-001 | Member 4 / Antigravity | ml/src/claimvision_ml/detection/, ml/tests/test_coco_converter.py, ml/results/detection/, notebooks/10_coco_annotation_audit_and_conversion.ipynb, docs/EXPERIMENT_LOG.md, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md | 2026-09-21 23:55 | 2026-09-22 03:00 | 1231ecf | RELEASED |
 | DET-YOLO-001 | Member 4 / Antigravity | ml/src/claimvision_ml/detection/, ml/tests/test_damage_detector.py, notebooks/11_yolo_damage_training.ipynb, docs/MODEL_CARD_DAMAGE_YOLO_V1.md, docs/EXPERIMENT_LOG.md, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md | 2026-09-22 01:46 | 2026-09-22 04:30 | 6884cc7 | RELEASED |
+| DET-PART-001 | Member 4 / Antigravity | ml/src/claimvision_ml/detection/, ml/tests/test_part_detector.py, notebooks/12_yolo_part_training.ipynb, docs/MODEL_CARD_PART_YOLO_V1.md, docs/EXPERIMENT_LOG.md, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md | 2026-09-22 02:19 | 2026-09-22 05:00 | a52ed77 | ACTIVE |
 
 
 ## Lock template

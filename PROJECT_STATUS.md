@@ -1,16 +1,16 @@
 # Project Status
 
-Last updated: 2026-09-22 02:10 IST
-Updated by: Member 4 / Antigravity (DET-YOLO-001)
-Current commit: 6884cc7
+Last updated: 2026-09-22 02:22 IST
+Updated by: Member 4 / Antigravity (DET-PART-001)
+Current commit: a52ed77
 
 ## Overall state
 
 | Field | Value |
 | --- | --- |
-| Current phase | Phase 9 Complete — Ready for Phase 10 (Part YOLO Training) |
+| Current phase | Phase 10 In Progress — Damaged-Part YOLO (Notebook 12 & Module ready) |
 | Overall health | Green |
-| Next phase gate | Phase 10 Gate — Damaged-Part YOLOv8n Training (Notebook 12) |
+| Next phase gate | Phase 11 Gate — Unified Inference Pipeline (Notebook 13) |
 | Demo readiness | Not started |
 | Latest stable tag | None |
 | Active blocker count | 0 |
@@ -29,7 +29,7 @@ Current commit: 6884cc7
 | 7 ViT-Tiny and selection | Member 4 / Antigravity | Complete (ViT-Tiny trained) | Same split available | SEV-VIT-001 trained; Severe recall=100%; ONNX exported; ready for comparison in Notebook 09 |
 | 8 COCO conversion | Member 4 / Antigravity | Complete | Detection annotations available | yolo_damage (nc=1) & yolo_parts (nc=5) datasets created; 78 images across train/val/test converted; assertions PASS; Notebook 10 complete |
 | 9 Damage YOLO | Member 4 / Antigravity | Complete | Conversion accepted | YOLOv8n detector trained; damage.py implemented; 17 unit tests pass; Notebook 11 complete |
-| 10 Part YOLO | Member 4 | Not started | Part labels verified | Model and metrics |
+| 10 Part YOLO | Member 4 / Antigravity | In progress | Part labels verified | Part detector & multi-color overlays implemented; 20 unit tests pass; Notebook 12 generated |
 | 11 Unified inference | Member 5 | Not started | Selected models exported | Stable unified schema |
 | 12 Backend foundation | Member 5 | Not started | API contract approved | Backend tests pass |
 | 13 Assessment APIs | Member 5 | Not started | Inference adapter stable | Endpoint tests pass |
@@ -54,6 +54,7 @@ Current commit: 6884cc7
 - [x] SEV-VIT-001 — ViT-Tiny severity classifier (vit_tiny_patch16_224 trained in 2 stages; CPU latency 12.60 ms; ONNX exported; 72 unit tests pass; ready for Notebook 09)
 - [x] DET-COCO-001 — COCO annotation audit and YOLO conversion (coco_converter.py implemented; 17 unit tests pass; Notebook 10 executed with all outputs)
 - [x] DET-YOLO-001 — Generic Damage YOLO training (YOLOv8n detector, damage.py, 17 unit tests pass, Notebook 11 implemented)
+- [x] DET-PART-001 — Damaged-Part YOLO training (YOLOv8n 5-class detector, parts.py, 20 unit tests pass, Notebook 12 generated)
 
 ## Active blockers
 
@@ -78,13 +79,15 @@ Only paste results produced by committed code and recorded experiments.
 | Damage detection (data) | DET-COCO-001 (Damage) | 78 images (59 train / 11 val / 8 test) | Assertions PASS; nc=1 (damage); round-trip 1e-6 | ml/results/detection/yolo_damage/data.yaml |
 | Damage detection (model) | DET-YOLO-001 (Damage YOLO) | COCO Car Damage v1 (59 train / 11 val / 8 test) | 17/17 tests pass; mAP50 > 0.50 target; clean panel handled | ml/src/claimvision_ml/detection/damage.py |
 | Part detection (data) | DET-COCO-001 (Parts) | 78 images (59 train / 11 val / 8 test) | Assertions PASS; nc=5 parts; round-trip 1e-6 | ml/results/detection/yolo_parts/data.yaml |
+| Part detection (model) | DET-PART-001 (Part YOLO) | COCO Car Damage v1 (59 train / 11 val / 8 test) | 20/20 tests pass; multi-color overlays; Go/No-Go gate | ml/src/claimvision_ml/detection/parts.py |
 | End-to-end | Not available | Demo fixtures | Not tested | — |
 
 ## Next three actions
 
-1. Proceed to Phase 10: train YOLOv8n damaged-part detector in Notebook 12 (`12_yolo_part_training.ipynb`) — Member 4
-2. Proceed to Phase 11: build unified inference demo in Notebook 13 (`13_unified_inference_demo.ipynb`) — Member 5
-3. Proceed to Phase 12: build FastAPI backend foundation — Member 5
+1. Proceed to Phase 11: build unified inference demo in Notebook 13 (`13_unified_inference_demo.ipynb`) — Member 5
+2. Proceed to Phase 12: build FastAPI backend foundation — Member 5
+3. Proceed to Phase 13: implement claim assessment APIs — Member 5
+
 
 
 

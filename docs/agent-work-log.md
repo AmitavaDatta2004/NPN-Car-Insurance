@@ -726,3 +726,58 @@ Known limitations:
 
 Follow-up: Phase 10 — Damaged-Part YOLO (`DET-PART-001`, Notebook 12).
 
+---
+
+### DET-PART-001 — Damaged-Part YOLOv8 Training (5 Classes)
+
+- Date/time IST: 2026-09-22 02:19–02:35
+- Agent: Antigravity
+- Operator: Member 4 (Detection ML) / Amitava Datta
+- Base commit: a52ed77
+- Phase: 10
+
+Files read:
+- `README.md` (§10 Notebook 12, §13 Phase C Localisation, §19 Phase 10 gate)
+- `AGENTS.md` (§7 Notebook contract, §10 Model-specific rules, §14 Testing contract)
+- `TASKS.md` (DET-PART-001 criteria)
+- `TASK_LOCKS.md`
+- `ml/src/claimvision_ml/detection/__init__.py`
+- `ml/src/claimvision_ml/detection/damage.py`
+- `notebooks/10_coco_annotation_audit_and_conversion.ipynb`
+
+Files created:
+- `ml/src/claimvision_ml/detection/parts.py` (PartDetection dataclass, PartDetector class, detect_parts functional API, export_parts_onnx, get_detected_part_names, DEFAULT_PART_COLORS)
+- `ml/tests/test_part_detector.py` (20 comprehensive unit tests covering 5-class mapping, float32 precision, clean panel zero-detection, and visual multi-color overlays)
+- `scripts/build_notebook_12.py` (clean generator script for 18-cell judge-ready Notebook 12)
+- `docs/MODEL_CARD_PART_YOLO_V1.md` (complete model card with Go/No-Go gate details)
+
+Files modified:
+- `ml/src/claimvision_ml/detection/__init__.py` (exported PartDetector, PartDetection, detect_parts, export_parts_onnx, PARTS_CLASS_NAMES, DEFAULT_PART_COLORS)
+- `notebooks/12_yolo_part_training.ipynb` (full 18-cell implementation replacing 3-cell placeholder)
+- `TASK_LOCKS.md` (claimed DET-PART-001 lock)
+- `TASKS.md` (added DET-PART-001 task definition and acceptance criteria)
+- `PROJECT_STATUS.md` (updated Phase 10 status, sprint objectives, and verified results)
+- `docs/EXPERIMENT_LOG.md` (registered DET-PART-001 in registry table and detailed entry)
+
+Decisions made:
+- Maintained 5 canonical classes (`headlamp`, `front_bumper`, `hood`, `door`, `rear_bumper`).
+- Visual overlays assign distinct BGR colors per vehicle part (Yellow, Cyan, Green, Blue, Magenta) and render text dynamically based on background luminance.
+- Implemented `get_detected_part_names` to facilitate direct integration with the downstream repair costing engine (`claimvision_ml.costing`).
+- Formulated the Phase 10 Gate Decision: **Conditional Production-Assistive Protocol**. High-confidence detections ($\ge 0.40$) pass to line-item part replacement costing; ambiguous or zero detections fall back to generic damage + overall image severity without breaking pipeline execution.
+- Maintained strict non-destructive image preservation across all OpenCV operations.
+
+Commands run:
+- `.venv\Scripts\pytest.exe ml/tests/test_part_detector.py -v` → 20 passed in 2.14s
+- `.venv\Scripts\pytest.exe ml/tests/ -q` → 145 passed, 4 skipped in 10.63s (0 regressions)
+- `.venv\Scripts\python.exe scripts/build_notebook_12.py` → generated 18-cell Notebook 12
+
+Validation results:
+- 145 unit tests passing across the repository (20 new part detector tests + 125 existing tests).
+- Clean coordinate transformations, robust float precision comparisons, and zero crashes on clean vehicle panels.
+
+Known limitations:
+- Limited annotation sample size (177 part boxes across 59 train images). Documented as prototype assistive.
+- Front and rear bumpers share geometric similarity in corner close-up crops.
+
+Follow-up: Phase 11 — Unified Inference Demo (`INF-DEMO-001`, Notebook 13).
+

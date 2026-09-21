@@ -450,3 +450,43 @@ Validation commands:
 - `.venv\Scripts\pytest.exe ml/tests/test_damage_detector.py -v`
 - `.venv\Scripts\pytest.exe ml/tests/ -q`
 - Run `notebooks/11_yolo_damage_training.ipynb` top-to-bottom
+
+---
+
+### DET-PART-001 — Damaged-Part YOLOv8 Training (5 Classes)
+
+- Phase: 10
+- Owner: Member 4 (Detection ML)
+- Reviewer: Member 1 / Member 5
+- Status: IN_PROGRESS
+- Priority: P0
+- Dependencies: DET-YOLO-001 DONE
+- Files allowed: ml/src/claimvision_ml/detection/, ml/tests/test_part_detector.py, notebooks/12_yolo_part_training.ipynb, docs/MODEL_CARD_PART_YOLO_V1.md, docs/EXPERIMENT_LOG.md, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md
+- Files prohibited: fraud/, severity/, costing/, backend routes, frontend app, notebooks 06, 07, 08, 09, 10, 11, 13, 14, 15
+- Objective: train, validate, and evaluate a lightweight YOLOv8n 5-class damaged vehicle part detector (nc=5: headlamp, front_bumper, hood, door, rear_bumper) on the converted COCO dataset from Phase 8. Provide reusable inference module, multi-color component visual overlays, export PyTorch and ONNX models, and execute reproducible judge notebook 12 with an explicit Go/No-Go decision gate for production demo.
+- Inputs:
+  - `ml/results/detection/yolo_parts/data.yaml`
+  - `train/`: 59 images + labels (177 part boxes)
+  - `val/`: 11 images + labels
+  - `test/`: 8 images (held-out test split)
+
+Acceptance criteria:
+- [ ] `ml/src/claimvision_ml/detection/parts.py` implemented with `PartDetection`, `PartDetector`, `detect_parts`, `export_parts_onnx`, and `get_detected_part_names`.
+- [ ] Public API exposed in `ml/src/claimvision_ml/detection/__init__.py`.
+- [ ] Multi-color visual bounding box overlay drawn cleanly with distinct colors per vehicle part and confidence percentages; original image remains pristine.
+- [ ] No-detection edge case handled gracefully (empty list returned, no exception).
+- [ ] Unit tests in `ml/tests/test_part_detector.py` pass; full test suite passes with 0 regressions.
+- [ ] Notebook 12 (`12_yolo_part_training.ipynb`) implemented with 18 cells adhering to README §10 and AGENTS.md §7.
+- [ ] Per-class performance reviewed (Precision, Recall, AP per class).
+- [ ] Front-vs-rear bumper confusion analyzed.
+- [ ] Bimodal execution support (Google Colab GPU / Local CPU) with dataset auto-sync fallback.
+- [ ] Held-out test set evaluated strictly ONCE.
+- [ ] Explicit production-demo vs. experimental Go/No-Go decision recorded.
+- [ ] Model checkpoints exported: `artifacts/models/parts_yolov8n.pt` and `artifacts/models/parts_yolov8n.onnx`.
+- [ ] `docs/MODEL_CARD_PART_YOLO_V1.md` and `docs/EXPERIMENT_LOG.md` entry created.
+- [ ] `PROJECT_STATUS.md` updated.
+
+Validation commands:
+- `.venv\Scripts\pytest.exe ml/tests/test_part_detector.py -v`
+- `.venv\Scripts\pytest.exe ml/tests/ -q`
+- Run `notebooks/12_yolo_part_training.ipynb` top-to-bottom
