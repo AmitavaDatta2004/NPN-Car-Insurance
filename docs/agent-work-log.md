@@ -23,6 +23,42 @@ Required by README §7.1 rule 5.
 
 ## Log
 
+### DET-COCO-001 — COCO Annotation Audit and YOLO Conversion (Phase 8)
+
+- Date/time IST: 2026-09-21 23:55 – 2026-09-22 00:05
+- Agent: Antigravity
+- Operator: Member 4
+- Base commit: 1231ecf
+- Files read: README.md, AGENTS.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md, docs/DECISIONS.md, ml/src/claimvision_ml/detection/__init__.py
+- Files changed:
+  - TASK_LOCKS.md (added ACTIVE lock for DET-COCO-001)
+  - TASKS.md (added DET-COCO-001 task card)
+  - PROJECT_STATUS.md (Phase 8 → IN_PROGRESS, next actions updated)
+  - ml/src/claimvision_ml/detection/__init__.py (exported COCOtoYOLOConverter, ValidationResult)
+  - ml/src/claimvision_ml/detection/coco_converter.py (NEW — full converter module)
+  - ml/tests/test_coco_converter.py (NEW — 17 unit tests)
+  - notebooks/10_coco_annotation_audit_and_conversion.ipynb (implemented 14-cell notebook)
+  - docs/EXPERIMENT_LOG.md (added DET-COCO-001 registry entry)
+  - docs/agent-work-log.md (this entry)
+- Decisions made:
+  - Generic damage task maps ALL COCO category IDs to YOLO class 0 (nc=1)
+  - Part detection task maps 5 part categories to YOLO classes 0-4 with explicit name normalisation (e.g. "rear bumper" → "rear_bumper")
+  - Round-trip tolerance set to 1e-6 (relative) for bounding box conversion assertions
+  - Empty .txt label files written for images with no annotations (required by Ultralytics YOLO)
+  - Dataset path on Colab: /content/NPN Car Insurance/data/raw/ (confirmed by team)
+  - Notebook 09 model comparison stub left unchanged per team decision
+- Commands run:
+  - `.venv\Scripts\pytest.exe ml/tests/test_coco_converter.py -v` → 17/17 PASSED
+  - `.venv\Scripts\pytest.exe ml/tests/ -q` → 108 passed, 4 skipped (zero regressions)
+- Validation results:
+  - 17 new tests pass; full suite 108 passed, 4 skipped
+  - All conversion functions: load, validate, draw, convert_bbox_to_yolo, convert_split, write_data_yaml, run_conversion_assertions implemented and tested
+- Known limitations / follow-up:
+  - Notebook 10 must be run in Colab against the real dataset to produce judge-facing outputs
+  - Dataset is very small (59 train images) — generalisation limitation must be communicated in Notebook 11 and 12
+
+---
+
 ### ML-003 — Per-Epoch Balanced Resampling Comparison (Phase 2 Extension)
 
 - Date/time IST: 2026-09-21 17:15–17:30

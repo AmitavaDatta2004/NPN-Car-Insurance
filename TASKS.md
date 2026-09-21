@@ -368,3 +368,44 @@ Validation commands:
 - `.venv\Scripts\pytest.exe ml/tests/ -q`
 - Run `notebooks/08_severity_vit_tiny_training.ipynb` top-to-bottom
 
+---
+
+### DET-COCO-001 — COCO annotation audit and YOLO conversion
+
+- Phase: 8
+- Owner: Member 4 (Detection owner)
+- Reviewer: Member 1
+- Status: IN_PROGRESS
+- Priority: P0
+- Dependencies: SEV-VIT-001 DONE (Phase 7 complete)
+- Files allowed: ml/src/claimvision_ml/detection/, ml/tests/test_coco_converter.py, ml/results/detection/, notebooks/10_coco_annotation_audit_and_conversion.ipynb, docs/EXPERIMENT_LOG.md, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md
+- Files prohibited: fraud/, severity/, backend routes, frontend app, notebooks 06, 07, 08, 09, 11, 12, 13, 14, 15
+- Objective: Audit the COCO car-damage detection dataset (59 train / 11 val / 8 test images, generic damage + 5 part classes at /content/NPN Car Insurance/data/raw/ on Colab), verify bounding boxes visually, convert to YOLO format, and prove correctness with assertions before YOLO training begins in Phase 9.
+- Inputs:
+  - /content/NPN Car Insurance/data/raw/train/_annotations.coco.json
+  - /content/NPN Car Insurance/data/raw/valid/_annotations.coco.json
+  - /content/NPN Car Insurance/data/raw/test/_annotations.coco.json
+
+Acceptance criteria:
+- [ ] `coco_converter.py` created with `load_coco_json`, `validate_structure`, `draw_coco_boxes`, `convert_bbox_to_yolo`, `convert_split`, `write_data_yaml`, `run_conversion_assertions`.
+- [ ] Round-trip conversion assertion passes within 1e-6 tolerance.
+- [ ] 17 unit tests pass in `test_coco_converter.py`; full ML suite passes without regression.
+- [ ] Notebook 10 implemented with 14 cells: category counts, before/after box grids, assertion output, data.yaml printed, directory tree.
+- [ ] `run_conversion_assertions` prints PASS for both `yolo_damage/` and `yolo_parts/`.
+- [ ] `data.yaml` for damage: `nc=1`, `names=[damage]`.
+- [ ] `data.yaml` for parts: `nc=5`, `names=[headlamp, rear_bumper, door, hood, front_bumper]`.
+- [ ] Every image has a `.txt` label file (empty file if no annotations).
+- [ ] No YOLO training in Notebook 10.
+- [ ] `ml/results/detection/` contains before/after box grid images.
+- [ ] `EXPERIMENT_LOG.md` updated with `DET-COCO-001` entry.
+- [ ] `PROJECT_STATUS.md` Phase 8 → DONE after push.
+
+Validation commands:
+- `.venv\Scripts\pytest.exe ml/tests/test_coco_converter.py -v`
+- `.venv\Scripts\pytest.exe ml/tests/ -q`
+- Run `notebooks/10_coco_annotation_audit_and_conversion.ipynb` top-to-bottom in Colab
+
+Risks/notes:
+- Dataset is very small (59 train images). Document the generalisation limitation prominently.
+- Some images may have no annotations — an empty .txt file must still be created for them.
+- Part class names in the COCO JSON may differ slightly from the YOLO names (e.g. "rear bumper" vs "rear_bumper") — the converter must handle the mapping explicitly.

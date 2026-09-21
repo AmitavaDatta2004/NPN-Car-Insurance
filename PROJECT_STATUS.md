@@ -27,7 +27,7 @@ Current commit: pending user commit for Phase 5
 | 5 Severity CNN | Member 3 / Antigravity | Complete | Severity audit accepted | SEV-CNN-001 trained; Val macro F1 0.6206; Test macro F1 0.5921; notebook 06 executed; metrics JSON |
 | 6 Severity MobileNetV2 | Friend 2 / Antigravity | Complete | Same split available | Two-stage transfer learning module, predict_severity runtime, notebook 07, model card |
 | 7 ViT-Tiny and selection | Member 4 / Antigravity | Complete (ViT-Tiny trained) | Same split available | SEV-VIT-001 trained; Severe recall=100%; ONNX exported; ready for comparison in Notebook 09 |
-| 8 COCO conversion | Member 4 | Not started | Detection annotations available | Visual conversion audit |
+| 8 COCO conversion | Member 4 / Antigravity | **In Progress** | Detection annotations available | Visual conversion audit |
 | 9 Damage YOLO | Member 4 | Not started | Conversion accepted | Model and metrics |
 | 10 Part YOLO | Member 4 | Not started | Part labels verified | Model and metrics |
 | 11 Unified inference | Member 5 | Not started | Selected models exported | Stable unified schema |
@@ -79,9 +79,9 @@ Only paste results produced by committed code and recorded experiments.
 
 ## Next three actions
 
-1. Run notebook 09 severity model comparison (CNN vs MobileNetV2 vs ViT-Tiny) — Members 3 & 4
-2. Select best severity model and lock weights / thresholds for Phase 11 unified pipeline
-3. Proceed to Phase 8: COCO to YOLO damage detection dataset conversion
+1. Complete Phase 8: run Notebook 10 top-to-bottom in Colab (DET-COCO-001) — Member 4
+2. Verify YOLO conversion assertions pass for both yolo_damage/ and yolo_parts/
+3. Proceed to Phase 9: generic damage YOLO training (Notebook 11) — Member 4
 
 
 

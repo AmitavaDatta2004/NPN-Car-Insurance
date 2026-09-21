@@ -23,8 +23,10 @@ Add an entry before training. Update it after evaluation. Never delete an unsucc
 | SEV-CNN-001 | 2026-09-21 | Member 3 / Antigravity | 28debd5 | Car Damage Severity v1 / severity_train.csv, _val.csv, _test.csv | SeverityCNN (from scratch, 160×160, 4-block conv) | 42 | COMPLETE | Val Macro F1: 0.6206 / Test Macro F1: 0.5921 / Acc: 59.7% | ml/artifacts/severity/severity_cnn_v1.pt | ACCEPTED (Phase 5 Gate passed, ready for Notebook 09) |
 | SEV-MNV2-001 | 2026-09-21 | Friend 2 / Antigravity | 28debd5 | Car Damage Severity v1 / severity_train.csv, _val.csv, _test.csv | MobileNetV2 (ImageNet pretrained) | 42 | COMPLETE | Two-stage transfer learning (Macro F1 & Severe recall prioritized) | artifacts/models/severity_mnv2.pt | READY_FOR_COMPARISON (Phase 6 / Notebook 09) |
 | SEV-VIT-001 | 2026-09-21 | Member 4 / Antigravity | pending commit | Car Damage Severity v1 / severity_train.csv, _val.csv, _test.csv | ViT-Tiny (vit_tiny_patch16_224) | 42 | COMPLETE | Test Acc: 34.27% / Macro F1: 0.1702 / Severe Recall: 100% | artifacts/models/severity_vit.pt | ACCEPTED (Phase 7 Gate passed, ready for Notebook 09) |
+| DET-COCO-001 | 2026-09-21 | Member 4 / Antigravity | 1231ecf | COCO Car Damage Detection v1 / 59 train, 11 val, 8 test | N/A — data conversion task | 42 | COMPLETE | Conversion assertions PASS for yolo_damage (nc=1) and yolo_parts (nc=5); round-trip tolerance 1e-6 | ml/results/detection/yolo_damage/, ml/results/detection/yolo_parts/ | ACCEPTED (Phase 8 Gate passed) |
 
 ## Detailed experiment entries
+
 
 ### FRAUD-MNV2-001 — Fraud MobileNetV2 Baseline
 
