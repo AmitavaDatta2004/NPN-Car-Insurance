@@ -461,7 +461,53 @@ Known limitations:
 - Dataset consists of full vehicle photos; does not have localized part-level severity annotations (deferred to Phase 20).
 - Moderate damage class has slightly higher visual variance than minor or severe.
 
-Follow-up: Phase 5 — SMOD-001 train baseline severity CNN on frozen manifests (Member 3).
+Follow-up: Phase 5 — SEV-CNN-001 train baseline severity CNN on frozen manifests (Member 3).
+
+---
+
+### SEV-CNN-001 — Severity Baseline CNN Module and Notebook 06 Training (Phase 5)
+
+- Date/time IST: 2026-09-21 17:51–20:35
+- Agent: Antigravity
+- Operator: Member 3 (ran notebook 06 in Colab, filled cnn_metrics.json, and committed)
+- Base commit: 28debd5
+- Phase: 5
+- Status: COMPLETE
+- Files read: README.md, AGENTS.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md,
+  docs/DECISIONS.md, docs/EXPERIMENT_LOG.md, docs/DATASET_CARD_SEVERITY.md,
+  ml/src/claimvision_ml/severity/__init__.py, ml/src/claimvision_ml/fraud/model.py,
+  ml/src/claimvision_ml/fraud/dataset.py, ml/src/claimvision_ml/data/__init__.py,
+  ml/results/severity/ (directory), ml/tests/ (directory),
+  notebooks/05_severity_dataset_audit.ipynb (bimodal env pattern),
+  notebooks/02_fraud_mobilenetv2_training.ipynb (bimodal env pattern),
+  notebooks/06_severity_cnn_training.ipynb, data/manifests/severity_*.csv
+- Files changed:
+  - ml/src/claimvision_ml/severity/cnn.py (NEW — SeverityCNN, SeverityDataset, transforms, load/save/export/predict/latency)
+  - ml/src/claimvision_ml/severity/__init__.py (MODIFIED — export Phase 5 CNN symbols alongside Phase 6 and 7 exports)
+  - ml/tests/test_severity_cnn.py (NEW — 29 unit tests across 8 test classes)
+  - ml/results/severity/cnn_metrics.json (NEW — verified test and val metrics)
+  - notebooks/06_severity_cnn_training.ipynb (MODIFIED — 17-cell complete implementation with saved Colab outputs)
+  - docs/EXPERIMENT_LOG.md (added SEV-CNN-001 registry row + detailed entry)
+  - TASKS.md (marked SEV-CNN-001 as DONE)
+  - TASK_LOCKS.md (added and released SEV-CNN-001 lock)
+  - PROJECT_STATUS.md (Phase 5 Complete, next action: notebook 09 model comparison)
+  - docs/agent-work-log.md (this entry)
+- Decisions made:
+  - 4th conv block (128→256) used by default (use_extra_conv=True) per README spec.
+  - ImageNet normalisation applied for numeric stability.
+  - Early stopping on val macro-F1 (patience=10); best checkpoint at epoch 19.
+  - Test set evaluated strictly once in final dedicated cell.
+- Commands run:
+  - Ran `notebooks/06_severity_cnn_training.ipynb` in Colab (GPU CUDA)
+  - Val macro F1: 0.6206, Test macro F1: 0.5921, Test Accuracy: 59.68%, Severe recall: 69.41%
+  - CPU latency benchmark: 17.90 ms/image (+/- 4.11 ms)
+  - `pytest ml/tests/ -q` → all tests green
+- Validation results:
+  - SeverityCNN trained in 19 epochs; beats 0.333 random baseline (hypothesis SUPPORTED).
+  - Checkpoint and ONNX exported.
+  - Metric outputs committed to `ml/results/severity/cnn_metrics.json`.
+- Follow-up:
+  - Proceed to notebook 09 severity model comparison (CNN vs MobileNetV2 vs ViT-Tiny) alongside Friend 2 (Phase 6) and Member 4 (Phase 7).
 
 ---
 
@@ -588,3 +634,4 @@ Known limitations:
 - For production, extended training with RandAugment/Mixup (50+ epochs on GPU) would be beneficial.
 
 Follow-up: Phase 7 Part 2 — Compare CNN, MobileNetV2, and ViT-Tiny in `notebooks/09_severity_model_comparison.ipynb` once Friend 1 and Friend 2 complete Phase 5 & 6.
+

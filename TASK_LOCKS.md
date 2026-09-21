@@ -27,6 +27,7 @@ This file substitutes for branch isolation because all seven members work direct
 | ML-003 | Member 2 / Antigravity | ml/src/claimvision_ml/fraud/, ml/tests/test_balanced_sampler.py, notebooks/02b_fraud_balanced_resampling_comparison.ipynb, ml/artifacts/fraud/balanced/, ml/results/fraud/balanced_*, docs/EXPERIMENT_LOG.md, docs/MODEL_CARD_FRAUD_MNV2_V1.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md, docs/agent-work-log.md | 2026-09-21 17:25 | 2026-09-21 21:00 | 28debd5 | RELEASED |
 | SEV-MNV2-001 | Friend 2 / Antigravity | ml/src/claimvision_ml/severity/mobilenet.py, ml/src/claimvision_ml/severity/dataset.py, ml/src/claimvision_ml/severity/predict.py, ml/src/claimvision_ml/severity/__init__.py, ml/tests/test_severity_mobilenet.py, notebooks/07_severity_mobilenetv2_training.ipynb, docs/MODEL_CARD_SEVERITY_MNV2_V1.md, docs/EXPERIMENT_LOG.md, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md | 2026-09-21 17:47 | 2026-09-21 20:30 | 28debd5 | RELEASED |
 | SEV-VIT-001 | Member 4 / Antigravity | ml/src/claimvision_ml/severity/vit.py, ml/src/claimvision_ml/severity/__init__.py, ml/tests/test_severity_vit.py, notebooks/08_severity_vit_tiny_training.ipynb, scripts/build_notebook_08.py, scripts/run_severity_vit.py, docs/MODEL_CARD_SEVERITY_VIT_TINY.md, ml/results/severity/vit/, ml/artifacts/severity/vit/, docs/EXPERIMENT_LOG.md, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md | 2026-09-21 17:50 | 2026-09-21 21:00 | 28debd5 | RELEASED |
+| SEV-CNN-001 | Member 3 / Antigravity | notebooks/06_severity_cnn_training.ipynb, ml/src/claimvision_ml/severity/cnn.py, ml/src/claimvision_ml/severity/__init__.py, ml/tests/test_severity_cnn.py, ml/results/severity/cnn_metrics.json, docs/EXPERIMENT_LOG.md, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md | 2026-09-21 17:51 | 2026-09-21 21:00 | 28debd5 | RELEASED |
 
 
 ## Lock template
@@ -40,9 +41,8 @@ This file substitutes for branch isolation because all seven members work direct
 
 If two tasks require the same file:
 
-1. Pause the later task.
-2. Decide which change lands first.
-3. First owner commits and pushes.
-4. Second owner pulls with rebase, reruns relevant tests, then takes the lock.
-5. Record any contract change in `docs/DECISIONS.md`.
-
+1. Stop immediately.
+2. Inspect the current lock in this file.
+3. Message the lock owner with task ID and reason.
+4. If authorized, the owner appends an explicit delegation note below the table.
+5. If denied, select an unblocked task or wait.

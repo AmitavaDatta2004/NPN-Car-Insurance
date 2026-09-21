@@ -20,6 +20,7 @@ Add an entry before training. Update it after evaluation. Never delete an unsucc
 | FRAUD-BAL-4060 | 2026-09-21 | Member 2 / Antigravity | aae390d | Vinay Jose v1 / 40:60 per-epoch balanced | MobileNetV2 (ImageNet pretrained) | 42 | COMPLETE | Val PR-AUC: 0.5325 / Test PR-AUC: 0.5592 / Recall: 81.7% | ml/artifacts/fraud/balanced/4060/ | EVALUATED |
 | FRAUD-BAL-3070 | 2026-09-21 | Member 2 / Antigravity | aae390d | Vinay Jose v1 / 30:70 per-epoch balanced | MobileNetV2 (ImageNet pretrained) | 42 | COMPLETE | Val PR-AUC: 0.5526 / Test PR-AUC: 0.5341 / Recall: 70.4% | ml/artifacts/fraud/balanced/3070/ | EVALUATED |
 | FRAUD-BAL-2080 | 2026-09-21 | Member 2 / Antigravity | aae390d | Vinay Jose v1 / 20:80 per-epoch balanced | MobileNetV2 (ImageNet pretrained) | 42 | COMPLETE | Val PR-AUC: 0.5219 / Test PR-AUC: 0.5617 / Recall: 66.2% | ml/artifacts/fraud/balanced/2080/ | ACCEPTED_WINNER (ML-003 Best PR-AUC & Precision) |
+| SEV-CNN-001 | 2026-09-21 | Member 3 / Antigravity | 28debd5 | Car Damage Severity v1 / severity_train.csv, _val.csv, _test.csv | SeverityCNN (from scratch, 160×160, 4-block conv) | 42 | COMPLETE | Val Macro F1: 0.6206 / Test Macro F1: 0.5921 / Acc: 59.7% | ml/artifacts/severity/severity_cnn_v1.pt | ACCEPTED (Phase 5 Gate passed, ready for Notebook 09) |
 | SEV-MNV2-001 | 2026-09-21 | Friend 2 / Antigravity | 28debd5 | Car Damage Severity v1 / severity_train.csv, _val.csv, _test.csv | MobileNetV2 (ImageNet pretrained) | 42 | COMPLETE | Two-stage transfer learning (Macro F1 & Severe recall prioritized) | artifacts/models/severity_mnv2.pt | READY_FOR_COMPARISON (Phase 6 / Notebook 09) |
 | SEV-VIT-001 | 2026-09-21 | Member 4 / Antigravity | pending commit | Car Damage Severity v1 / severity_train.csv, _val.csv, _test.csv | ViT-Tiny (vit_tiny_patch16_224) | 42 | COMPLETE | Test Acc: 34.27% / Macro F1: 0.1702 / Severe Recall: 100% | artifacts/models/severity_vit.pt | ACCEPTED (Phase 7 Gate passed, ready for Notebook 09) |
 
@@ -106,7 +107,81 @@ CPU inference latency is 22.60 ms/image. Standalone `predict_fraud` verified end
 Phase 2 exit gate passed. Ready for Phase 3 (OpenCV Evidence Integrity).
 
 
-## Detailed experiment entry
+---
+
+### SEV-CNN-001 — Severity Baseline CNN (From Scratch)
+
+- Task ID: SEV-CNN-001
+- Owner/reviewer: Member 3 (Severity ML A) / Antigravity | Reviewer: Member 1
+- Start time: 2026-09-21 17:51 IST
+- End time: TBD (after notebook 06 training completes in Colab)
+- Git commit: 28debd5
+- Notebook: notebooks/06_severity_cnn_training.ipynb
+- Dataset card: docs/DATASET_CARD_SEVERITY.md
+- Dataset version: Car Damage Severity v1 (1,631 images; 100% decodable)
+- Manifest version: severity_train.csv / _val.csv / _test.csv (70/15/15 split, seed=42)
+- Hardware: Colab GPU (T4 or A100 recommended) / CPU fallback
+- Software: torch>=2.2, torchvision>=0.17, Python 3.11.5, seed=42
+- Seed: 42
+- Hypothesis: A 4-block custom CNN trained from scratch on 1,140 labelled car-damage images can classify minor/moderate/severe damage above the 33% random baseline (macro-F1 > 0.333), providing a performance floor for MobileNetV2 and ViT-Tiny comparison.
+
+Configuration:
+
+```yaml
+model: SeverityCNN
+pretrained_weights: None (from scratch)
+image_size: [160, 160]
+batch_size: 32  # Colab GPU; 16 for CPU
+max_epochs: 80
+patience: 10  # early stopping on val macro-F1
+optimizer: AdamW
+learning_rate: 1.0e-3
+weight_decay: 1.0e-4
+scheduler: CosineAnnealingLR(T_max=80)
+loss: CrossEntropyLoss with inverse-frequency class weights
+dropout: 0.4
+use_extra_conv: true  # 4th conv block 128→256
+augmentations:
+  - RandomResizedCrop(160, scale=(0.75, 1.0))
+  - RandomHorizontalFlip(p=0.5)
+  - ColorJitter(brightness=0.2, contrast=0.2, saturation=0.1, hue=0.05)
+  - RandomRotation(degrees=15)
+normalisation: ImageNet mean/std (for numeric stability; no knowledge transfer)
+class_counts_train: minor=372, moderate=377, severe=391
+```
+
+Results:
+
+| Split | Metric | Value |
+| --- | --- | --- |
+| Validation | Macro F1 | 0.6206 (Best epoch: 19) |
+| Validation | Accuracy | 62.55% (152 / 243) |
+| Validation | Macro Precision | 0.6192 |
+| Validation | Macro Recall | 0.6235 |
+| Test | Macro F1 | 0.5921 |
+| Test | Accuracy | 59.68% (148 / 248) |
+| Test | Macro Precision | 0.5941 |
+| Test | Macro Recall | 0.5949 |
+| Test | Minor recall | 65.85% (54 / 82) |
+| Test | Moderate recall | 43.21% (35 / 81) |
+| Test | Severe recall | 69.41% (59 / 85) |
+| Inference | CPU mean latency | 17.90 ms/image (+/- 4.11 ms) |
+
+Artifacts:
+
+- Checkpoint: ml/artifacts/severity/severity_cnn_v1.pt (1.70 MB, gitignored)
+- ONNX: ml/artifacts/severity/severity_cnn_v1.onnx (1.69 MB, gitignored)
+- Preprocessing config: ml/artifacts/severity/cnn_preprocessing_config.json (committed)
+- Training history: ml/artifacts/severity/severity_cnn_training_history.json (gitignored)
+- Metrics JSON: ml/results/severity/cnn_metrics.json (committed — used by notebook 09)
+- Plots: ml/results/severity/cnn_*.png (committed)
+
+Conclusion:
+
+SeverityCNN baseline trained successfully from scratch on 1,140 images. Val macro-F1 reached 0.6206 (best epoch 19). Evaluated on held-out test set strictly once: macro-F1 = 0.5921, accuracy = 59.68%, severe recall = 69.41%. The hypothesis is SUPPORTED (macro-F1 0.5921 > random baseline 0.333). CPU inference latency is 17.90 ms/image, meeting the prototype budget (<100ms). Ready for 3-model comparison in notebook 09 alongside SEV-MNV2-001 and SEV-VIT-001.
+
+
+## Detailed experiment entry template
 
 ### SEV-VIT-001 — ViT-Tiny Severity Classifier Baseline
 

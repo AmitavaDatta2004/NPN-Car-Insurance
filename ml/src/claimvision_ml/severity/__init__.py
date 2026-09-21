@@ -4,6 +4,11 @@ Implemented in Phases 5–7 (notebooks 06–09).
 
 Public API
 ----------
+Baseline CNN (Phase 5):
+  SeverityCNN, build_cnn_model, load_cnn_model, save_cnn_checkpoint,
+  export_cnn_onnx, save_cnn_preprocessing_config, predict_severity_cnn,
+  measure_cpu_latency, CNN_IMAGE_SIZE
+
 MobileNetV2 (Phase 6):
   SeverityMobileNetV2, build_severity_mobilenet, load_severity_checkpoint,
   save_severity_checkpoint, export_onnx, predict_severity, SeverityResult
@@ -18,6 +23,17 @@ Shared:
 
 from __future__ import annotations
 
+from claimvision_ml.severity.cnn import (
+    CNN_IMAGE_SIZE,
+    SeverityCNN,
+    build_cnn_model,
+    export_onnx as export_cnn_onnx,
+    load_cnn_model,
+    measure_cpu_latency,
+    predict_severity_cnn,
+    save_cnn_checkpoint,
+    save_cnn_preprocessing_config,
+)
 from claimvision_ml.severity.dataset import (
     IMAGENET_MEAN,
     IMAGENET_STD,
@@ -61,6 +77,16 @@ __all__ = [
     "SeverityDataset",
     "get_severity_transforms",
     "get_severity_class_weights",
+    # Baseline CNN (Phase 5)
+    "CNN_IMAGE_SIZE",
+    "SeverityCNN",
+    "build_cnn_model",
+    "load_cnn_model",
+    "save_cnn_checkpoint",
+    "export_cnn_onnx",
+    "save_cnn_preprocessing_config",
+    "predict_severity_cnn",
+    "measure_cpu_latency",
     # MobileNetV2 (Phase 6)
     "SeverityMobileNetV2",
     "build_severity_mobilenet",

@@ -239,6 +239,38 @@ Validation commands:
 
 ---
 
+### SEV-CNN-001 — Severity Baseline CNN Training (Phase 5)
+
+- Phase: 5
+- Owner: Member 3 / Antigravity
+- Reviewer: Member 1
+- Status: DONE
+- Priority: P0
+- Dependencies: SDATA-001 (DONE — manifests frozen)
+- Files allowed: ml/src/claimvision_ml/severity/cnn.py, ml/src/claimvision_ml/severity/__init__.py, ml/tests/test_severity_cnn.py, ml/results/severity/cnn_metrics.json, notebooks/06_severity_cnn_training.ipynb, docs/EXPERIMENT_LOG.md, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md
+- Files prohibited: notebooks/07_severity_mobilenetv2_training.ipynb, notebooks/08_severity_vit_tiny_training.ipynb, ml/src/claimvision_ml/severity/mobilenet.py, ml/src/claimvision_ml/severity/vit.py
+- Objective: implement and train a 4-block convolutional neural network from scratch on the frozen Phase 4 severity manifests (160×160 input, SEED=42) establishing the baseline performance floor for Phase 6 and 7.
+
+Acceptance criteria:
+- [x] `ml/src/claimvision_ml/severity/cnn.py` created with SeverityCNN, SeverityDataset, get_severity_transforms, build_cnn_model, load_cnn_model, predict_severity_cnn, measure_cpu_latency, export_onnx.
+- [x] `notebooks/06_severity_cnn_training.ipynb` complete with 17 cells covering all README §10 required outputs.
+- [x] Notebook runs bimodal (Colab GPU + local CPU) with self-healing fallback.
+- [x] Test set evaluated EXACTLY ONCE in the final dedicated cell (accuracy 0.5968, macro F1 0.5921).
+- [x] `ml/tests/test_severity_cnn.py` created with 29 unit tests.
+- [x] All existing ML tests continue to pass without regression.
+- [x] `ml/results/severity/cnn_metrics.json` committed with real verified metrics.
+- [x] `docs/EXPERIMENT_LOG.md` updated with SEV-CNN-001 registry entry and detailed report.
+- [x] Phase 5 gate passed: checkpoint loads outside notebook; curves, metrics, confusion matrix, and error examples visible.
+
+Evidence: SeverityCNN trained from scratch in 19 epochs; Best Val Macro F1: 0.6206; Test Macro F1: 0.5921; Test Accuracy: 59.68%; CPU latency: 17.90 ms/image; ONNX exported; 29 unit tests pass; notebook 06 executed with all outputs in Colab.
+
+Validation commands:
+- `.venv\Scripts\pytest.exe ml/tests/test_severity_cnn.py -v`
+- `.venv\Scripts\pytest.exe ml/tests/ -q`
+- Run `notebooks/06_severity_cnn_training.ipynb` top-to-bottom
+
+---
+
 ### ML-003 — Per-Epoch Balanced Resampling Comparison (50:50, 40:60, 30:70, 20:80)
 
 - Phase: 2 (Extension)

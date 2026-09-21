@@ -1,16 +1,16 @@
 # Project Status
 
-Last updated: 2026-09-21 18:15 IST
-Updated by: Antigravity (SEV-VIT-001)
-Current commit: 28debd5 (pending user commit for Phase 7)
+Last updated: 2026-09-21 20:35 IST
+Updated by: Antigravity (SEV-CNN-001)
+Current commit: pending user commit for Phase 5
 
 ## Overall state
 
 | Field | Value |
 | --- | --- |
-| Current phase | Phase 7 Complete (Parallel Phase 5 & 6 In Progress) |
+| Current phase | Phases 5, 6, 7 Complete (Ready for Notebook 09 Comparison) |
 | Overall health | Green |
-| Next phase gate | Model Comparison (Notebook 09) once Phase 5 & 6 conclude |
+| Next phase gate | Severity Model Comparison (Notebook 09) & Model Selection |
 | Demo readiness | Not started |
 | Latest stable tag | None |
 | Active blocker count | 0 |
@@ -24,7 +24,7 @@ Current commit: 28debd5 (pending user commit for Phase 7)
 | 2 Fraud classifier | Member 2 | Complete | Frozen fraud manifests | FRAUD-MNV2-001 trained; test PR-AUC=0.5464; thresholds frozen; predict_fraud verified |
 | 3 OpenCV evidence integrity | Member 3 | Complete | Sample images ready | runtime_checker.py + 19 tests pass (56 total); notebook 04 12 sections |
 | 4 Severity audit | Member 3 | Complete | Dataset available | Frozen manifests (1,631 images: 1,140 train, 243 val, 248 test); 0 leakage; 64 tests pass |
-| 5 Severity CNN | Friend 1 | In progress (parallel) | Severity audit accepted | Baseline report |
+| 5 Severity CNN | Member 3 / Antigravity | Complete | Severity audit accepted | SEV-CNN-001 trained; Val macro F1 0.6206; Test macro F1 0.5921; notebook 06 executed; metrics JSON |
 | 6 Severity MobileNetV2 | Friend 2 / Antigravity | Complete | Same split available | Two-stage transfer learning module, predict_severity runtime, notebook 07, model card |
 | 7 ViT-Tiny and selection | Member 4 / Antigravity | Complete (ViT-Tiny trained) | Same split available | SEV-VIT-001 trained; Severe recall=100%; ONNX exported; ready for comparison in Notebook 09 |
 | 8 COCO conversion | Member 4 | Not started | Detection annotations available | Visual conversion audit |
@@ -49,6 +49,7 @@ Current commit: 28debd5 (pending user commit for Phase 7)
 - [x] CV-001 — OpenCV evidence-integrity runtime checker (run_quality_checks(); QualityResult; 19 new tests; 56 total pass; notebook 04 12 sections)
 - [x] SDATA-001 — Severity dataset audit & manifest freeze (1,631 images; 0 corrupt; 11 exact dupe groups & 32 pHash clusters; 0 leakage 70/15/15 split; 64 total tests pass)
 - [x] ML-003 — Per-epoch balanced resampling comparison (50:50, 40:60, 30:70, 20:80; 20:80 won with Test PR-AUC 0.5617, Recall 66.2%, F1 0.5000, FP 70; notebook 02b complete)
+- [x] SEV-CNN-001 — Severity baseline CNN classifier (SeverityCNN from scratch, val macro F1 0.6206, test macro F1 0.5921, notebook 06 complete)
 - [x] SEV-MNV2-001 — Severity MobileNetV2 classifier (two-stage transfer learning; val macro F1 0.72; notebook 07 complete)
 - [x] SEV-VIT-001 — ViT-Tiny severity classifier (vit_tiny_patch16_224 trained in 2 stages; CPU latency 12.60 ms; ONNX exported; 72 unit tests pass; ready for Notebook 09)
 
@@ -69,15 +70,18 @@ Only paste results produced by committed code and recorded experiments.
 | Fraud (Balanced) | FRAUD-BAL-2080 | Vinay Jose v1 (1,214 test images) | PR-AUC: 0.5617, Recall: 66.2%, Precision: 40.2%, F1: 0.5000, 5.25ms/img | ml/artifacts/fraud/balanced/best_model_thresholds.json |
 | Quality (Runtime) | CV-001 | Synthetic (tests) + real (notebook) | 19/19 tests pass; all 9 checks verified; EXIF rule confirmed | ml/src/claimvision_ml/quality/runtime_checker.py |
 | Severity (Audit) | Audit v1 (Prajwal Bhamere) | 1,631 images (534 min / 538 mod / 559 sev) | 0 leakage; 1,140 train, 243 val, 248 test | data/manifests/severity_train.csv |
+| Severity (CNN) | SEV-CNN-001 | Car Damage Severity v1 (248 test images) | Macro F1: 0.5921, Accuracy: 59.7%, Severe Recall: 69.4%, 17.9ms/img | ml/results/severity/cnn_metrics.json |
+| Severity (MobileNetV2) | SEV-MNV2-001 | Car Damage Severity v1 (248 test images) | Macro F1: 0.72, Accuracy: 73.0%, 25.1ms/img | docs/MODEL_CARD_SEVERITY_MNV2_V1.md |
+| Severity (ViT-Tiny) | SEV-VIT-001 | Car Damage Severity v1 (248 test images) | Macro F1: 0.7711, Accuracy: 77.02%, Severe Recall: 100%, 12.6ms/img | ml/artifacts/severity/vit/severity_vit_metrics.json |
 | Damage detection | Not available | Not available | Not measured | — |
 | Part detection | Not available | Not available | Not measured | — |
 | End-to-end | Not available | Demo fixtures | Not tested | — |
 
 ## Next three actions
 
-1. Review and commit Phase 4 — User — SDATA-001
-2. Implement Phase 5 Severity Baseline CNN — Member 3 — SMOD-001
-3. Train and benchmark baseline CNN — Member 3 — SMOD-001
+1. Run notebook 09 severity model comparison (CNN vs MobileNetV2 vs ViT-Tiny) — Members 3 & 4
+2. Select best severity model and lock weights / thresholds for Phase 11 unified pipeline
+3. Proceed to Phase 8: COCO to YOLO damage detection dataset conversion
 
 
 

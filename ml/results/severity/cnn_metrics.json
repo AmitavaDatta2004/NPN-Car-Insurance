@@ -1,0 +1,47 @@
+{
+  "experiment_id": "SEV-CNN-001",
+  "model": "SeverityCNN",
+  "phase": 5,
+  "notebook": "notebooks/06_severity_cnn_training.ipynb",
+  "dataset": "Car Damage Severity Dataset v1 (1,631 images)",
+  "manifests": {
+    "train": "data/manifests/severity_train.csv",
+    "val": "data/manifests/severity_val.csv",
+    "test": "data/manifests/severity_test.csv"
+  },
+  "seed": 42,
+  "image_size": 160,
+  "status": "COMPLETE",
+  "note": "Evaluated ONCE after val-based architecture and hyperparameter lock.",
+  "val_metrics": {
+    "accuracy": 0.6255,
+    "macro_precision": 0.6192,
+    "macro_recall": 0.6235,
+    "macro_f1": 0.6206,
+    "best_epoch": 19,
+    "minor_recall": 0.6,
+    "moderate_recall": 0.4875,
+    "severe_recall": 0.7831
+  },
+  "test_metrics": {
+    "accuracy": 0.5968,
+    "macro_precision": 0.5941,
+    "macro_recall": 0.5949,
+    "macro_f1": 0.5921,
+    "minor_recall": 0.6585,
+    "moderate_recall": 0.4321,
+    "severe_recall": 0.6941,
+    "note": "Evaluated ONCE. No further tuning performed after this cell."
+  },
+  "latency": {
+    "cpu_mean_ms": 17.9,
+    "cpu_std_ms": 4.11,
+    "model_size_mb": 1.7
+  },
+  "artifacts": {
+    "checkpoint": "ml/artifacts/severity/severity_cnn_v1.pt",
+    "onnx": "ml/artifacts/severity/severity_cnn_v1.onnx",
+    "preprocessing_config": "ml/artifacts/severity/cnn_preprocessing_config.json",
+    "training_history": "ml/artifacts/severity/severity_cnn_training_history.json"
+  }
+}
