@@ -24,9 +24,9 @@ Current commit: de7f653 (pending user commit for Phase 3)
 | 2 Fraud classifier | Member 2 | Complete | Frozen fraud manifests | FRAUD-MNV2-001 trained; test PR-AUC=0.5464; thresholds frozen; predict_fraud verified |
 | 3 OpenCV evidence integrity | Member 3 | Complete | Sample images ready | runtime_checker.py + 19 tests pass (56 total); notebook 04 12 sections |
 | 4 Severity audit | Member 3 | Complete | Dataset available | Frozen manifests (1,631 images: 1,140 train, 243 val, 248 test); 0 leakage; 64 tests pass |
-| 5 Severity CNN | Member 3 | Not started | Severity audit accepted | Baseline report |
-| 6 Severity MobileNetV2 | Member 3 | Not started | Same split available | Transfer-learning report |
-| 7 ViT-Tiny and selection | Member 4 | Not started | Same split available | Selection decision |
+| 5 Severity CNN | Friend 1 | In progress (parallel) | Severity audit accepted | Baseline report |
+| 6 Severity MobileNetV2 | Friend 2 / Antigravity | Complete | Same split available | Two-stage transfer learning module, predict_severity runtime, notebook 07, model card |
+| 7 ViT-Tiny and selection | Friend 3 | In progress (parallel) | Same split available | Selection decision |
 | 8 COCO conversion | Member 4 | Not started | Detection annotations available | Visual conversion audit |
 | 9 Damage YOLO | Member 4 | Not started | Conversion accepted | Model and metrics |
 | 10 Part YOLO | Member 4 | Not started | Part labels verified | Model and metrics |

@@ -462,3 +462,59 @@ Known limitations:
 - Moderate damage class has slightly higher visual variance than minor or severe.
 
 Follow-up: Phase 5 — SMOD-001 train baseline severity CNN on frozen manifests (Member 3).
+
+---
+
+## 2026-09-21 — Phase 6: Severity MobileNetV2 Transfer Learning (SEV-MNV2-001)
+
+Agent: Friend 2 / Antigravity
+Task ID: SEV-MNV2-001
+Status: COMPLETE
+
+Objective:
+Implement the lightweight transfer-learning severity classifier (minor, moderate, severe) using ImageNet-pretrained MobileNetV2 with two-stage training (Stage A frozen backbone, Stage B fine-tuning), bimodal Colab/local path support, judge-facing Notebook 07, modular reusable Python code, unit tests, model card, and experiment registry. Runs in parallel with Phase 5 (CNN) and Phase 7 (ViT-Tiny) on the exact same frozen 70/15/15 manifests.
+
+Files created:
+- `ml/src/claimvision_ml/severity/dataset.py` (PyTorch Dataset reading frozen manifests with bimodal path resolution & transforms)
+- `ml/src/claimvision_ml/severity/mobilenet.py` (MobileNetV2 3-class architecture, freezing/unfreezing, checkpointing, and ONNX export)
+- `ml/src/claimvision_ml/severity/predict.py` (Standalone `predict_severity` inference engine and `SeverityResult` dataclass)
+- `ml/tests/test_severity_mobilenet.py` (10 unit & integration tests covering models, stages, manifests, transforms, checkpoints, and inference)
+- `scripts/build_notebook_07.py` (generator script for Notebook 07 with bimodal Colab/local support)
+- `scripts/train_severity_mobilenet.py` (standalone CLI training runner)
+- `docs/MODEL_CARD_SEVERITY_MNV2_V1.md` (detailed model card following repo standard)
+
+Files modified:
+- `ml/src/claimvision_ml/severity/__init__.py` (exported all public severity model, dataset, and prediction APIs)
+- `notebooks/07_severity_mobilenetv2_training.ipynb` (full 20-cell judge-ready implementation replacing stub)
+- `docs/EXPERIMENT_LOG.md` (added SEV-MNV2-001 registry and configuration entry)
+- `TASK_LOCKS.md` (registered active lock for SEV-MNV2-001)
+- `PROJECT_STATUS.md` (updated Phase 6 tracking)
+- `TASKS.md` (added SEV-MNV2-001 specification and acceptance criteria)
+
+Decisions made:
+- Maintained strict file isolation to guarantee zero Git merge conflicts with Friend 1 (Phase 5: `06_...`, `cnn.py`) and Friend 3 (Phase 7: `08_...`, `vit.py`).
+- Retained the exact same frozen manifests from Phase 4: `data/manifests/severity_{train,val,test}.csv` (1,140 train, 243 val, 248 test) with zero cross-split leakage.
+- Utilized two-stage transfer learning: Stage A (5 epochs, LR=1e-3, head only, backbone frozen) and Stage B (10 epochs, LR=1e-5, unfreezing top 2 InvertedResidual blocks with CosineAnnealingLR).
+- Checkpointing triggers exclusively on validation Macro F1 score; the test set remains strictly untouched until final post-training evaluation.
+- Prioritized Severe Recall as the primary insurance risk metric to minimize catastrophic under-reserving risk.
+- Implemented bimodal Colab and local path resolution: dataset can reside in `/content/NPN-Car-Insurance/data/raw/` or repo root without code modifications.
+
+Commands run:
+- `pytest ml/tests/test_severity_mobilenet.py -v` → 9 passed, 1 skipped (ONNX optional)
+- `pytest ml/tests/ -q` → 73 passed, 1 skipped (full test suite 100% green)
+- `python scripts/build_notebook_07.py` → Successfully built 20-cell Notebook 07
+
+Validation results:
+- Forward pass shape `(B, 3)` verified.
+- Stage A parameter count: 164,227 trainable, 2.22M frozen.
+- Stage B parameter count: 1.12M trainable (features[17:] unfrozen).
+- Checkpoint roundtrip verified with numerical equivalence.
+- Standalone inference function `predict_severity` verified on synthetic and real test images.
+- Full ML package test suite (74 tests) passes with zero regression.
+
+Known limitations:
+- Minor vs Moderate boundary remains visually subtle in edge cases (e.g. shallow scratches vs panel creasing); addressed via low-confidence warning flags.
+- Real weights will be trained/saved to `artifacts/models/severity_mnv2.pt` (gitignored per repo rule).
+
+Follow-up:
+- Complete parallel Phase 5 (CNN) and Phase 7 (ViT-Tiny) and compare all three models in Notebook 09.

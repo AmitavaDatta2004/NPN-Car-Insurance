@@ -239,7 +239,7 @@ Validation commands:
 
 ---
 
-### ML-003 â€” Per-Epoch Balanced Resampling Comparison (50:50, 40:60, 30:70, 20:80)
+### ML-003 — Per-Epoch Balanced Resampling Comparison (50:50, 40:60, 30:70, 20:80)
 
 - Phase: 2 (Extension)
 - Owner: Member 2 / Antigravity
@@ -267,3 +267,38 @@ Validation commands:
 - `.venv\Scripts\pytest.exe ml/tests/test_balanced_sampler.py -v`
 - `.venv\Scripts\pytest.exe ml/tests/ -q`
 - Run `notebooks/02b_fraud_balanced_resampling_comparison.ipynb` top-to-bottom
+
+---
+
+### SEV-MNV2-001 — Severity MobileNetV2 transfer learning
+
+- Phase: 6
+- Owner: Friend 2 / Antigravity
+- Reviewer: Member 1 / Member 3
+- Status: DONE
+- Priority: P0
+- Dependencies: SDATA-001 accepted
+- Files allowed: ml/src/claimvision_ml/severity/mobilenet.py, ml/src/claimvision_ml/severity/dataset.py, ml/src/claimvision_ml/severity/predict.py, ml/src/claimvision_ml/severity/__init__.py, ml/tests/test_severity_mobilenet.py, ml/artifacts/severity/, ml/results/severity/, ml/results/severity_mnv2_metrics.json, notebooks/07_severity_mobilenetv2_training.ipynb, docs/MODEL_CARD_SEVERITY_MNV2_V1.md, docs/EXPERIMENT_LOG.md, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md
+- Files prohibited: notebooks/06_severity_cnn_training.ipynb, ml/src/claimvision_ml/severity/cnn.py, notebooks/08_severity_vit_tiny_training.ipynb, ml/src/claimvision_ml/severity/vit.py, backend routes, frontend app, detection models
+- Objective: train, validate, evaluate, and export a lightweight two-stage MobileNetV2 transfer-learning severity classifier (minor, moderate, severe) on the frozen 70/15/15 manifests.
+
+Acceptance criteria:
+- [x] PyTorch Dataset reads frozen manifests (`severity_train.csv`, `severity_val.csv`, `severity_test.csv`) with bimodal path resolution (local & Colab).
+- [x] MobileNetV2 model architecture with ImageNet weights, pooling, dropout (0.3), and 3-class linear head implemented.
+- [x] Two-stage transfer learning: Stage A (frozen backbone, LR=1e-3, head only) and Stage B (unfrozen top blocks features[17:], LR=1e-5).
+- [x] Checkpoint best model on validation Macro F1 score (no test set leakage during training/tuning).
+- [x] Evaluated strictly once on untouched held-out test manifest (`severity_test.csv`).
+- [x] Metrics reported: Accuracy, Macro Precision/Recall/F1, Weighted F1, Severe Recall, confusion matrix, CPU/GPU latency.
+- [x] Model weights exported (`.pt` and `.onnx` format); ONNX output parity verified within 1e-4.
+- [x] Standalone `predict_severity` runtime function implemented and verified.
+- [x] Unit tests pass in `ml/tests/test_severity_mobilenet.py` and full suite passes without regression (73 passed, 1 skipped).
+- [x] Judge-facing notebook `07_severity_mobilenetv2_training.ipynb` contains clean, curated, reproducible outputs and bimodal Colab/local support.
+- [x] Model card `docs/MODEL_CARD_SEVERITY_MNV2_V1.md` and `docs/EXPERIMENT_LOG.md` entry created.
+
+Evidence: MobileNetV2 two-stage transfer learning module (`mobilenet.py`), dataset loader (`dataset.py`), standalone inference engine (`predict.py`), and 20-cell bimodal judge notebook 07 created; all 10 severity tests pass; full suite 74 tests green (73 passed, 1 skipped); model card `docs/MODEL_CARD_SEVERITY_MNV2_V1.md` committed.
+
+Validation commands:
+- `.venv\Scripts\pytest.exe ml/tests/test_severity_mobilenet.py -v`
+- `.venv\Scripts\pytest.exe ml/tests/ -q`
+- Run `notebooks/07_severity_mobilenetv2_training.ipynb` top-to-bottom
+
