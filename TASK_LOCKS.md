@@ -22,6 +22,7 @@ This file substitutes for branch isolation because all seven members work direct
 | DATA-001-FIX | Antigravity | notebooks/01_fraud_dataset_audit.ipynb, TASK_LOCKS.md | 2026-09-21 00:30 | 2026-09-21 01:00 | de7f653 | RELEASED |
 | ML-PATH-FIX | Antigravity | ml/src/claimvision_ml/fraud/dataset.py, notebooks/02_fraud_mobilenetv2_training.ipynb, notebooks/03_fraud_evaluation_and_threshold.ipynb, data/manifests/, TASK_LOCKS.md | 2026-09-21 00:45 | 2026-09-21 01:30 | de7f653 | RELEASED |
 | CV-001 | Member 3 / Antigravity | ml/src/claimvision_ml/quality/, ml/tests/test_quality_runtime.py, notebooks/04_opencv_quality_and_integrity.ipynb, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md | 2026-09-21 01:37 | 2026-09-21 04:00 | de7f653 | RELEASED |
+| ML-DOWNLOAD-HELPER | Antigravity | notebooks/02_fraud_mobilenetv2_training.ipynb, TASK_LOCKS.md | 2026-09-21 16:03 | 2026-09-21 16:30 | de7f653 | RELEASED |
 
 ## Lock template
 
