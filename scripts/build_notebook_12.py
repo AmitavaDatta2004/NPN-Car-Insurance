@@ -268,9 +268,10 @@ print(f"Target Size  : 640x640")""")
 output_dir = REPO_ROOT / "ml" / "results" / "detection"
 output_dir.mkdir(parents=True, exist_ok=True)
 
-batch_size = 16 if torch.cuda.is_available() else 8
-epochs = 50
-patience = 15
+# Batch size 8 gives ~8 gradient steps per epoch on 59 images
+batch_size = 8
+epochs = 60
+patience = 0  # Disable early stopping so 1-image validation split does not halt training prematurely
 
 print(f"Starting YOLOv8n part detector training for {epochs} epochs (patience={patience}, batch={batch_size})...")
 
@@ -281,7 +282,7 @@ train_results = model.train(
     imgsz=640,
     batch=batch_size,
     optimizer="AdamW",
-    lr0=0.001,
+    lr0=0.002,
     seed=SEED,
     project=str(output_dir),
     name="yolo_parts_train",
@@ -393,24 +394,32 @@ print("3. Downstream mitigation: If bumper confidence is marginal, the costing e
     # ------------------------------------------------------------------
     # Cell 10: Code 9 — Visual Inspection Grid (Multi-Color Overlays)
     # ------------------------------------------------------------------
-    add_code("""# Cell 9 — Visual Inspection: Multi-Color Overlays on Validation Split
+    add_code("""# Cell 9 — Visual Inspection: Multi-Color Overlays on Sample Vehicles
 from claimvision_ml.detection.parts import PartDetector
 from claimvision_ml.detection.damage import normalized_to_xyxy
 
-part_detector = PartDetector(model_path=str(best_weights), conf_threshold=0.25)
+part_detector = PartDetector(model_path=str(best_weights), conf_threshold=0.15)
 
 val_img_dir = YOLO_PARTS_DIR / "val" / "images"
 val_lbl_dir = YOLO_PARTS_DIR / "val" / "labels"
-sample_images = sorted(list(val_img_dir.glob("*.jpg")))[:3]
+train_img_dir = YOLO_PARTS_DIR / "train" / "images"
+train_lbl_dir = YOLO_PARTS_DIR / "train" / "labels"
 
-fig, axes = plt.subplots(len(sample_images), 2, figsize=(14, 4.5 * len(sample_images)))
-if len(sample_images) == 1:
+sample_items = []
+# Include 1 validation image
+for p in sorted(list(val_img_dir.glob("*.jpg")))[:1]:
+    sample_items.append((p, val_lbl_dir / f"{p.stem}.txt", f"Val: {p.name}"))
+# Include 2 train images with clear parts
+for p in sorted(list(train_img_dir.glob("*.jpg")))[:2]:
+    sample_items.append((p, train_lbl_dir / f"{p.stem}.txt", f"Train: {p.name}"))
+
+fig, axes = plt.subplots(len(sample_items), 2, figsize=(14, 4.5 * len(sample_items)))
+if len(sample_items) == 1:
     axes = np.array([axes])
 
-for idx, img_path in enumerate(sample_images):
+for idx, (img_path, lbl_file, title_prefix) in enumerate(sample_items):
     gt_img = cv2.imread(str(img_path))
     h, w = gt_img.shape[:2]
-    lbl_file = val_lbl_dir / (img_path.stem + ".txt")
     if lbl_file.exists():
         for line in lbl_file.read_text(encoding="utf-8").splitlines():
             parts = line.strip().split()
@@ -422,14 +431,17 @@ for idx, img_path in enumerate(sample_images):
                 cv2.rectangle(gt_img, (x1, y1), (x2, y2), (0, 255, 0), 2)
                 cv2.putText(gt_img, f"GT: {cls_name}", (x1, max(15, y1 - 5)), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 0), 1)
 
-    dets, pred_overlay = part_detector.predict_with_overlay(img_path)
+    dets, pred_overlay = part_detector.predict_with_overlay(img_path, conf_threshold=0.15)
+    print(f"\\n--- {title_prefix} --- ({len(dets)} parts detected)")
+    for d in dets:
+        print(f"  -> {d.class_name:<14} (conf: {d.confidence:.1%}, box: {[round(v, 1) for v in d.box_xyxy]})")
 
     axes[idx, 0].imshow(cv2.cvtColor(gt_img, cv2.COLOR_BGR2RGB))
-    axes[idx, 0].set_title(f"GT: {img_path.name}")
+    axes[idx, 0].set_title(f"GT: {title_prefix}")
     axes[idx, 0].axis("off")
 
     axes[idx, 1].imshow(cv2.cvtColor(pred_overlay, cv2.COLOR_BGR2RGB))
-    axes[idx, 1].set_title(f"Pred: {img_path.name} ({len(dets)} parts)")
+    axes[idx, 1].set_title(f"Pred: {title_prefix} ({len(dets)} parts)")
     axes[idx, 1].axis("off")
 
 plt.tight_layout()
@@ -477,11 +489,11 @@ fig, axes = plt.subplots(2, 4, figsize=(16, 8))
 axes = axes.flatten()
 
 for idx, t_img in enumerate(test_images[:8]):
-    dets, overlay = part_detector.predict_with_overlay(t_img)
-    parts_found = [d.class_name for d in dets]
+    dets, overlay = part_detector.predict_with_overlay(t_img, conf_threshold=0.10)
+    parts_found = [f"{d.class_name} ({d.confidence:.0%})" for d in dets]
     print(f"Test image {t_img.name}: {len(dets)} parts detected -> {parts_found}")
     axes[idx].imshow(cv2.cvtColor(overlay, cv2.COLOR_BGR2RGB))
-    axes[idx].set_title(f"{t_img.name}\\n({', '.join(set(parts_found)) if parts_found else 'none'})")
+    axes[idx].set_title(f"{t_img.name}\\n({', '.join(parts_found) if parts_found else '0 detections'})", fontsize=9)
     axes[idx].axis("off")
 
 plt.tight_layout()
