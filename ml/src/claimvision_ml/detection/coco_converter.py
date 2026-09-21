@@ -5,7 +5,7 @@ Phase   : 8
 Owner   : Member 4 / Antigravity
 Dataset : COCO Car Damage Detection Dataset
           59 train / 11 val / 8 test images
-          Categories: damage (generic) + headlamp, rear bumper, door, hood, front bumper
+          Categories: damage (generic) + headlamp, front_bumper, hood, door, rear_bumper
 
 Public API
 ----------
@@ -78,7 +78,7 @@ class COCOtoYOLOConverter:
     """Audit and convert COCO object-detection annotations to YOLO TXT format.
 
     All methods are stateless class methods so they can be called without
-    instantiation.  The class groups related utilities under one namespace.
+    instantiation. The class groups related utilities under one namespace.
     """
 
     # ------------------------------------------------------------------
@@ -92,7 +92,7 @@ class COCOtoYOLOConverter:
         Parameters
         ----------
         json_path:
-            Absolute or relative path to the ``_annotations.coco.json`` file.
+            Absolute or relative path to the COCO JSON file.
 
         Returns
         -------
@@ -166,11 +166,14 @@ class COCOtoYOLOConverter:
         cat_map: dict[int, str] = {cat["id"]: cat["name"] for cat in coco["categories"]}
         category_counts: dict[str, int] = {name: 0 for name in cat_map.values()}
 
-        # Check file existence
+        # Check file existence (check direct path and basename fallback)
         for img in coco["images"]:
-            fpath = image_dir / img["file_name"]
+            fname = img["file_name"]
+            fpath = image_dir / fname
             if not fpath.exists():
-                missing_files.append(img["file_name"])
+                fpath_alt = image_dir / Path(fname).name
+                if not fpath_alt.exists():
+                    missing_files.append(fname)
 
         # Validate annotations
         for ann in coco["annotations"]:
@@ -186,6 +189,16 @@ class COCOtoYOLOConverter:
             img_h: int = img_info.get("height", 0)
             x, y, w, h = ann.get("bbox", [0, 0, 0, 0])
 
+            # If image dimensions missing in JSON, try reading from disk
+            if (img_w == 0 or img_h == 0) and image_dir.exists():
+                fpath = image_dir / img_info["file_name"]
+                if not fpath.exists():
+                    fpath = image_dir / Path(img_info["file_name"]).name
+                if fpath.exists():
+                    tmp = cv2.imread(str(fpath))
+                    if tmp is not None:
+                        img_h, img_w = tmp.shape[:2]
+
             # Validate box
             if w <= 0 or h <= 0:
                 invalid_boxes.append(
@@ -195,7 +208,7 @@ class COCOtoYOLOConverter:
                 invalid_boxes.append(
                     {"ann_id": ann.get("id"), "image_id": img_id, "reason": "negative origin"}
                 )
-            elif img_w > 0 and (x + w > img_w):
+            elif img_w > 0 and (x + w > img_w + 1.0):  # 1px tolerance for rounding
                 invalid_boxes.append(
                     {
                         "ann_id": ann.get("id"),
@@ -203,7 +216,7 @@ class COCOtoYOLOConverter:
                         "reason": f"bbox exceeds image width ({x+w:.1f} > {img_w})",
                     }
                 )
-            elif img_h > 0 and (y + h > img_h):
+            elif img_h > 0 and (y + h > img_h + 1.0):
                 invalid_boxes.append(
                     {
                         "ann_id": ann.get("id"),
@@ -365,12 +378,8 @@ class COCOtoYOLOConverter:
         Output structure::
 
             out_dir/
-            ├── images/     (symlinks or copies of source images)
+            ├── images/     (copies of source images)
             └── labels/     (one .txt per image, empty if no annotations)
-
-        A round-trip assertion is run internally: each written normalised value
-        is back-converted to pixel coordinates and compared with the original
-        within a tolerance of 1e-6.
 
         Parameters
         ----------
@@ -379,13 +388,12 @@ class COCOtoYOLOConverter:
         image_dir:
             Source directory containing the images.
         out_dir:
-            Destination root.  Created if absent.
+            Destination root. Created if absent.
         category_map:
-            ``{coco_category_id: yolo_class_id}``.  Annotations whose
+            ``{coco_category_id: yolo_class_id}``. Annotations whose
             ``category_id`` is not in this map are skipped with a warning.
         class_names:
-            List of class name strings in YOLO class-id order (used only for
-            ``data.yaml``; not written here).
+            List of class name strings in YOLO class-id order.
         """
         image_dir = Path(image_dir)
         out_dir = Path(out_dir)
@@ -397,7 +405,7 @@ class COCOtoYOLOConverter:
         # Build per-image annotation index
         image_map: dict[int, dict] = {img["id"]: img for img in coco["images"]}
         ann_index: dict[int, list[dict]] = {img["id"]: [] for img in coco["images"]}
-        for ann in coco["annotations"]:
+        for ann in coco.get("annotations", []):
             iid = ann.get("image_id")
             if iid in ann_index:
                 ann_index[iid].append(ann)
@@ -408,17 +416,19 @@ class COCOtoYOLOConverter:
             img_w: int = img_info.get("width", 0)
             img_h: int = img_info.get("height", 0)
 
-            # If dimensions missing, try to read from file
-            if img_w == 0 or img_h == 0:
-                src = image_dir / fname
-                if src.exists():
-                    tmp = cv2.imread(str(src))
-                    if tmp is not None:
-                        img_h, img_w = tmp.shape[:2]
-
-            # Copy image
+            # Resolve source image file path
             src_img = image_dir / fname
-            dst_img = images_out / fname
+            if not src_img.exists():
+                src_img = image_dir / Path(fname).name
+
+            # If dimensions missing, try to read from file
+            if (img_w == 0 or img_h == 0) and src_img.exists():
+                tmp = cv2.imread(str(src_img))
+                if tmp is not None:
+                    img_h, img_w = tmp.shape[:2]
+
+            # Copy image to YOLO images/ folder
+            dst_img = images_out / Path(fname).name
             if src_img.exists() and not dst_img.exists():
                 shutil.copy2(str(src_img), str(dst_img))
 
@@ -470,7 +480,7 @@ class COCOtoYOLOConverter:
         nc: int,
         names: list[str],
         train_path: str = "train/images",
-        val_path: str = "valid/images",
+        val_path: str = "val/images",
         test_path: str = "test/images",
     ) -> None:
         """Write a ``data.yaml`` file compatible with Ultralytics YOLO.
@@ -485,7 +495,7 @@ class COCOtoYOLOConverter:
             Class name list in YOLO class-id order.
         train_path, val_path, test_path:
             Relative paths (from ``out_dir``) to the image directories for each
-            split.  Defaults match the structure produced by ``convert_split``.
+            split. Defaults match the structure produced by ``convert_split``.
         """
         out_dir = Path(out_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
