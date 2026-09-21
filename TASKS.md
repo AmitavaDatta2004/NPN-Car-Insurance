@@ -204,3 +204,35 @@ Validation commands:
 - `.venv\Scripts\pytest.exe ml/tests/ -q`
 - Run `notebooks/04_opencv_quality_and_integrity.ipynb` top-to-bottom in Colab
 
+---
+
+### SDATA-001 — Severity dataset audit and manifest freeze
+
+- Phase: 4
+- Owner: Member 3 (Severity ML A) / Antigravity
+- Reviewer: Member 1
+- Status: DONE
+- Priority: P0
+- Dependencies: CFG-002, CV-001
+- Files allowed: ml/src/claimvision_ml/data/severity_audit.py, ml/src/claimvision_ml/data/__init__.py, ml/tests/test_severity_audit.py, ml/tests/conftest.py, ml/pyproject.toml, notebooks/05_severity_dataset_audit.ipynb, data/manifests/severity_*, docs/DATASET_CARD_SEVERITY.md, ml/results/severity/, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md
+- Files prohibited: fraud/, backend routes, frontend app, detection models
+- Objective: audit the 3-class Car Damage Severity Dataset (1,631 images), verify image decodability, detect exact and perceptual duplicates, analyze shortcut risks, and freeze duplicate-safe 70/15/15 stratified manifests for CNN, MobileNetV2, and ViT-Tiny
+
+Acceptance criteria:
+- [x] All 1,631 images validated for OpenCV decode integrity with zero corrupt images unquarantined (100.0% decodable).
+- [x] Exact SHA-256 duplicate groups identified and cataloged (11 groups, 22 total images).
+- [x] Perceptual hash near-duplicate clusters (pHash dist <= 8) identified (32 clusters, 65 total images).
+- [x] Class distributions (Minor: 534, Moderate: 538, Severe: 559) and quality distributions (dimensions, blur, brightness, contrast) analyzed across classes.
+- [x] Duplicate-safe 70/15/15 stratified train, validation, and test manifests generated (Train: 1,140, Val: 243, Test: 248).
+- [x] Zero-leakage verification: programmatic assertions confirm 0 SHA-256 or duplicate cluster leakage across splits.
+- [x] Unit tests for severity audit utilities pass without regression (8/8 new pass; all 64 ML suite tests pass).
+- [x] Notebook 05 executed with clean, curated judge-facing outputs and Colab/local universal sync.
+- [x] Dataset card `docs/DATASET_CARD_SEVERITY.md` created.
+- [x] Manifest summary and class map exported to `data/manifests/`.
+
+Evidence: 1,631 images audited with 0 corrupt; 11 exact duplicate groups & 32 pHash clusters grouped; zero-leakage 70/15/15 split (1,140 train, 243 val, 248 test) frozen in `data/manifests/`; all 64 ML tests pass; `docs/DATASET_CARD_SEVERITY.md` and 4 visual charts committed.
+
+Validation commands:
+- `.venv\Scripts\pytest.exe ml/tests/test_severity_audit.py -v`
+- `.venv\Scripts\pytest.exe ml/tests/ -q`
+- Run `notebooks/05_severity_dataset_audit.ipynb` top-to-bottom

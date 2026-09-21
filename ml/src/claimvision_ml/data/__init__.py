@@ -19,6 +19,24 @@ from claimvision_ml.data.manifest import (
     save_manifests,
     validate_split_leakage,
 )
+from claimvision_ml.data.severity_audit import (
+    SEVERITY_CLASS_TO_ID,
+    SEVERITY_CLASSES,
+    SEVERITY_ID_TO_CLASS,
+    audit_severity_images,
+    compute_image_phash,
+    create_severity_split,
+    discover_severity_images,
+    normalize_class_name,
+    save_severity_manifests,
+    validate_severity_split_leakage,
+)
+from claimvision_ml.data.severity_audit import (
+    find_exact_duplicate_groups as find_severity_exact_duplicates,
+)
+from claimvision_ml.data.severity_audit import (
+    find_perceptual_duplicates as find_severity_perceptual_duplicates,
+)
 
 __all__ = [
     "load_and_validate_csv",
@@ -32,4 +50,16 @@ __all__ = [
     "create_group_aware_split",
     "validate_split_leakage",
     "save_manifests",
+    "SEVERITY_CLASSES",
+    "SEVERITY_CLASS_TO_ID",
+    "SEVERITY_ID_TO_CLASS",
+    "normalize_class_name",
+    "discover_severity_images",
+    "compute_image_phash",
+    "audit_severity_images",
+    "find_severity_exact_duplicates",
+    "find_severity_perceptual_duplicates",
+    "create_severity_split",
+    "validate_severity_split_leakage",
+    "save_severity_manifests",
 ]

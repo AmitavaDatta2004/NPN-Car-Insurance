@@ -8,9 +8,9 @@ Current commit: de7f653 (pending user commit for Phase 3)
 
 | Field | Value |
 | --- | --- |
-| Current phase | Phase 3 Complete (Phase 4 Ready) |
+| Current phase | Phase 4 Complete (Phase 5 Ready) |
 | Overall health | Green |
-| Next phase gate | Severity Dataset Audit — frozen 70/15/15 manifests |
+| Next phase gate | Baseline Severity CNN (Phase 5) |
 | Demo readiness | Not started |
 | Latest stable tag | None |
 | Active blocker count | 0 |
@@ -23,7 +23,7 @@ Current commit: de7f653 (pending user commit for Phase 3)
 | 1 Fraud dataset audit | Member 2 | Complete | Data instructions ready | Audit notebook accepted (8,079 images audited) |
 | 2 Fraud classifier | Member 2 | Complete | Frozen fraud manifests | FRAUD-MNV2-001 trained; test PR-AUC=0.5464; thresholds frozen; predict_fraud verified |
 | 3 OpenCV evidence integrity | Member 3 | Complete | Sample images ready | runtime_checker.py + 19 tests pass (56 total); notebook 04 12 sections |
-| 4 Severity audit | Member 3 | Not started | Dataset available | Frozen manifests |
+| 4 Severity audit | Member 3 | Complete | Dataset available | Frozen manifests (1,631 images: 1,140 train, 243 val, 248 test); 0 leakage; 64 tests pass |
 | 5 Severity CNN | Member 3 | Not started | Severity audit accepted | Baseline report |
 | 6 Severity MobileNetV2 | Member 3 | Not started | Same split available | Transfer-learning report |
 | 7 ViT-Tiny and selection | Member 4 | Not started | Same split available | Selection decision |
@@ -47,12 +47,13 @@ Current commit: de7f653 (pending user commit for Phase 3)
 - [x] DATA-001 — Fraud dataset audit (8,079 images; frozen manifests; 20 unit tests pass)
 - [x] ML-001 — Fraud MobileNetV2 classifier (FRAUD-MNV2-001 trained; test PR-AUC 0.5464; high_threshold 0.80; recall 90.1%; ONNX export; 37 unit tests pass)
 - [x] CV-001 — OpenCV evidence-integrity runtime checker (run_quality_checks(); QualityResult; 19 new tests; 56 total pass; notebook 04 12 sections)
+- [x] SDATA-001 — Severity dataset audit & manifest freeze (1,631 images; 0 corrupt; 11 exact dupe groups & 32 pHash clusters; 0 leakage 70/15/15 split; 64 total tests pass)
 
 ## Active blockers
 
 | ID | Blocker | Owner | Impact | Required decision | Target date |
 | --- | --- | --- | --- | --- | --- |
-| None | — | — | — | — | — |
+| None | — | — | — | — | — | — |
 
 ## Latest verified results
 
@@ -63,16 +64,17 @@ Only paste results produced by committed code and recorded experiments.
 | Fraud (Audit) | Audit v1 (Vinay Jose) | 8,079 images (7,614 gen / 465 susp) | 0 leakage; 5,654 train, 1,211 val, 1,214 test | data/manifests/fraud_train.csv |
 | Fraud (Classifier) | FRAUD-MNV2-001 | Vinay Jose v1 (1,214 test images) | PR-AUC: 0.5464, Recall: 90.1%, ROC-AUC: 0.9077, 22.6ms/img | ml/artifacts/fraud/thresholds_v1.json |
 | Quality (Runtime) | CV-001 | Synthetic (tests) + real (notebook) | 19/19 tests pass; all 9 checks verified; EXIF rule confirmed | ml/src/claimvision_ml/quality/runtime_checker.py |
-| Severity | Not available | Not available | Not measured | — |
+| Severity (Audit) | Audit v1 (Prajwal Bhamere) | 1,631 images (534 min / 538 mod / 559 sev) | 0 leakage; 1,140 train, 243 val, 248 test | data/manifests/severity_train.csv |
 | Damage detection | Not available | Not available | Not measured | — |
 | Part detection | Not available | Not available | Not measured | — |
 | End-to-end | Not available | Demo fixtures | Not tested | — |
 
 ## Next three actions
 
-1. Review and commit Phase 3 — User — CV-001
-2. Implement Phase 4 Severity Dataset Audit — Member 3 — SDATA-001
-3. Create frozen 70/15/15 severity manifests — Member 3 — SDATA-001
+1. Review and commit Phase 4 — User — SDATA-001
+2. Implement Phase 5 Severity Baseline CNN — Member 3 — SMOD-001
+3. Train and benchmark baseline CNN — Member 3 — SMOD-001
+
 
 
 ## Demo readiness checklist

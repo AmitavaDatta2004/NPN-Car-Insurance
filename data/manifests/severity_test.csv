@@ -1,0 +1,249 @@
+image_path,filename,label,label_id,sha256,width,height,aspect_ratio,blur_score,brightness,contrast,split
+data/raw/car_damage_severity/data3a/training/01-minor/0012.JPEG,0012.JPEG,minor,0,2840181b3781adb9916e60d7a8be93073fb845f1e095953788d3effdf577ffbe,259,194,1.3351,713.62,106.26,68.42,test
+data/raw/car_damage_severity/data3a/training/01-minor/0019.JPEG,0019.JPEG,minor,0,9a0fe3a5ebb1d25e6fcfb0abc16bf9988f82e123ceeeb2dfd27bdab61444f5f1,357,141,2.5319,2523.1,104.36,60.83,test
+data/raw/car_damage_severity/data3a/training/01-minor/0028.JPEG,0028.JPEG,minor,0,08f683ad2fe9f1dfb7f0871cfd6514915844d5c737b79c445d22f2b838ec9ed9,275,183,1.5027,1049.91,82.63,34.35,test
+data/raw/car_damage_severity/data3a/training/01-minor/0032.JPEG,0032.JPEG,minor,0,e75220295126e318358f7713e3a3f3b16a450f3bbc2d9a7f1b97a70335c76ce1,289,175,1.6514,3368.27,120.68,82.72,test
+data/raw/car_damage_severity/data3a/training/01-minor/0050.JPEG,0050.JPEG,minor,0,99b3683042a5c10c31b962c9cb22440d1dbdac846b3ff3f830b6d6388ec1b1b6,259,194,1.3351,1475.59,100.16,67.3,test
+data/raw/car_damage_severity/data3a/training/01-minor/0057.JPEG,0057.JPEG,minor,0,95cd58c2eb4e5cf905ac9c4e2a322e9c3dfd3bc960b9385008022b5c15cd5684,317,159,1.9937,1137.56,153.28,43.34,test
+data/raw/car_damage_severity/data3a/training/01-minor/0058.JPEG,0058.JPEG,minor,0,7aa0cd9bc3b443eaf09a7dad2ea0559d972e914c84bec9d82920c6a017cd485a,194,259,0.749,2236.61,133.41,68.1,test
+data/raw/car_damage_severity/data3a/training/01-minor/0059.JPEG,0059.JPEG,minor,0,fc0dfb61ccc9876f276f2debb8e111620f6e44527e25c1da2c96400391080bd5,266,189,1.4074,1493.2,169.55,51.43,test
+data/raw/car_damage_severity/data3a/training/01-minor/0072.JPEG,0072.JPEG,minor,0,ae5a2ef490fada40758cce9917d1079212ba7327c0815bbd76903c6056191b3c,180,280,0.6429,2334.43,117.75,60.2,test
+data/raw/car_damage_severity/data3a/training/01-minor/0075.JPEG,0075.JPEG,minor,0,e5da4761bec0c15cd02a3318ec2664bf14703bcbcf178d57829b7f59b8c3b9e8,275,183,1.5027,1560.73,116.16,65.46,test
+data/raw/car_damage_severity/data3a/training/01-minor/0077.JPEG,0077.JPEG,minor,0,14779ab7a77adce60e1e55d223b3e813f90615e2cf20716a51ee5d4a7a9651be,274,184,1.4891,3160.73,137.41,86.74,test
+data/raw/car_damage_severity/data3a/training/01-minor/0085.JPEG,0085.JPEG,minor,0,b3398b7e07543f1706420698ff89a0cb1ad76d86f5fda15d8b271128954ddc49,259,194,1.3351,4897.3,143.31,82.73,test
+data/raw/car_damage_severity/data3a/training/01-minor/0095.JPEG,0095.JPEG,minor,0,985a333fdc0a9f2e47b4d1a4bcdb4e1f11b89c32f8b883ce5f383f4b787ab2f6,308,164,1.878,1800.76,89.79,53.01,test
+data/raw/car_damage_severity/data3a/training/01-minor/0098.JPEG,0098.JPEG,minor,0,3362ff33301c68e4217f90b7bc2bf6a2f1151a965533d812997c8b0127a53351,259,194,1.3351,1109.62,140.19,48.45,test
+data/raw/car_damage_severity/data3a/training/01-minor/0117.JPEG,0117.JPEG,minor,0,46ae1eabade6a5d70c8fe653e7097f37c467c4d08c4809e6570c3b2793bc042c,259,194,1.3351,1428.03,122.66,62.2,test
+data/raw/car_damage_severity/data3a/training/01-minor/0118.JPEG,0118.JPEG,minor,0,73f711bb93503dde0b67ca6958a144f214946fa50f13423ab3e1bbbc5849d9a7,259,194,1.3351,1748.4,82.83,59.01,test
+data/raw/car_damage_severity/data3a/training/01-minor/0130.JPEG,0130.JPEG,minor,0,9ff4417fd7ebfccb98588ca428b81197335f41215b906b5d8116357579871e6c,194,259,0.749,1675.16,143.39,66.11,test
+data/raw/car_damage_severity/data3a/training/01-minor/0140.JPEG,0140.JPEG,minor,0,372e1ae41046109e5f743ad5de15b8807db2dc40d9b5206e106dd5224225024f,300,168,1.7857,978.53,95.67,47.52,test
+data/raw/car_damage_severity/data3a/training/01-minor/0143.JPEG,0143.JPEG,minor,0,1b266476d3f2823eb633f25ef2cc7504b904eae252122167787f63fc56ebbc63,213,236,0.9025,2111.98,75.48,55.76,test
+data/raw/car_damage_severity/data3a/training/01-minor/0144.JPEG,0144.JPEG,minor,0,ae858cf8fdcd7e1bc32504176501033f874d77eb0a58692c372af4e922aaba72,259,194,1.3351,1555.78,89.48,55.82,test
+data/raw/car_damage_severity/data3a/training/01-minor/0146.JPEG,0146.JPEG,minor,0,e6ed68b65a3152e751b287fd651440c1bef26e66cf293f3f96bdd03ac7148b53,287,176,1.6307,1395.66,100.97,53.41,test
+data/raw/car_damage_severity/data3a/training/01-minor/0158.JPEG,0158.JPEG,minor,0,46c078349036070d7983cba99f2db69c3ef6a76de9c3af3dd66940b11c930786,259,194,1.3351,1671.12,114.56,76.78,test
+data/raw/car_damage_severity/data3a/training/01-minor/0160.JPEG,0160.JPEG,minor,0,31160b2d8fb25acc9f88afeb003ff5c6c9c338c0150ab36be2df9b49c80b651f,275,183,1.5027,5873.15,164.88,92.83,test
+data/raw/car_damage_severity/data3a/training/01-minor/0168.JPEG,0168.JPEG,minor,0,a35b5ae0dd642a9105264526704e85432098b81a490c8a5d5c9faf64a4cc88d4,259,194,1.3351,1624.32,82.2,53.06,test
+data/raw/car_damage_severity/data3a/training/01-minor/0173.JPEG,0173.JPEG,minor,0,d937cf08b7310c193e209e0e385f50e9119a8f37388be8933dbc64a2e58671cb,275,183,1.5027,1516.94,90.66,77.02,test
+data/raw/car_damage_severity/data3a/training/01-minor/0176.JPEG,0176.JPEG,minor,0,2082c29c6f23c64860116916b6eaab566ab4da77a3b15b1dcbba1b9d8227381f,260,194,1.3402,2444.35,116.7,54.94,test
+data/raw/car_damage_severity/data3a/training/01-minor/0193.JPEG,0193.JPEG,minor,0,34d82ed25bc8da5839b6fdd7f7096372eeebad9c480d62a4fcc457707c5a2eb2,178,132,1.3485,1476.27,104.86,50.32,test
+data/raw/car_damage_severity/data3a/training/01-minor/0195.JPEG,0195.JPEG,minor,0,aba5a95a36f171cf5961919adb6d6bf0ba088ed7086539c234cf418fae907559,259,194,1.3351,2336.94,144.59,73.34,test
+data/raw/car_damage_severity/data3a/training/01-minor/0197.JPEG,0197.JPEG,minor,0,81efef6852aeff0281f74eaebd4118e588fb62725b3c8ebb346917467768292d,194,259,0.749,962.76,106.49,60.16,test
+data/raw/car_damage_severity/data3a/training/01-minor/0210.JPEG,0210.JPEG,minor,0,e3a9995684dd3778b392693f6235caba088ecc8b2bb6ed473c5a5bf38235a6e5,301,167,1.8024,5376.08,70.11,51.97,test
+data/raw/car_damage_severity/data3a/training/01-minor/0218.JPEG,0218.JPEG,minor,0,cf2db0054b8b4e1ee54ef2f837aaa0506730579e93d78265cff82bdba4f3e569,259,194,1.3351,3689.63,88.53,43.91,test
+data/raw/car_damage_severity/data3a/training/01-minor/0238.JPEG,0238.JPEG,minor,0,b62c7b90dc9ebdae2de2ab120fb1f8753be065dc07aa1aa2ba0c97a58c759e2d,259,194,1.3351,2251.71,112.24,62.61,test
+data/raw/car_damage_severity/data3a/training/01-minor/0243.JPEG,0243.JPEG,minor,0,3a53d7678bc0e4413337915a9c40947ccf7180369491a696b829a62e67100903,259,194,1.3351,3737.78,111.69,64.97,test
+data/raw/car_damage_severity/data3a/training/01-minor/0245.jpeg,0245.jpeg,minor,0,de94fa7fc3df29512736c4da0cd7f20a4b9cb8e7a4ed18b5af3da70a50ec8a25,260,194,1.3402,399.15,92.2,57.54,test
+data/raw/car_damage_severity/data3a/training/01-minor/0253.jpeg,0253.jpeg,minor,0,c0d9c96193a4d6d1c18648e5e49ea397b22eb704bb15aa238b7406bc88a58d7b,259,194,1.3351,1341.51,128.17,63.59,test
+data/raw/car_damage_severity/data3a/training/01-minor/0258.JPEG,0258.JPEG,minor,0,e8893e57c21fe74bbe1503dbda058d20ebd984fcf218dca559c2f3f7a5a2f10d,303,166,1.8253,9071.58,107.87,72.08,test
+data/raw/car_damage_severity/data3a/training/01-minor/0263.JPEG,0263.JPEG,minor,0,6f3372296185251320a5a020b53e78855d77ec15bfd013aa43cc7858fa045eaa,259,194,1.3351,1467.22,146.31,56.98,test
+data/raw/car_damage_severity/data3a/training/01-minor/0264.JPEG,0264.JPEG,minor,0,60821ba5de8346a9f460dda2a62029449d18e21a7a7815e0de18406787e02f52,300,168,1.7857,541.89,77.48,58.85,test
+data/raw/car_damage_severity/data3a/training/01-minor/0265.JPEG,0265.JPEG,minor,0,42602101bb1d7cee301dabce81798b4e3bd943757edf25eea81279669d9970be,275,183,1.5027,1205.88,144.4,55.41,test
+data/raw/car_damage_severity/data3a/training/01-minor/0273.JPEG,0273.JPEG,minor,0,5acd2d87d412f9ee2b8982200939fe3a291eafc417ec1467b34511982e7902bd,266,189,1.4074,1457.05,175.07,44.82,test
+data/raw/car_damage_severity/data3a/training/01-minor/0276.JPEG,0276.JPEG,minor,0,9e4da76aebd99c614cf10248360c14fed0b5fbc3881e73d227b654c40f19877e,194,259,0.749,4595.4,87.89,54.08,test
+data/raw/car_damage_severity/data3a/training/01-minor/a3c01267e2674f488911328012ccb039_thb.jpg,a3c01267e2674f488911328012ccb039_thb.jpg,minor,0,c02d5f765c25047d18f6c8013320ba720818b7a29a380764ab799800d7582a25,144,108,1.3333,2765.91,116.33,66.1,test
+data/raw/car_damage_severity/data3a/training/01-minor/download (13).jpeg,download (13).jpeg,minor,0,d7c2a82b917670e44077e7b5b8525e19b7ac5f161a61f2491d3aa4074ded2c94,300,168,1.7857,1684.86,124.46,69.32,test
+data/raw/car_damage_severity/data3a/training/01-minor/download (15).jpeg,download (15).jpeg,minor,0,913a31ba9a6104c636143cc25de73dd60c961db2c77ab1d3c42582dfb90b35d4,259,194,1.3351,2068.98,132.12,58.21,test
+data/raw/car_damage_severity/data3a/training/01-minor/download (2).jpeg,download (2).jpeg,minor,0,8015c5fc5ddb997c947ac6c94d7c61677f5d19d0afd2453ddc9d7311b09b406e,100,100,1.0,418.28,106.22,75.93,test
+data/raw/car_damage_severity/data3a/training/01-minor/download (24).jpeg,download (24).jpeg,minor,0,30a528b0f60d2fc03702aed053790a525ff51a765ec26a5e932e46d8315b91f3,259,194,1.3351,5613.33,108.4,56.42,test
+data/raw/car_damage_severity/data3a/training/01-minor/download (31).jpeg,download (31).jpeg,minor,0,0e49c3c8d6f75f9b9a67653d46d706ce4a4ee72d6030c40e57e2e21d4d0aaa92,100,100,1.0,1204.44,92.1,38.92,test
+data/raw/car_damage_severity/data3a/training/01-minor/download (33).jpeg,download (33).jpeg,minor,0,acf31b89c36547e13f2f7e81ad92995aa6fc3e03c008e1495d9a90d9f806fbb9,100,100,1.0,568.85,109.49,46.19,test
+data/raw/car_damage_severity/data3a/training/01-minor/download (7).jpeg,download (7).jpeg,minor,0,cfdc68451eefac460d4e82870e32382d7b55f98ad6a153924e3ab29bc00d5279,300,168,1.7857,1452.05,99.82,50.75,test
+data/raw/car_damage_severity/data3a/training/01-minor/e6fc41f1d1c84530b623c6cb180b2afb_thb.jpg,e6fc41f1d1c84530b623c6cb180b2afb_thb.jpg,minor,0,3dc84797ee1f5ef82348dc1ddb1e20881d46a7033d5e21fda92c033ee627a97f,144,108,1.3333,2377.44,132.67,62.75,test
+data/raw/car_damage_severity/data3a/training/01-minor/ef2b325bcc164d6a8e834a57448b9343_thb.jpg,ef2b325bcc164d6a8e834a57448b9343_thb.jpg,minor,0,82bdd1dd4a29bb2017971b3cc0d4a53591506cf3cebd565c398f5cf758709fed,144,108,1.3333,3314.25,126.32,62.67,test
+data/raw/car_damage_severity/data3a/training/01-minor/f1db84b589e54f898958c912112934c7_thb.jpg,f1db84b589e54f898958c912112934c7_thb.jpg,minor,0,3d8d844b15a32b2f3557122eb5f61d753bee846a0ee26f53236326218095397f,144,108,1.3333,2574.19,141.91,63.27,test
+data/raw/car_damage_severity/data3a/training/01-minor/images (2).jpeg,images (2).jpeg,minor,0,7ed50c2fc520699e956123ff7c32904c59d444e432a98c942ba14e0c50a09b08,287,176,1.6307,3361.33,131.31,63.99,test
+data/raw/car_damage_severity/data3a/training/01-minor/images (23).jpeg,images (23).jpeg,minor,0,d562aad906c85fa3215d4be563c2dbb0e0cee178b56ff3f0ee60ebe2bf2cf787,275,183,1.5027,782.59,171.33,63.7,test
+data/raw/car_damage_severity/data3a/training/01-minor/images (26).jpeg,images (26).jpeg,minor,0,8c825479673fc1b16fb986e24a6db44b909648b094d6f6dcc8dd3f534341223a,259,194,1.3351,1149.52,103.51,73.55,test
+data/raw/car_damage_severity/data3a/training/01-minor/images (31).jpeg,images (31).jpeg,minor,0,6e52fb822db3ba1ed2ded84db534a864fc6e257d8d016f28908279761b081aff,275,183,1.5027,800.72,116.66,64.38,test
+data/raw/car_damage_severity/data3a/training/01-minor/images (42).jpeg,images (42).jpeg,minor,0,57c6cc48b877ecf75404d5eafc9fbd30584bb843ce9ea32d675501bf850f9dfd,275,183,1.5027,807.87,157.09,67.29,test
+data/raw/car_damage_severity/data3a/training/01-minor/images (44).jpeg,images (44).jpeg,minor,0,05aa347b633fdc61550149ffecc5807c3fa7c9996cb17e47f80f052282f6c398,275,183,1.5027,570.08,158.45,52.75,test
+data/raw/car_damage_severity/data3a/training/01-minor/images (71).jpeg,images (71).jpeg,minor,0,e37094c334a00d9e894e55ac411e54bc5008246eb3069fc4e61dddff734e5f97,274,184,1.4891,3124.15,142.35,61.38,test
+data/raw/car_damage_severity/data3a/training/01-minor/images (76).jpeg,images (76).jpeg,minor,0,f1c85200ca070b91bc94f2b638bbdd2f017d250acf60ec5ce854d296ccae4a60,318,159,2.0,165.2,116.59,66.49,test
+data/raw/car_damage_severity/data3a/training/01-minor/images (88).jpeg,images (88).jpeg,minor,0,ce6f1128d295b0667d95dbea17ee9ad0374565bf700f9d5d971849053082fb8c,275,183,1.5027,2870.5,133.4,67.07,test
+data/raw/car_damage_severity/data3a/training/01-minor/images (9).jpeg,images (9).jpeg,minor,0,bf2f88b770bfba825c5a37feddaf929b4a15bbe83483df5bcd2be62e2eab3870,278,181,1.5359,1239.17,105.4,61.71,test
+data/raw/car_damage_severity/data3a/training/01-minor/images (98).jpeg,images (98).jpeg,minor,0,540d16943608d87cd29f0d5bfcdd3703d2f2cd12ef17adbc42af38668bc76552,284,177,1.6045,649.74,113.52,51.05,test
+data/raw/car_damage_severity/data3a/training/01-minor/images - 2022-12-12T151413.100.jpeg,images - 2022-12-12T151413.100.jpeg,minor,0,60760d5997940f5d88250f06bece0d0ea0487c7cf66649015d95e35d0355f714,275,183,1.5027,431.78,107.92,52.36,test
+data/raw/car_damage_severity/data3a/training/01-minor/images - 2022-12-12T151413.666.jpeg,images - 2022-12-12T151413.666.jpeg,minor,0,2a9a9179d57e0b5452e7566ac6fec844f8ceb242c2cd8d298aa2ec2e08cef53d,210,157,1.3376,4338.55,123.88,60.74,test
+data/raw/car_damage_severity/data3a/training/01-minor/images - 2022-12-12T151419.050.jpeg,images - 2022-12-12T151419.050.jpeg,minor,0,2e1ad47919d2c9c5df41c6281db6b07f5eeb72b8db7aca5da01861abe129d0ff,259,194,1.3351,2130.22,104.41,59.39,test
+data/raw/car_damage_severity/data3a/training/01-minor/images - 2022-12-12T151420.569.jpeg,images - 2022-12-12T151420.569.jpeg,minor,0,a9b4f8accc5aae571085c9b67b40f91b95c7bdef5b8b4aaaa5bbde914b95a0fe,275,183,1.5027,1935.21,132.49,51.2,test
+data/raw/car_damage_severity/data3a/training/01-minor/images.jpeg,images.jpeg,minor,0,44c612ae2411d70882eff7ae0148c8b22c7a266528f11b9584b0e4a19711034e,100,100,1.0,1801.95,134.04,49.27,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0001.JPEG,0001.JPEG,moderate,1,0c0c94c6763eb15fcf6a2783315b97ac8fbb3e64a94be45b29aeca51c55052b8,300,168,1.7857,3037.35,120.27,71.06,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0002.JPEG,0002.JPEG,moderate,1,f64a78710f1db51e6eab49a0f60d88dcc3817083e175d399869647530bbf1f72,299,168,1.7798,625.68,108.4,46.04,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0011.JPEG,0011.JPEG,moderate,1,941c3e84eef632729a67bf926fa93ddc209136615d15aca52891b78a567ff4ce,151,124,1.2177,2946.56,75.99,52.73,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0017.JPEG,0017.JPEG,moderate,1,eae066583904d68be576113af4e75d160eef85e04e8b93b4c002c280114d21d4,259,194,1.3351,1878.26,118.33,53.82,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0023.JPEG,0023.JPEG,moderate,1,f13889498dfbdb9ed529e475702c295feb010ccdfb240feca64930945c5cfa93,259,194,1.3351,3096.58,114.62,76.89,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0026.JPEG,0026.JPEG,moderate,1,d15fc231545481b2ade645c65fac24ee54240642d61999ab2c99920544edf6c4,299,168,1.7798,4623.27,89.93,60.33,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0027.JPEG,0027.JPEG,moderate,1,86d95bbe5d7f39759691d3eb768b961d76a7fa536a23341ef5a2301016edffba,259,194,1.3351,2884.36,98.64,58.36,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0032.JPEG,0032.JPEG,moderate,1,bf2c24dd9de4eb83ecdb22a9579ff1f59af3c0ad3c5029b3b62f74c6a40a9a2e,259,194,1.3351,775.44,59.28,40.45,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0041.JPEG,0041.JPEG,moderate,1,e338e67055c7265420d7f50cd3156b7a02ff6c1a0cbd9fb605d00a024a9f0674,266,189,1.4074,3123.42,135.56,61.07,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0042.JPEG,0042.JPEG,moderate,1,142371ca42c25e1c550b9f5368b87831e0e33c6915e66afb3b0cf677c16355f8,299,168,1.7798,1722.2,124.83,54.53,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0079.JPEG,0079.JPEG,moderate,1,a189c3c83b8ce2f0a1ac138301a5324cd33896976674cc182423c8929758d45b,269,188,1.4309,6674.24,122.59,72.6,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0080.jpeg,0080.jpeg,moderate,1,cf20c78ca3e029d46b5feabea513ae5229244a918b356e6c006ce5bfadf63717,259,194,1.3351,4009.72,124.77,66.6,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0092.JPEG,0092.JPEG,moderate,1,1195bf816fedf5fbdc83dc60f4beea03b43b4fec6857e0464785402e2b82a821,259,194,1.3351,5089.75,118.19,70.97,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0096.JPEG,0096.JPEG,moderate,1,e77a82a872d145d2e11e85d489aa6b84701e73cc8a98e26366da4c3221847f3c,259,194,1.3351,721.49,101.43,37.61,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0105.JPEG,0105.JPEG,moderate,1,a35dee3e28cacdd7f1c109db52922a5459e9a627ab3b0c9af4cec4bd48bcbdd4,258,196,1.3163,2383.18,122.3,71.32,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0111.JPEG,0111.JPEG,moderate,1,3d2a65cace140f9859276a2c88e2308bba237eadb579e072b1716d1b7c62cb2c,259,194,1.3351,1399.66,104.39,53.25,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0115.JPEG,0115.JPEG,moderate,1,7835f24ac9225acdd1284cc2c0e1eac29816adf86d9763399bf64898e76a7ec0,212,139,1.5252,3130.2,109.97,72.26,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0118.JPEG,0118.JPEG,moderate,1,9167b73868d9b5fb31f64bd1d6693c7e2851e7006027325f47a1d5308439674c,259,194,1.3351,2186.94,89.56,69.74,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0120.JPEG,0120.JPEG,moderate,1,585ad649b9328271067ce8b7810ce8ba2e1347a9cae0af1a1f08f3fb20695553,259,194,1.3351,2446.43,112.53,67.72,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0124.JPEG,0124.JPEG,moderate,1,ae276b0434ccab40ed6aa1f9cd12d537a74a8cfd968f53ec9aa4ab913d9e186b,300,168,1.7857,2493.6,93.99,45.07,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0134.JPEG,0134.JPEG,moderate,1,30e3f2c6651738bd0f28fcc583ce4771b22a94f24ac2843926887878c664a4f9,135,130,1.0385,3745.44,91.59,71.51,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0145.JPEG,0145.JPEG,moderate,1,0f5746a17dbac700a8fb627e445dd7134f680594367d2d834d6d45d7a0e1dde4,268,188,1.4255,3556.62,137.11,78.82,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0151.JPEG,0151.JPEG,moderate,1,62d4a411b8201915a662e161a2829201ee5193fd076306c6f8afd48f8d6778a2,233,216,1.0787,2486.88,146.32,80.71,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0152.JPEG,0152.JPEG,moderate,1,b03b3d5fff7aebf6e0847cadd7d9491248757f8000f1ff70e03de9b0184c38a1,269,187,1.4385,5300.6,135.83,67.02,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0155.JPEG,0155.JPEG,moderate,1,35d41152251832a70836a189d865a66a5e90cf57657266fd022838466ba03f0d,225,225,1.0,357.49,60.04,42.51,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0161.JPEG,0161.JPEG,moderate,1,05c1b80aeb3056cff16c054d2eebd4e664a07639e15a5a5b38983b36ba0fae24,269,188,1.4309,4635.31,123.58,79.23,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0177.JPEG,0177.JPEG,moderate,1,c3fd1747f61a6cba17b37519dd55e2f1e42b6d0649a5f7a0b5360fedcef42bc0,260,194,1.3402,1861.31,127.67,71.16,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0181.JPEG,0181.JPEG,moderate,1,c0ebbf6f808f61f19e9b4969c2687f980186ec5022abafcc53621d646c8ed40e,176,286,0.6154,2567.27,102.61,60.4,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0193.JPEG,0193.JPEG,moderate,1,fb409ae560e2c22c96174f1c402beed09c495adffb696a2593a0c4a825d8c400,194,260,0.7462,2716.42,97.62,81.87,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0196.JPEG,0196.JPEG,moderate,1,90d75adc7e24b3a1448767b0061703056702710502eb793d8a933f75b3ae9300,224,151,1.4834,6164.17,122.54,72.23,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0202.JPEG,0202.JPEG,moderate,1,1056c7129e7601ee376c35fce3a03ecbb452cdabbf4d433f57dc50544f7d5c8e,261,193,1.3523,3885.07,179.41,72.23,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0207.JPEG,0207.JPEG,moderate,1,d969cfb4750430676718a5a113d60e2d54846a2e21bb915c9bf679b4d494d37a,259,194,1.3351,2595.26,113.06,72.84,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0209.JPEG,0209.JPEG,moderate,1,90cdc8a44290b3dc52aeaffbd20193e63b9538c0de348d1320a374628921fc1e,259,194,1.3351,2997.67,132.48,73.74,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0214.JPEG,0214.JPEG,moderate,1,d5759b047c9f51dbed0b54302df2a8daf0eb48beb0e85f84c56605c4ae8a9345,259,194,1.3351,980.04,120.17,64.5,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0215.JPEG,0215.JPEG,moderate,1,cbacdc6b3c5ccd07fa47b0e69914c574932c21b0690dc51d73f6c14c8d2ffda8,259,194,1.3351,1769.13,124.48,65.98,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0216.JPEG,0216.JPEG,moderate,1,945e2270e1f12f21c20ac77ad5054dfae26ae40d8bcb4a511553d7b6fc6b8e2c,148,91,1.6264,3185.11,82.09,60.86,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0232.JPEG,0232.JPEG,moderate,1,5b0af1ac894b8d5a3c42b1e4f634bde799e2e0351b6e33737d1a73e0bf4a0cd7,259,194,1.3351,1495.83,62.87,69.48,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0244.JPEG,0244.JPEG,moderate,1,cf25f0c0e1278aac4a28dbcbf20d19d20cf332aeea279e0b657ab51741372c1a,226,134,1.6866,1990.22,102.22,66.23,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0269.JPEG,0269.JPEG,moderate,1,33e6c89b946f65bfb1d77945cd0f9369269d43bb5b7739f1b7b948733b66e5ed,194,259,0.749,2166.26,150.99,74.05,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0272.JPEG,0272.JPEG,moderate,1,338f46868090d0d812a8e238a973b76e431bd062731276e3bd40e9dd0b5725ae,276,183,1.5082,2302.36,119.37,66.68,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0285.JPEG,0285.JPEG,moderate,1,463765eb04feaecca14148d33b2d1354f331d539574bae957651c67982d92ede,274,184,1.4891,2138.34,24.96,39.45,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0287.JPEG,0287.JPEG,moderate,1,f17f416f25aa979175c9786316f6f79087f1bb63ec583eaf52fffdef5b6d81eb,209,112,1.8661,4252.79,96.25,52.28,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0291.JPEG,0291.JPEG,moderate,1,23017dbffd06b2177c4efd4b4de4638859f93cf04b5ee545b9e1f381cabc93c0,259,194,1.3351,2399.93,90.67,71.0,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0297.JPEG,0297.JPEG,moderate,1,2c64ab063f0ba0a42aa289d6be3a7ffab814034cae548cc5c0720e9f7ba3388b,259,194,1.3351,4312.06,85.9,67.21,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0298.JPEG,0298.JPEG,moderate,1,8eea4305969a9d853cf45801be7796090e3c1353a32a2e598e143bd5535a9c2f,300,168,1.7857,1880.11,144.11,61.57,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0299.JPEG,0299.JPEG,moderate,1,763dd7021d15528a7fa8b85dcde70ce862dd39a3d9c1308fb34782e643ba53ad,259,194,1.3351,2862.98,132.42,73.62,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0300.JPEG,0300.JPEG,moderate,1,2a16780b700b964273fa804bcfd55a0a530638c4736b510ceb173169de3a3461,259,194,1.3351,761.45,110.91,66.84,test
+data/raw/car_damage_severity/data3a/training/02-moderate/0307.JPEG,0307.JPEG,moderate,1,d0fe8840f9e7e973dd9cd5080ec17458b46c1916e443d2e667b0f4011690d3e1,259,194,1.3351,4379.76,128.04,66.67,test
+data/raw/car_damage_severity/data3a/training/02-moderate/038ac5f01d694b8180fc6f0e2cc71976_thb.jpg,038ac5f01d694b8180fc6f0e2cc71976_thb.jpg,moderate,1,21ddba588670086e3c0ca7149e92b746dbc33d015785ea4bc39589c03cbed0fa,144,108,1.3333,2383.26,113.1,54.32,test
+data/raw/car_damage_severity/data3a/training/02-moderate/467fbd6dd7b148c1950833b4a472eef6_thb.jpg,467fbd6dd7b148c1950833b4a472eef6_thb.jpg,moderate,1,7cc7f7d279e4ed1485369eefe640354f0a82ae27efea5271c984611019cf76d9,144,108,1.3333,3014.26,139.17,61.63,test
+data/raw/car_damage_severity/data3a/training/02-moderate/4ac6b3f4fbb0418cb365fecb849b5ddf_thb.jpg,4ac6b3f4fbb0418cb365fecb849b5ddf_thb.jpg,moderate,1,0e78eb04e47c41542f968327f1dfed0fb34be5b6366dfe47fddce2e97c4023b3,144,108,1.3333,3258.74,134.59,65.86,test
+data/raw/car_damage_severity/data3a/training/02-moderate/598d5b29cf964e9b96e6d6af1e2857db_thb.jpg,598d5b29cf964e9b96e6d6af1e2857db_thb.jpg,moderate,1,dc63e51bf8a09d661cd04f96f9a68cc0ef176b3278d91ef282c941a762349dcd,144,108,1.3333,2939.11,118.87,55.48,test
+data/raw/car_damage_severity/data3a/training/02-moderate/5e958bd0-f875-4855-af2c-31c5b0ac2ab5.jpeg,5e958bd0-f875-4855-af2c-31c5b0ac2ab5.jpeg,moderate,1,198ecabf5836b31488296103f5618b399d473639514226f0cd3ae5bfe4cb43e7,96,72,1.3333,2529.76,144.01,55.02,test
+data/raw/car_damage_severity/data3a/training/02-moderate/9da25ae9e03d4726aec50985c77a9730_thb.jpg,9da25ae9e03d4726aec50985c77a9730_thb.jpg,moderate,1,11fc93e0648919184ff0ee0a04d749a043540e30e00f3ca2c40ed39f9191c767,144,108,1.3333,3484.36,146.22,63.49,test
+data/raw/car_damage_severity/data3a/training/02-moderate/c93652b2ded3483ebc823ffd2b3eb402_thb.jpg,c93652b2ded3483ebc823ffd2b3eb402_thb.jpg,moderate,1,91d77e42f19b68280b98d13a8cca382f62be0ea1f567a4a38bbdb936dac36825,144,108,1.3333,3186.37,108.43,60.65,test
+data/raw/car_damage_severity/data3a/training/02-moderate/download (12).jpeg,download (12).jpeg,moderate,1,89df30313657b40634ee2a29b9d92422ad982010a68e6c8901422b12573acb54,215,234,0.9188,2690.42,177.9,80.3,test
+data/raw/car_damage_severity/data3a/training/02-moderate/download (9).jpeg,download (9).jpeg,moderate,1,82d3909341df026a79b6d0b2ea13d4a32b253a859b4f909c6dab105cadd03c2f,262,192,1.3646,2826.45,184.94,95.52,test
+data/raw/car_damage_severity/data3a/training/02-moderate/download.jpeg,download.jpeg,moderate,1,d2fd3290d9c145c1fcc528c8fb27aa198504b4efff814f4f034304e83d2f9db6,100,100,1.0,7844.8,145.48,56.65,test
+data/raw/car_damage_severity/data3a/training/02-moderate/f600a5058cd94fbf8c5a1b2600199022_thb.jpg,f600a5058cd94fbf8c5a1b2600199022_thb.jpg,moderate,1,ec7002111d035fab99dcd33143b49b0c32a3a11881d63cb7d946f5c8ca5b96fd,144,108,1.3333,2657.31,119.88,56.77,test
+data/raw/car_damage_severity/data3a/training/02-moderate/images (31).jpeg,images (31).jpeg,moderate,1,c01ef8e521cb1ba171e0fe92f866f8dedcb5b26dbf078074f0f9884a79fe08ae,100,100,1.0,4094.41,109.26,75.77,test
+data/raw/car_damage_severity/data3a/training/02-moderate/images (48).jpeg,images (48).jpeg,moderate,1,1f31f90721d843dd0f3e26cc72e89172dc424a102312e8b9b149bf8f5c4f89c6,225,225,1.0,4151.61,87.85,74.62,test
+data/raw/car_damage_severity/data3a/training/02-moderate/images (57).jpeg,images (57).jpeg,moderate,1,0aa4e26349e1f860d09c5778434586e589a80c6d4ae70519ad5c7bcfe20e7050,290,174,1.6667,1567.02,148.61,62.94,test
+data/raw/car_damage_severity/data3a/training/02-moderate/images (65).jpeg,images (65).jpeg,moderate,1,0f6d3c2d05197e7c6366c7577205ce6ccc96f74afe1cdc8dfdad66769faa9b04,275,183,1.5027,3534.41,157.2,66.23,test
+data/raw/car_damage_severity/data3a/training/02-moderate/images (69).jpeg,images (69).jpeg,moderate,1,445ae43a814eb6d14372e3a7e0a6d175b7ae8271dc0353ad6c08c5e2a1efacda,264,191,1.3822,6358.43,188.01,66.45,test
+data/raw/car_damage_severity/data3a/training/02-moderate/images (76).jpeg,images (76).jpeg,moderate,1,196c01c6ff43ff72d9304d7fb857f9d4b175a201bf89b651fc18b23a81442bc9,300,168,1.7857,4956.02,106.08,61.54,test
+data/raw/car_damage_severity/data3a/training/02-moderate/images (8).jpeg,images (8).jpeg,moderate,1,577b21d3caaaab240b5300d8bed313b94b518be7b1fc47c48926da81a0d4d69a,275,183,1.5027,2190.89,96.85,53.38,test
+data/raw/car_damage_severity/data3a/training/02-moderate/images (81).jpeg,images (81).jpeg,moderate,1,b3ccc6e2b54d43f5170b423ae6be46f6eeb7c03f72367cbc08110b3f40fbcf24,300,168,1.7857,3316.19,125.77,68.89,test
+data/raw/car_damage_severity/data3a/training/02-moderate/images (87).jpeg,images (87).jpeg,moderate,1,781ad84dfca50f4a12ab94876c1544fcfec6901a24b795b433bf5ae4aca81eea,100,100,1.0,5027.02,114.11,66.6,test
+data/raw/car_damage_severity/data3a/training/02-moderate/images (89).jpeg,images (89).jpeg,moderate,1,53087fb819db1df35da5b93732083410aac1d3e302d8749ca0f58d6a9937dcb5,225,225,1.0,8378.21,111.71,68.21,test
+data/raw/car_damage_severity/data3a/training/02-moderate/images (95).jpeg,images (95).jpeg,moderate,1,6cb11f6cb5290cdf81c41666f2a3b34510d691f9da12d16c8771870f62b18572,225,225,1.0,2985.25,112.47,51.85,test
+data/raw/car_damage_severity/data3a/training/02-moderate/images - 2022-12-12T151420.224.jpeg,images - 2022-12-12T151420.224.jpeg,moderate,1,9cdf2b6899de62f67e3e3920f8aa653ee078572ef86da25c4aff19355f98a9b8,275,183,1.5027,4036.87,119.74,67.22,test
+data/raw/car_damage_severity/data3a/training/03-severe/0011.JPEG,0011.JPEG,severe,2,c7cafdab18f65016fdeb02780acf396bbf003189508a991e93e7fae8cfeb2f8c,225,225,1.0,2865.61,74.42,77.83,test
+data/raw/car_damage_severity/data3a/training/03-severe/0023.jpeg,0023.jpeg,severe,2,f6f475b57f52a4905256abdcc4b8f49ad2659bdec48e959d6ce4f68f0ea295f9,299,168,1.7798,1739.51,115.98,58.48,test
+data/raw/car_damage_severity/data3a/training/03-severe/0033.jpeg,0033.jpeg,severe,2,3304c5df41515cd5d7826f164d03e3bbb5ca0514c81852ef10cd04ec1247a67d,127,113,1.1239,7138.94,83.93,68.64,test
+data/raw/car_damage_severity/data3a/training/03-severe/0036.JPEG,0036.JPEG,severe,2,3a7b048b507b7e4a0736fc2a723f1f4ade19d29d15660ff1f58c58dd07e0a2ad,259,194,1.3351,1877.44,93.99,57.77,test
+data/raw/car_damage_severity/data3a/training/03-severe/0046.JPEG,0046.JPEG,severe,2,4b022bfe5f4b04a21494baa37662ce3bafcdc04ce398556fa558c9a1b09d6662,259,194,1.3351,3175.85,110.61,61.35,test
+data/raw/car_damage_severity/data3a/training/03-severe/0049.jpeg,0049.jpeg,severe,2,e8fb95d7a3fe7868c25a0eec9b73e2f800a6623e01fa554b5d8fe1630cc61409,269,188,1.4309,4990.04,101.28,80.52,test
+data/raw/car_damage_severity/data3a/training/03-severe/0050.JPEG,0050.JPEG,severe,2,89bf6bcdbe7a4986c0effed191aabbe3087fad557083e8e9771d54ebe2f2cee9,273,184,1.4837,2097.58,58.33,54.29,test
+data/raw/car_damage_severity/data3a/training/03-severe/0053.JPEG,0053.JPEG,severe,2,6027b0fb602866a0653d019be7ce99edbdfe87d97ed320307edbf71f7db561c1,268,188,1.4255,2152.02,112.4,51.29,test
+data/raw/car_damage_severity/data3a/training/03-severe/0054.jpeg,0054.jpeg,severe,2,a2f44241b07dc4d3238bbf0fd87c2106cc483e0b14c904e2973fb5724791dcd9,270,187,1.4439,4899.83,92.12,66.47,test
+data/raw/car_damage_severity/data3a/training/03-severe/0059.JPEG,0059.JPEG,severe,2,d663a89e04b3a90f9dedadc89c34d0176db030f74000647ca52817b030177027,296,170,1.7412,3544.08,133.41,69.25,test
+data/raw/car_damage_severity/data3a/training/03-severe/0078.JPEG,0078.JPEG,severe,2,53e35ed07b268266a48361566bf64cfe0af2b4332873a3a1ab8db997153c95fe,275,183,1.5027,4561.0,140.77,73.44,test
+data/raw/car_damage_severity/data3a/training/03-severe/0085.JPEG,0085.JPEG,severe,2,67999f0d6f5a40fbf313662294ce3048cea5cdfdef789d7ea00c566171a21fc9,235,159,1.478,3640.25,121.01,55.34,test
+data/raw/car_damage_severity/data3a/training/03-severe/0090.JPEG,0090.JPEG,severe,2,af142fe554b04bbe787018442f4286a7238231f53e0327a692c957c172e9a8fd,275,183,1.5027,4505.35,97.61,69.59,test
+data/raw/car_damage_severity/data3a/training/03-severe/0095.JPEG,0095.JPEG,severe,2,4dc71ee37ab70dd83c1222ed4b3a274383e052ea70bc9049559bc6c619e9cdf3,243,183,1.3279,3669.33,108.4,66.77,test
+data/raw/car_damage_severity/data3a/training/03-severe/0096.JPEG,0096.JPEG,severe,2,0ab7f4c0cb59070eac2b58ddd9cecc6e002779c7ad9b5592757dac116c53b678,181,145,1.2483,2620.85,128.53,55.84,test
+data/raw/car_damage_severity/data3a/training/03-severe/0100.JPEG,0100.JPEG,severe,2,bc55dd2521f56141ecaf9eae40765f22f8ac8c3bb5d35255b2221f6a2b7bfa38,253,199,1.2714,3201.65,95.91,73.65,test
+data/raw/car_damage_severity/data3a/training/03-severe/0108.jpeg,0108.jpeg,severe,2,0cb87a5361ac487c44d48bdbaafac5ea4ba4a84f669a3473242a2ccf883dcccd,259,194,1.3351,5812.24,132.48,59.82,test
+data/raw/car_damage_severity/data3a/training/03-severe/0124.JPEG,0124.JPEG,severe,2,da9f6b5a0b808869cb8af9f4c6078e63bfaea00a76c8e4378af96a64d93023af,259,194,1.3351,5639.74,109.32,63.95,test
+data/raw/car_damage_severity/data3a/training/03-severe/0127.JPEG,0127.JPEG,severe,2,9258b00d40172c746b5cd048d333ed6dea85d396ac3de5be87cb4164c11e61f9,269,187,1.4385,5130.88,141.84,75.25,test
+data/raw/car_damage_severity/data3a/training/03-severe/0132.JPEG,0132.JPEG,severe,2,27aa077f69bba119552f0add2266257d4150d49e5e80077eb6ccb5723b3ecf2a,304,166,1.8313,3610.19,117.33,72.42,test
+data/raw/car_damage_severity/data3a/training/03-severe/0154.JPEG,0154.JPEG,severe,2,2c0e48d5e62e16cfe4781922263913a174e474a77cc8e9e9662d698e435dddb0,261,193,1.3523,831.87,125.78,72.45,test
+data/raw/car_damage_severity/data3a/training/03-severe/0163.JPEG,0163.JPEG,severe,2,4cd4a9e671bd682b79dc4133d5d4b5f2f036ad67c9e2e05d58461d4712ebb0fb,278,181,1.5359,2463.28,110.44,57.49,test
+data/raw/car_damage_severity/data3a/training/03-severe/0171.jpeg,0171.jpeg,severe,2,03dd4cdad4500207ea943f7d9b8803f7bc293b2ab5366eb36b2ac176cd2dd61c,259,194,1.3351,447.02,108.5,53.37,test
+data/raw/car_damage_severity/data3a/training/03-severe/0174.JPEG,0174.JPEG,severe,2,a265c9504486267f418f98437e81c7e53102993e2fa2a4a604fb271da88136fb,106,110,0.9636,14637.72,134.98,73.76,test
+data/raw/car_damage_severity/data3a/training/03-severe/0180.JPEG,0180.JPEG,severe,2,5c7712914b3a520258b64b63e41c9d5e5ba9acb35b82079c3cbe2fbaf1b44cf3,275,183,1.5027,3772.39,116.24,57.73,test
+data/raw/car_damage_severity/data3a/training/03-severe/0182.JPEG,0182.JPEG,severe,2,064bb7799e35c4e6b57bd51aef0724f06b65e8dda7d4efdad4ca2d3b79277644,254,199,1.2764,3628.83,154.41,95.76,test
+data/raw/car_damage_severity/data3a/training/03-severe/0189.JPEG,0189.JPEG,severe,2,99794a8cf31711eefcc76c12da65b4b5aff56ea0a2587216f829569f9406f60f,259,194,1.3351,2308.45,104.49,81.83,test
+data/raw/car_damage_severity/data3a/training/03-severe/0200.jpeg,0200.jpeg,severe,2,37c61d4662a3190cd5d10a83a6215d18ced6317e3c511b9f4a5bc2463d6b80ff,259,194,1.3351,4573.7,133.58,71.45,test
+data/raw/car_damage_severity/data3a/training/03-severe/0203.JPEG,0203.JPEG,severe,2,2689eefd2eeb060ef81f96aefad6cb142ee0021ad5054e2836d54d0ccbb26f8e,251,201,1.2488,2244.46,91.36,63.0,test
+data/raw/car_damage_severity/data3a/training/03-severe/0208.JPEG,0208.JPEG,severe,2,d683b0403ce68d1e5a67d0e6216e46ab3ed857827af2327457c4dba118c65ade,163,149,1.094,4780.02,126.6,71.99,test
+data/raw/car_damage_severity/data3a/training/03-severe/0215.JPEG,0215.JPEG,severe,2,467c1d27142332f0f26232214e475318616eddd5a820607dde499be91bdc3029,208,94,2.2128,5802.78,62.43,49.28,test
+data/raw/car_damage_severity/data3a/training/03-severe/0217.jpeg,0217.jpeg,severe,2,cdfb28fca605044d67b6f8aa0deefbbce2d0bfdf96d8d456efa5fe4ea535a68a,266,189,1.4074,3606.88,103.78,79.56,test
+data/raw/car_damage_severity/data3a/training/03-severe/0221.JPEG,0221.JPEG,severe,2,b82c966722367964998e732caae37a91d8e58849da78a69a86c256314797e928,275,183,1.5027,491.75,82.57,39.9,test
+data/raw/car_damage_severity/data3a/training/03-severe/0228.JPEG,0228.JPEG,severe,2,6861998f934e3b165c6b8e4749abab5a05e037e445dfef6502a9b6b8474c4e5b,259,194,1.3351,3535.23,120.27,77.27,test
+data/raw/car_damage_severity/data3a/training/03-severe/0230.JPEG,0230.JPEG,severe,2,bc7308dd45b1d1eafdec2e6e656aa0255fe824abd9e846415ebf874c1d0f08a0,260,194,1.3402,2978.44,76.3,64.03,test
+data/raw/car_damage_severity/data3a/training/03-severe/0233.JPEG,0233.JPEG,severe,2,c419c63fd526ee93e1ae8f218d2d0b30c20ecb189fba22f30ab2bef0f9cba929,269,188,1.4309,4827.22,112.62,77.91,test
+data/raw/car_damage_severity/data3a/training/03-severe/0242.JPEG,0242.JPEG,severe,2,3143c093922aaca569defdf606c7902a436ce88f4566bfe41e71281a7a838660,261,193,1.3523,3358.72,150.36,84.95,test
+data/raw/car_damage_severity/data3a/training/03-severe/0244.JPEG,0244.JPEG,severe,2,29131fa389c2997143680638125ceb4600ad46184cec54899ee03c242383c313,284,177,1.6045,519.2,126.23,38.0,test
+data/raw/car_damage_severity/data3a/training/03-severe/024909e6f1af4f00be4ef420354291a3_thb.jpg,024909e6f1af4f00be4ef420354291a3_thb.jpg,severe,2,8780f47f7ab69254affac744fc66509b71140a4dd43862d6038ba1555ba72f0d,144,108,1.3333,3302.79,132.12,58.78,test
+data/raw/car_damage_severity/data3a/training/03-severe/0253.JPEG,0253.JPEG,severe,2,557b6baa13c71cd22a0330984bf331a0a2de5663b1889487b1a60320b1df3541,299,168,1.7798,2401.66,113.07,77.57,test
+data/raw/car_damage_severity/data3a/training/03-severe/0257.JPEG,0257.JPEG,severe,2,5ae3086eebafcaee4b9202ec959e9ae0bffe5a424baa7225f4a63dd92ee553dd,242,208,1.1635,1713.5,88.99,61.85,test
+data/raw/car_damage_severity/data3a/training/03-severe/0263.JPEG,0263.JPEG,severe,2,745303e31d698d60f02b93dd2e69fbb331d7cc513bc1a4ec6bd374a869f98d09,300,168,1.7857,9238.79,105.73,59.75,test
+data/raw/car_damage_severity/data3a/training/03-severe/0268.JPEG,0268.JPEG,severe,2,8a4c0814f17a97f81f265b8ed8740e10c5f89c21ac160fae531c9430270f0917,259,194,1.3351,6833.76,123.27,63.05,test
+data/raw/car_damage_severity/data3a/training/03-severe/0280.JPEG,0280.JPEG,severe,2,630c56de68f4e003d09257af2b8a8814025b1dfea9aea457670b35533bde9d35,275,183,1.5027,5201.91,100.21,71.08,test
+data/raw/car_damage_severity/data3a/training/03-severe/0282.JPEG,0282.JPEG,severe,2,3b5432199bbd96e1b27658d29cf66ea1679e1442817a59cb589b3a1e82792ec4,287,175,1.64,3315.56,156.65,70.0,test
+data/raw/car_damage_severity/data3a/training/03-severe/0301.JPEG,0301.JPEG,severe,2,ce1921304203d297b117541d2e654e77e452a396f0cdbefa3160196a153c9649,284,177,1.6045,4941.46,124.19,81.52,test
+data/raw/car_damage_severity/data3a/training/03-severe/0310.JPEG,0310.JPEG,severe,2,af79216dac45bcadb825b629290b5a983f707d0947c7ef1ff75f4f55c5b187c1,154,113,1.3628,4826.54,85.99,61.05,test
+data/raw/car_damage_severity/data3a/training/03-severe/0313.jpeg,0313.jpeg,severe,2,303533ec1e83fb61ded08d09eeca81236e83e24373f38566c8322dba61121dca,259,194,1.3351,1384.75,110.32,57.38,test
+data/raw/car_damage_severity/data3a/training/03-severe/0314.JPEG,0314.JPEG,severe,2,9f192c30d6f0ce63826d62f16fec3159c72b1ac72639bf77b0823943b8c7e39a,259,194,1.3351,9289.23,130.99,63.27,test
+data/raw/car_damage_severity/data3a/training/03-severe/0316.JPEG,0316.JPEG,severe,2,355c04e873329934b6d409da0b3112b00d6f2149276f31587d0ea21ca0cb2fc2,256,197,1.2995,3471.65,113.05,69.05,test
+data/raw/car_damage_severity/data3a/training/03-severe/0328.JPEG,0328.JPEG,severe,2,30b66f0113207a2869c72c462631b01fa026e6605dd864d7805f6e993d4386f2,300,168,1.7857,2538.5,86.58,76.21,test
+data/raw/car_damage_severity/data3a/training/03-severe/0339.JPEG,0339.JPEG,severe,2,2c0e48d5e62e16cfe4781922263913a174e474a77cc8e9e9662d698e435dddb0,261,193,1.3523,831.87,125.78,72.45,test
+data/raw/car_damage_severity/data3a/training/03-severe/0340.JPEG,0340.JPEG,severe,2,5e98a0c75e4743bcf7012a5da6f0a3a2cf0c603f9ddca7b5d6c647c11091e343,284,178,1.5955,4848.75,122.4,72.76,test
+data/raw/car_damage_severity/data3a/training/03-severe/0347.JPEG,0347.JPEG,severe,2,b0e7cf5adb5fc1838ad1ef5bf325c4afd6da41e6cd9dbf7c356bfa98b4e8b560,259,194,1.3351,1520.52,139.79,67.28,test
+data/raw/car_damage_severity/data3a/training/03-severe/0356.JPEG,0356.JPEG,severe,2,f934e4996f2afabcb4a5be58b0c2247fe3af30d624b20ff9a15c50af1afeabe5,253,199,1.2714,8587.76,124.27,66.54,test
+data/raw/car_damage_severity/data3a/training/03-severe/0368.jpeg,0368.jpeg,severe,2,7fcfec05038cc8904bc13f5acbbb7ba4a0985c8c9951140ef1bbfac37c1ae19a,256,197,1.2995,4864.53,140.88,69.9,test
+data/raw/car_damage_severity/data3a/training/03-severe/0369.JPEG,0369.JPEG,severe,2,c7c0613ad253d36134bdc44ca18b05fc2eda5ab09addb0f6e8cca5c4c119d6bc,259,194,1.3351,1223.7,155.89,64.62,test
+data/raw/car_damage_severity/data3a/training/03-severe/0375.JPEG,0375.JPEG,severe,2,361cbbbf07c28cd601b89d70e211a3c4dae9ee94e4b4425d156cf6c6abc7d285,274,184,1.4891,6237.92,108.72,63.66,test
+data/raw/car_damage_severity/data3a/training/03-severe/0377.JPEG,0377.JPEG,severe,2,7d3b279616621841c47e627d042df5abdc3fdcd09a133ac038880152d822087a,259,194,1.3351,2142.71,110.59,47.84,test
+data/raw/car_damage_severity/data3a/training/03-severe/0378.JPEG,0378.JPEG,severe,2,236e763a6ef725dc6de3ff0f93bd76954d79554e7cdbb478a46570c78311bf52,269,188,1.4309,5382.75,109.88,64.29,test
+data/raw/car_damage_severity/data3a/training/03-severe/0380.JPEG,0380.JPEG,severe,2,94868500b85dc4340d776d20924e68ca1ade8bbeb16ee15f694dd5b155faef3e,275,183,1.5027,3340.16,105.56,74.17,test
+data/raw/car_damage_severity/data3a/training/03-severe/0381.JPEG,0381.JPEG,severe,2,21b11a374d3fae3818712a2317e6274ba9fa97e56d30d4d898c98ed4a7c018f4,300,168,1.7857,2805.69,99.19,62.86,test
+data/raw/car_damage_severity/data3a/training/03-severe/0382.JPEG,0382.JPEG,severe,2,18c37fcbfaddfb4718b5a143c864f33cacc692f3e3227b86b3651f3d3419fac5,309,163,1.8957,994.66,118.04,63.34,test
+data/raw/car_damage_severity/data3a/training/03-severe/0385.JPEG,0385.JPEG,severe,2,5440eb49488f1a3b57483680e6744b3b7702504d53f100ba31cea5eb7609fbda,187,97,1.9278,2315.64,88.61,47.29,test
+data/raw/car_damage_severity/data3a/training/03-severe/316a46d0d3c346acbeae81ff604abe86_thb.jpg,316a46d0d3c346acbeae81ff604abe86_thb.jpg,severe,2,176787fb3f27e0919671882b39b1d0d9a8640e1495df4da561970b1b8547ec2b,144,108,1.3333,3140.06,104.57,61.96,test
+data/raw/car_damage_severity/data3a/training/03-severe/images (15).jpeg,images (15).jpeg,severe,2,1028a5605af5252ceb4d0df506ec3de5fbd185e08567cba811fbc9ed211b93b9,276,183,1.5082,5487.88,120.74,57.54,test
+data/raw/car_damage_severity/data3a/training/03-severe/images (17).jpeg,images (17).jpeg,severe,2,cd7cf12a7c19f04969b55a919dc2bc23945fd425bd33067edf218809146b1ef0,262,192,1.3646,3400.6,108.72,78.44,test
+data/raw/car_damage_severity/data3a/training/03-severe/images (19).jpeg,images (19).jpeg,severe,2,15835faa53dc3d4796dc5e7aa4377be7e5459497deae3b4b9243c29d61e06a23,197,256,0.7695,3707.45,147.38,59.17,test
+data/raw/car_damage_severity/data3a/training/03-severe/images (27).jpeg,images (27).jpeg,severe,2,4e9f49f1fe23df143fae8fb5fb9de687092f1c4b698c6df829fae69ade4aba93,100,100,1.0,2684.32,143.68,68.21,test
+data/raw/car_damage_severity/data3a/training/03-severe/images (29).jpeg,images (29).jpeg,severe,2,3a32fa30e247e7955bb7839777fa0434c1a41222438e4fe75f5bfb97179ad491,260,194,1.3402,2865.82,75.15,66.77,test
+data/raw/car_damage_severity/data3a/training/03-severe/images (86).jpeg,images (86).jpeg,severe,2,c2ddcfefa8d11cb5c2eb4ff23d61386b8ee3d48d9fd10ef0887bb09df9bcd6af,275,183,1.5027,506.4,133.78,52.25,test
+data/raw/car_damage_severity/data3a/training/03-severe/images (90).jpeg,images (90).jpeg,severe,2,f6a2bab3797a84efecfeeb21d53e48f840971e382455461fb70104b4f8fb939b,267,189,1.4127,1414.4,161.09,74.97,test
+data/raw/car_damage_severity/data3a/training/03-severe/images - 2022-12-13T215956.583.jpeg,images - 2022-12-13T215956.583.jpeg,severe,2,eccdcb1e5fd55110e5576e474d8186912c1605d5987fdb3e9e56f5342a89b97a,262,192,1.3646,3065.2,98.0,65.49,test
+data/raw/car_damage_severity/data3a/training/03-severe/images - 2022-12-13T215957.811.jpeg,images - 2022-12-13T215957.811.jpeg,severe,2,fb87a97de58a1a4cba57a8b32b2c438da092ab01f099255cb8285f9b2d9cbbdd,260,194,1.3402,3270.9,69.27,45.41,test
+data/raw/car_damage_severity/data3a/validation/01-minor/0002.JPEG,0002.JPEG,minor,0,08bb1d4c2d0b6c564f5db4602b26e96fd6341fa6fe55cf05d2f24084b947066e,258,196,1.3163,2693.56,117.45,58.18,test
+data/raw/car_damage_severity/data3a/validation/01-minor/0003.JPEG,0003.JPEG,minor,0,4c2e892968538e9151895febebdc42e4e5437f2e402e782a7eb3b2d00209c085,259,194,1.3351,1495.22,79.6,43.73,test
+data/raw/car_damage_severity/data3a/validation/01-minor/0004.JPEG,0004.JPEG,minor,0,6f3372296185251320a5a020b53e78855d77ec15bfd013aa43cc7858fa045eaa,259,194,1.3351,1467.22,146.31,56.98,test
+data/raw/car_damage_severity/data3a/validation/01-minor/0006.JPEG,0006.JPEG,minor,0,a97aaec711ae2c3811574f2d61273269f61ed4e466c0b2702123d123dc72fbbd,259,194,1.3351,1218.82,107.83,79.36,test
+data/raw/car_damage_severity/data3a/validation/01-minor/0011.jpeg,0011.jpeg,minor,0,e7b05aed81948450f9a513405583ee0929714a8ce88d1a7ab5ee3874f8669b60,179,282,0.6348,4161.78,178.34,56.34,test
+data/raw/car_damage_severity/data3a/validation/01-minor/0022.JPEG,0022.JPEG,minor,0,9e9f0de3709bbeda7de75ffc46d2013f7bcc3c9686d3b0dd2d00e2b0da8d1936,259,194,1.3351,1541.71,112.0,54.2,test
+data/raw/car_damage_severity/data3a/validation/01-minor/0030.JPEG,0030.JPEG,minor,0,52ce443ed36e8e214e43ae0cc605b6b993e0534408354630f2f861544a0f1692,180,279,0.6452,1021.94,154.19,69.78,test
+data/raw/car_damage_severity/data3a/validation/01-minor/0037.JPEG,0037.JPEG,minor,0,e640e9f0b0ad6e91ffccb5e35cd6ced181fc87c7a093a60e9b453319e3c71c69,101,81,1.2469,2874.13,92.6,55.65,test
+data/raw/car_damage_severity/data3a/validation/01-minor/0040.JPEG,0040.JPEG,minor,0,64f1d6f85cb7f5a401a6db77856fddc974605a92c6aabfbcdf8111a7917e19de,260,194,1.3402,2117.83,103.29,59.75,test
+data/raw/car_damage_severity/data3a/validation/01-minor/0042.JPEG,0042.JPEG,minor,0,b88a219dcc3b00627c88fbbc1545b1ba0c216ec461321d8eec3f9c057649aa67,259,194,1.3351,579.57,39.12,37.68,test
+data/raw/car_damage_severity/data3a/validation/01-minor/download (3).jpeg,download (3).jpeg,minor,0,cec49fed7c7f07cb80827f96684389b26982c4f0f013a7e94dd28afc1d4b7781,100,100,1.0,1833.51,161.67,64.42,test
+data/raw/car_damage_severity/data3a/validation/01-minor/images (100).jpeg,images (100).jpeg,minor,0,f9e4e8948e7174ed23c391e860c2b29d0edc538bf76435347434ca7cb955c98d,259,194,1.3351,555.8,128.79,39.63,test
+data/raw/car_damage_severity/data3a/validation/01-minor/images - 2022-12-12T151412.407.jpeg,images - 2022-12-12T151412.407.jpeg,minor,0,b4c36b5c752880c4c21f43955790901092a24ca7111b945797de5fba01f128c6,259,195,1.3282,1741.66,110.34,64.02,test
+data/raw/car_damage_severity/data3a/validation/01-minor/images - 2022-12-13T213954.983.jpeg,images - 2022-12-13T213954.983.jpeg,minor,0,9ac1c23791bdaafd4b9bc4f928b3b0b8129c2fcd68e843024c401b51567d1a54,225,225,1.0,1264.71,111.63,56.65,test
+data/raw/car_damage_severity/data3a/validation/02-moderate/0012.jpeg,0012.jpeg,moderate,1,b244bc319cc8ce94812d8b6bffa511cfafe5c4b8cdff48830c801ae52ed287ab,262,192,1.3646,2984.76,149.17,79.94,test
+data/raw/car_damage_severity/data3a/validation/02-moderate/0014.JPEG,0014.JPEG,moderate,1,9b09e295a865e326132e567eb6cdf07df07aa93697edd4f2ec615f81466b6709,254,198,1.2828,3534.16,165.47,85.58,test
+data/raw/car_damage_severity/data3a/validation/02-moderate/0017.JPEG,0017.JPEG,moderate,1,2171f174bfa4687a41402a143f1f88a73d7a8f79a9f77aa5711a766c14f802fc,259,194,1.3351,2927.0,94.25,59.64,test
+data/raw/car_damage_severity/data3a/validation/02-moderate/0020.JPEG,0020.JPEG,moderate,1,47146a1468d392b2b5123cd6b6bbf60636e1e26544db2252a96a0befd2625025,228,221,1.0317,2521.53,108.2,73.38,test
+data/raw/car_damage_severity/data3a/validation/02-moderate/0036.JPEG,0036.JPEG,moderate,1,22ab16c981bc3fc72e30b06821a9c20c96df90ac8efd4d6d8fcb4b8d3eacb6c8,254,198,1.2828,3624.24,131.38,75.51,test
+data/raw/car_damage_severity/data3a/validation/02-moderate/0037.JPEG,0037.JPEG,moderate,1,921540d66be3452d20344ea6b3f0f56ebdd56672861a78248b0f3ec1b999d494,259,194,1.3351,1599.96,57.71,72.66,test
+data/raw/car_damage_severity/data3a/validation/02-moderate/0038.JPEG,0038.JPEG,moderate,1,04f4b7b0e379d2767d6811fd1b87e4a8dda390b06ddff42f72dd1e5bebc50946,275,183,1.5027,949.88,120.8,61.7,test
+data/raw/car_damage_severity/data3a/validation/02-moderate/0044.JPEG,0044.JPEG,moderate,1,83be582083a11f62c1c714511bd4fba9a6e015528487f068508089263d38b9b5,275,183,1.5027,3317.82,109.65,76.92,test
+data/raw/car_damage_severity/data3a/validation/02-moderate/0053.JPEG,0053.JPEG,moderate,1,a508574915717e2099473c077f09cde34f1f2dabb87d3a2b55cc64b2537143c4,259,194,1.3351,2545.85,112.64,70.52,test
+data/raw/car_damage_severity/data3a/validation/02-moderate/da7301dfd988492fb368ad5102fbf708_thb.jpg,da7301dfd988492fb368ad5102fbf708_thb.jpg,moderate,1,4588990fbad609d66e6f98d0f481d31c786c7e4c0268e95f081714e8ab4e3e7d,144,108,1.3333,4521.03,94.29,56.17,test
+data/raw/car_damage_severity/data3a/validation/03-severe/0013.JPEG,0013.JPEG,severe,2,57fd66fafea39ead92a4c390bac33b052ee6bc94db6336d1ab2cdc1898383054,276,183,1.5082,3273.38,100.4,66.42,test
+data/raw/car_damage_severity/data3a/validation/03-severe/0019.JPEG,0019.JPEG,severe,2,b1e23b80c4d67097878a3a9415849f1e2aff696d47e202bc18d143c0aef72b71,212,238,0.8908,9504.06,192.78,74.05,test
+data/raw/car_damage_severity/data3a/validation/03-severe/0024.JPEG,0024.JPEG,severe,2,33f6ca1ebbcdc8bff69e48e2e201091bcf55e53ae69a58ef633a6786c24bbc63,259,194,1.3351,4485.79,146.31,62.08,test
+data/raw/car_damage_severity/data3a/validation/03-severe/0032.JPEG,0032.JPEG,severe,2,47a81f9773a5cfc9fc9eaff6b8514a1dbb828400ae1fe6e0e2fad298f6453d08,129,99,1.303,3590.79,123.57,69.67,test
+data/raw/car_damage_severity/data3a/validation/03-severe/0033.JPEG,0033.JPEG,severe,2,757959ee88a9cda1a027829eb96aa370dd050998674e02c9c66b05da982dd088,259,194,1.3351,4200.68,97.74,71.14,test
+data/raw/car_damage_severity/data3a/validation/03-severe/0042.JPEG,0042.JPEG,severe,2,52f0e1f67f9d0a8f471aac9f5355481fe49eb072c4cf3a04d343a390143be861,259,194,1.3351,1034.46,111.54,56.45,test
+data/raw/car_damage_severity/data3a/validation/03-severe/0044.JPEG,0044.JPEG,severe,2,a1332f98e44401fb2aed26f212cfe21c8eb42790ac0dd18a3e9c4397cde36307,260,194,1.3402,5516.44,116.39,83.64,test
+data/raw/car_damage_severity/data3a/validation/03-severe/0059.JPEG,0059.JPEG,severe,2,21438b291b19d4c262a68cb73f6c26969ff3a007e803c4e9b7693f38bcf03b64,259,194,1.3351,2512.19,102.46,67.19,test
+data/raw/car_damage_severity/data3a/validation/03-severe/0062.JPEG,0062.JPEG,severe,2,a9573601e0d2f9bdf9b547b58224dc99793b05f58d5fffdd1b58a095e8e0f676,239,92,2.5978,4749.25,115.78,56.21,test
+data/raw/car_damage_severity/data3a/validation/03-severe/0064.JPEG,0064.JPEG,severe,2,ecafaa4f0691d4756d0aafdd13affc30c96a15701986bb9b51cff21cb5266b63,200,110,1.8182,2756.11,137.93,68.0,test
+data/raw/car_damage_severity/data3a/validation/03-severe/46ba5d744b2d4ce9ac2192cbc340cf56_thb.jpg,46ba5d744b2d4ce9ac2192cbc340cf56_thb.jpg,severe,2,97f1be9f7feae94b7a04cef4ffe025b91dcda09b158dda466ca2b37128e570ea,144,108,1.3333,2533.24,137.74,57.46,test

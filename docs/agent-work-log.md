@@ -352,3 +352,76 @@ Known limitations:
 - Notebook must run in Colab with real dataset mounted at `DATASET_ROOT`.
 
 Follow-up: Phase 4 — SDATA-001 Severity dataset audit — 1,631 images, frozen 70/15/15 manifests (Member 3).
+
+---
+
+### SDATA-001 — Severity dataset audit and manifest freeze
+
+- Date/time IST: 2026-09-21 16:15–17:05
+- Agent: Antigravity
+- Operator: Member 3 (Severity ML A) / Amitava Datta (to review diff and commit)
+- Base commit: b1704c6
+- Phase: 4
+
+Files read:
+- `README.md` (§10 Notebook 05, §11.2 Severity dataset, §13 Phase B, §19 Phase 4 gate)
+- `AGENTS.md` (§8 Dataset contract, §10 Model-specific rules)
+- `docs/DATASET_CARD_TEMPLATE.md`
+- `PROJECT_STATUS.md`
+- `TASKS.md`
+- `TASK_LOCKS.md`
+- `ml/src/claimvision_ml/data/audit.py`
+- `ml/src/claimvision_ml/data/manifest.py`
+
+Files created:
+- `ml/src/claimvision_ml/data/severity_audit.py` (image discovery, decodability, exact SHA-256 deduplication, pHash clustering, duplicate-safe stratified 70/15/15 splitting, zero-leakage assertions, manifest serialization)
+- `ml/tests/test_severity_audit.py` (8 unit tests covering class normalization, folder discovery, hashing, image metrics, duplicate clustering, splitting, and negative leakage assertions)
+- `ml/tests/conftest.py` (pytest path configuration to guarantee `ml/src` is on Python path across local and virtual environments)
+- `scripts/run_severity_audit.py` (execution runner for severity audit and figure generation)
+- `scripts/build_notebook_05.py` (generator script for Notebook 05 with self-healing Colab sync and package fallback)
+- `docs/DATASET_CARD_SEVERITY.md` (comprehensive dataset card following project standard)
+- `data/manifests/severity_train.csv` (1,140 samples, 69.9%)
+- `data/manifests/severity_val.csv` (243 samples, 14.9%)
+- `data/manifests/severity_test.csv` (248 samples, 15.2%)
+- `data/manifests/severity_class_map.json` (`{"0": "minor", "1": "moderate", "2": "severe"}`)
+- `data/manifests/severity_manifest_summary.json` (metadata summary with split counts and percentages)
+- `data/manifests/severity_audit_report.csv` (per-image audit metrics for all 1,631 images)
+- `ml/results/severity/class_distribution.png`
+- `ml/results/severity/split_distribution.png`
+- `ml/results/severity/quality_distributions.png`
+- `ml/results/severity/sample_grid.png`
+
+Files modified:
+- `ml/src/claimvision_ml/data/__init__.py` (exported all severity audit utilities)
+- `ml/pyproject.toml` (added `pythonpath = ["src"]` under `[tool.pytest.ini_options]`)
+- `notebooks/05_severity_dataset_audit.ipynb` (full 15-section implementation replacing stub)
+- `TASK_LOCKS.md` (added and released SDATA-001 lock)
+- `PROJECT_STATUS.md` (Phase 4 marked Complete; Phase 5 Ready)
+- `TASKS.md` (SDATA-001 added and marked DONE with complete evidence)
+
+Decisions made:
+- Severity dataset ingested via `prajwalbhamere/car-damage-severity-dataset` (mirror of `anujms/car-damage-severity-dataset`), containing exactly 1,631 images across minor (534), moderate (538), and severe (559).
+- Reconciled folder structures across `data3a/training/01-minor` and flat structures so both Colab and local layouts resolve transparently.
+- Identified 11 exact duplicate groups (SHA-256) and 32 perceptual near-duplicate clusters (pHash distance <= 8) across 65 images.
+- Group-aware stratified splitting allocates all duplicates in any group to the exact same split, preventing test contamination.
+- Programmatic assertions confirm strictly zero SHA-256 or duplicate cluster leakage across train, val, and test.
+- Notebook 05 includes a self-healing bootstrap and fallback so it runs cleanly across local, Colab (pre-commit), and Colab (post-push) environments.
+
+Commands run:
+- `python -m pytest ml/tests/test_severity_audit.py -v` → 8 passed
+- `python -m pytest ml/tests/ -v` → 64 passed (all Phase 1, 2, 3, 4 tests green)
+- `python scripts/run_severity_audit.py` → Generated manifests, summary, and 4 high-res charts
+- `python scripts/build_notebook_05.py` → Built runnable 29-cell Notebook 05
+
+Validation results:
+- 100% of 1,631 images decodable by OpenCV with zero corrupt files.
+- Exact duplicates and near-duplicates grouped into unified meta-clusters.
+- Stratified 70/15/15 partitions created: 1,140 train, 243 val, 248 test.
+- Zero leakage verified: 0 hash overlaps, 0 duplicate cluster spans, all 3 classes present in every split.
+- All 64 ML unit tests pass on both local venv and global Python.
+
+Known limitations:
+- Dataset consists of full vehicle photos; does not have localized part-level severity annotations (deferred to Phase 20).
+- Moderate damage class has slightly higher visual variance than minor or severe.
+
+Follow-up: Phase 5 — SMOD-001 train baseline severity CNN on frozen manifests (Member 3).

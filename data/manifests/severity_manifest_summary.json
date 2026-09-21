@@ -1,0 +1,43 @@
+{
+  "dataset_name": "Car Damage Severity Dataset (3 classes)",
+  "classes": [
+    "minor",
+    "moderate",
+    "severe"
+  ],
+  "class_to_id": {
+    "minor": 0,
+    "moderate": 1,
+    "severe": 2
+  },
+  "train_samples": 1140,
+  "val_samples": 243,
+  "test_samples": 248,
+  "total_samples": 1631,
+  "train_pct": 69.9,
+  "val_pct": 14.9,
+  "test_pct": 15.21,
+  "class_distribution": {
+    "train": {
+      "severe": 391,
+      "moderate": 377,
+      "minor": 372
+    },
+    "val": {
+      "severe": 83,
+      "minor": 80,
+      "moderate": 80
+    },
+    "test": {
+      "severe": 85,
+      "minor": 82,
+      "moderate": 81
+    }
+  },
+  "files": {
+    "train": "severity_train.csv",
+    "val": "severity_val.csv",
+    "test": "severity_test.csv",
+    "class_map": "severity_class_map.json"
+  }
+}
