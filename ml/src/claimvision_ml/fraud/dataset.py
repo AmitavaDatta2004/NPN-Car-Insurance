@@ -10,10 +10,11 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal
 
+import numpy as np
 import pandas as pd
 import torch
 from PIL import Image
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, Sampler
 from torchvision import transforms
 
 # ImageNet normalisation constants
@@ -129,6 +130,132 @@ class FraudDataset(Dataset):
             f"n={len(self)}, "
             f"genuine={counts.get(0, 0)}, "
             f"suspicious={counts.get(1, 0)})"
+        )
+
+
+class BalancedEpochSampler(Sampler):
+    """Per-epoch random undersampling sampler for the fraud classifier.
+
+    Every epoch this sampler yields:
+    - ALL suspicious (class 1) dataset indices  — fixed, same every epoch
+    - A fresh random subset of N genuine (class 0) indices — changes each epoch
+
+    The ratio ``suspicious_pct`` controls N:
+
+        suspicious_pct = 0.5  →  50:50  →  N = n_susp      (e.g. 325 gen)
+        suspicious_pct = 0.4  →  40:60  →  N = n_susp * 1.5 (e.g. 487 gen)
+        suspicious_pct = 0.3  →  30:70  →  N = n_susp * 7/3 (e.g. 758 gen)
+        suspicious_pct = 0.2  →  20:80  →  N = n_susp * 4   (e.g. 1300 gen)
+
+    The per-epoch genuine sample is drawn WITHOUT replacement within each epoch.
+    Across epochs a different random seed is used (base_seed + epoch_counter),
+    so the model sees different genuine images in each epoch.
+
+    Loss function should be plain ``BCEWithLogitsLoss()`` (no pos_weight) because
+    the classes are already balanced by sampling.
+
+    Args:
+        dataset: A ``FraudDataset`` instance.  Its ``.df`` must have a ``label`` column
+            with integer values 0 (genuine) and 1 (suspicious).
+        suspicious_pct: Fraction of each epoch that should be suspicious images.
+            Must be in (0, 1].  E.g. 0.5 for 50:50, 0.4 for 40:60.
+        seed: Base random seed.  Epoch i uses seed ``seed + i``.
+
+    Example::
+
+        dataset = FraudDataset("fraud_train.csv", split="train")
+        sampler = BalancedEpochSampler(dataset, suspicious_pct=0.5, seed=42)
+        loader  = DataLoader(dataset, batch_size=16, sampler=sampler)
+        for epoch in range(30):
+            for images, labels in loader:   # sampler rebuilds each epoch
+                ...
+    """
+
+    def __init__(
+        self,
+        dataset: "FraudDataset",
+        suspicious_pct: float = 0.5,
+        seed: int = 42,
+    ) -> None:
+        super().__init__()
+        if not (0.0 < suspicious_pct <= 1.0):
+            raise ValueError(
+                f"suspicious_pct must be in (0, 1], got {suspicious_pct}"
+            )
+
+        self._seed = seed
+        self._suspicious_pct = suspicious_pct
+        self._epoch: int = 0
+
+        labels = dataset.df["label"].values  # numpy array
+        self._susp_idx: np.ndarray = np.where(labels == 1)[0]
+        self._gen_idx: np.ndarray = np.where(labels == 0)[0]
+
+        n_susp = len(self._susp_idx)
+        if n_susp == 0:
+            raise ValueError("Dataset contains no suspicious (label=1) images.")
+        if len(self._gen_idx) == 0:
+            raise ValueError("Dataset contains no genuine (label=0) images.")
+
+        # Number of genuine images to sample per epoch
+        self._n_gen_per_epoch: int = max(
+            1, round(n_susp * (1.0 - suspicious_pct) / suspicious_pct)
+        )
+        if self._n_gen_per_epoch > len(self._gen_idx):
+            import warnings
+            warnings.warn(
+                f"BalancedEpochSampler: n_genuine_per_epoch ({self._n_gen_per_epoch}) "
+                f"exceeds genuine pool ({len(self._gen_idx)}). "
+                "Capping at the full genuine pool.",
+                stacklevel=2,
+            )
+            self._n_gen_per_epoch = len(self._gen_idx)
+
+    # ------------------------------------------------------------------
+    # Public helpers
+    # ------------------------------------------------------------------
+
+    @property
+    def epoch(self) -> int:
+        """Current epoch counter (increments every time __iter__ is called)."""
+        return self._epoch
+
+    @property
+    def n_genuine_per_epoch(self) -> int:
+        """Number of genuine images sampled per epoch."""
+        return self._n_gen_per_epoch
+
+    @property
+    def epoch_size(self) -> int:
+        """Total number of indices yielded per epoch."""
+        return len(self._susp_idx) + self._n_gen_per_epoch
+
+    # ------------------------------------------------------------------
+    # Sampler protocol
+    # ------------------------------------------------------------------
+
+    def __len__(self) -> int:
+        return self.epoch_size
+
+    def __iter__(self):
+        rng = np.random.default_rng(self._seed + self._epoch)
+        gen_sample = rng.choice(
+            self._gen_idx, size=self._n_gen_per_epoch, replace=False
+        )
+        # Suspicious indices: always the same fixed set
+        combined = np.concatenate([self._susp_idx, gen_sample])
+        rng.shuffle(combined)
+        self._epoch += 1
+        return iter(combined.tolist())
+
+    def __repr__(self) -> str:
+        return (
+            f"BalancedEpochSampler("
+            f"suspicious_pct={self._suspicious_pct}, "
+            f"n_susp={len(self._susp_idx)}, "
+            f"n_gen_per_epoch={self._n_gen_per_epoch}, "
+            f"epoch_size={self.epoch_size}, "
+            f"epoch={self._epoch})"
         )
 
 

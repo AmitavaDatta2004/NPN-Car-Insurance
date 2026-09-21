@@ -24,7 +24,7 @@ This file substitutes for branch isolation because all seven members work direct
 | CV-001 | Member 3 / Antigravity | ml/src/claimvision_ml/quality/, ml/tests/test_quality_runtime.py, notebooks/04_opencv_quality_and_integrity.ipynb, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md | 2026-09-21 01:37 | 2026-09-21 04:00 | de7f653 | RELEASED |
 | ML-DOWNLOAD-HELPER | Antigravity | notebooks/02_fraud_mobilenetv2_training.ipynb, TASK_LOCKS.md | 2026-09-21 16:03 | 2026-09-21 16:30 | de7f653 | RELEASED |
 | SDATA-001 | Member 3 / Antigravity | ml/src/claimvision_ml/data/severity_audit.py, ml/src/claimvision_ml/data/__init__.py, ml/tests/test_severity_audit.py, ml/tests/conftest.py, ml/pyproject.toml, notebooks/05_severity_dataset_audit.ipynb, data/manifests/severity_*, docs/DATASET_CARD_SEVERITY.md, ml/results/severity/, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md | 2026-09-21 16:15 | 2026-09-21 18:30 | b1704c6 | RELEASED |
-
+| ML-003 | Member 2 / Antigravity | ml/src/claimvision_ml/fraud/, ml/tests/test_balanced_sampler.py, notebooks/02b_fraud_balanced_resampling_comparison.ipynb, ml/artifacts/fraud/balanced/, ml/results/fraud/balanced_*, docs/EXPERIMENT_LOG.md, docs/MODEL_CARD_FRAUD_MNV2_V1.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md, docs/agent-work-log.md | 2026-09-21 17:25 | 2026-09-21 21:00 | 28debd5 | ACTIVE |
 
 ## Lock template
 

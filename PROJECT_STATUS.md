@@ -48,6 +48,7 @@ Current commit: de7f653 (pending user commit for Phase 3)
 - [x] ML-001 — Fraud MobileNetV2 classifier (FRAUD-MNV2-001 trained; test PR-AUC 0.5464; high_threshold 0.80; recall 90.1%; ONNX export; 37 unit tests pass)
 - [x] CV-001 — OpenCV evidence-integrity runtime checker (run_quality_checks(); QualityResult; 19 new tests; 56 total pass; notebook 04 12 sections)
 - [x] SDATA-001 — Severity dataset audit & manifest freeze (1,631 images; 0 corrupt; 11 exact dupe groups & 32 pHash clusters; 0 leakage 70/15/15 split; 64 total tests pass)
+- [/] ML-003 — Per-epoch balanced resampling comparison (50:50, 40:60, 30:70, 20:80; BalancedEpochSampler tested; notebook 02b in progress)
 
 ## Active blockers
 

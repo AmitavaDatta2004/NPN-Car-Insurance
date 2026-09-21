@@ -23,6 +23,43 @@ Required by README §7.1 rule 5.
 
 ## Log
 
+### ML-003 — Per-Epoch Balanced Resampling Comparison (Phase 2 Extension)
+
+- Date/time IST: 2026-09-21 17:15–17:30
+- Agent: Antigravity
+- Operator: Amitava Datta
+- Base commit: b1704c6
+- Files read: README.md, AGENTS.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md,
+  ml/src/claimvision_ml/fraud/dataset.py, ml/src/claimvision_ml/fraud/model.py
+- Files changed:
+  - ml/src/claimvision_ml/fraud/dataset.py (NEW BalancedEpochSampler class added)
+  - ml/src/claimvision_ml/fraud/__init__.py (exported BalancedEpochSampler)
+  - ml/tests/test_balanced_sampler.py (NEW — 12 unit tests)
+  - notebooks/02b_fraud_balanced_resampling_comparison.ipynb (NEW — 20 cells complete comparison notebook)
+  - TASKS.md (added ML-003 task)
+  - TASK_LOCKS.md (ML-003 ACTIVE lock)
+  - PROJECT_STATUS.md (updated sprint objectives)
+  - docs/agent-work-log.md (this entry)
+- Decisions made:
+  - Per mentor instruction: compare four class ratios (50:50, 40:60, 30:70, 20:80) within each training epoch.
+  - Frozen Phase 1 manifests respected: identical 70/15/15 splits used.
+  - Suspicious class: all 325 training images used in every epoch (fixed, zero randomness).
+  - Genuine class: fresh random sample of N images drawn each epoch without replacement.
+  - Loss function: plain BCEWithLogitsLoss() (no pos_weight needed as balance is enforced via sampling).
+  - Four separate models trained (FRAUD-BAL-5050, FRAUD-BAL-4060, FRAUD-BAL-3070, FRAUD-BAL-2080).
+  - Validation set used strictly for early stopping and threshold sweep.
+  - Held-out test set evaluated exactly once per model.
+  - Comparison table and visualizations compare all 4 ratios against baseline FRAUD-MNV2-001.
+- Commands run:
+  - `.venv\Scripts\pytest.exe ml/tests/test_balanced_sampler.py -v` — 12 passed
+  - `.venv\Scripts\pytest.exe ml/tests/ -q` — 68 passed (all pass, 0 regressions)
+- Validation results: 12/12 new tests pass; 68/68 total test suite passes.
+- Known limitations / follow-up:
+  - Notebook 02b must be executed by operator to produce weights, metrics, and plots for all 4 models.
+  - After notebook completes, fill in real numbers in docs and release ML-003 lock.
+
+
+
 ### ML-001 — Train and evaluate fraud MobileNetV2 classifier (Phase 2)
 
 - Date/time IST: 2026-09-20 19:27–21:00

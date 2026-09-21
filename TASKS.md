@@ -7,7 +7,7 @@ Status values: `BACKLOG`, `READY`, `LOCKED`, `IN_PROGRESS`, `REVIEW`, `BLOCKED`,
 Copy this section for every task. A task may not enter `READY` without acceptance criteria.
 
 ```markdown
-### TASK-ID â€” Short title
+### TASK-ID ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Short title
 
 - Phase:
 - Owner:
@@ -35,7 +35,7 @@ Risks/notes:
 
 ## Initial repository tasks
 
-### CFG-001 â€” Install repository configuration pack
+### CFG-001 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Install repository configuration pack
 
 - Phase: 0
 - Owner: Member 1
@@ -53,11 +53,11 @@ Acceptance criteria:
 - [x] All members confirm they read `AGENTS.md`.
 - [x] Configuration commit is pushed to `main`.
 
-Commit: `787c999` â€” feat: Add initial project configuration and CI/CD setup
+Commit: `787c999` ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â feat: Add initial project configuration and CI/CD setup
 
 ---
 
-### CFG-002 â€” Create application skeleton
+### CFG-002 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Create application skeleton
 
 - Phase: 0
 - Owner: Member 1 (executed by Antigravity)
@@ -67,12 +67,12 @@ Commit: `787c999` â€” feat: Add initial project configuration and CI/CD set
 - Dependencies: CFG-001
 - Files allowed: `backend/`, `frontend/`, `ml/`, `notebooks/`, `data/`, `artifacts/`, `scripts/`, `annotated/`, `reports/`, `demo/`, `docs/agent-work-log.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `config/project.yaml`, `.github/workflows/ci.yml`, `PROJECT_STATUS.md`, `TASKS.md`
 - Files prohibited: `README.md`, `AGENTS.md`, `.env.example`, `.gitignore`, `.gitattributes`, `.editorconfig`, `.pre-commit-config.yaml`, all existing `docs/` templates, both `prompts/`
-- Objective: create the repository structure defined in `README.md` Â§6 with working backend and frontend placeholders and an importable ML package
-- Inputs: `README.md` Â§6 directory structure, `config/project.example.yaml`, `.github/workflows/ci.yml`
+- Objective: create the repository structure defined in `README.md` Ãƒâ€šÃ‚Â§6 with working backend and frontend placeholders and an importable ML package
+- Inputs: `README.md` Ãƒâ€šÃ‚Â§6 directory structure, `config/project.example.yaml`, `.github/workflows/ci.yml`
 
 Acceptance criteria:
 
-- [x] Full directory skeleton from README Â§6 exists with `.gitkeep` files where needed.
+- [x] Full directory skeleton from README Ãƒâ€šÃ‚Â§6 exists with `.gitkeep` files where needed.
 - [x] `claimvision_ml` Python package imports successfully from the venv (`import claimvision_ml`).
 - [x] `claimvision_ml.__version__` returns `"0.1.0"`.
 - [x] `pytest ml/tests/ -q` passes (package smoke test).
@@ -87,7 +87,7 @@ Acceptance criteria:
 - [x] No dataset, model weight, secret, or local database is tracked.
 - [x] `git status --short` is clean after all additions.
 
-Commit: `abf99fb` â€” Add initial implementation of claimvision_ml package with submodules for fraud detection, severity classification, and damage detection
+Commit: `abf99fb` ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Add initial implementation of claimvision_ml package with submodules for fraud detection, severity classification, and damage detection
 
 Validation commands:
 
@@ -105,7 +105,7 @@ Risks/notes:
 
 ---
 
-### DATA-001 â€” Validate fraud dataset feasibility
+### DATA-001 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Validate fraud dataset feasibility
 
 - Phase: 1
 - Owner: Member 2 (executed by Antigravity)
@@ -130,7 +130,7 @@ Evidence: 8,079 images audited; 0 corrupt files; 2,502 near-duplicate clusters g
 
 ---
 
-### ML-001 â€” Train and evaluate fraud baseline
+### ML-001 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Train and evaluate fraud baseline
 
 - Phase: 2
 - Owner: Member 2 / Antigravity
@@ -150,7 +150,7 @@ Evidence: 8,079 images audited; 0 corrupt files; 2,502 near-duplicate clusters g
 Acceptance criteria:
 
 - [x] MobileNetV2 experiment is reproducible (seed=42, manifests frozen).
-- [x] PR-AUC, class metrics, confusion matrix, calibration, and threshold trade-off shown (Val PR-AUC 0.4999, Test PR-AUC 0.5464, sweep 0.20–0.80).
+- [x] PR-AUC, class metrics, confusion matrix, calibration, and threshold trade-off shown (Val PR-AUC 0.4999, Test PR-AUC 0.5464, sweep 0.20Ã¢â‚¬â€œ0.80).
 - [x] Untouched test set used exactly once for final reporting (held-out test set evaluated in Notebook 03 after threshold freeze).
 - [x] Exported artifact passes smoke inference (`predict_fraud` verified standalone on sample image; outputs match).
 - [x] Model card clearly limits the meaning of fraud output (`docs/MODEL_CARD_FRAUD_MNV2_V1.md`).
@@ -170,7 +170,7 @@ Only move one task per member into `IN_PROGRESS` at a time. Add the lock first, 
 
 ---
 
-### CV-001 — OpenCV evidence-integrity runtime checker
+### CV-001 Ã¢â‚¬â€ OpenCV evidence-integrity runtime checker
 
 - Phase: 3
 - Owner: Member 3 (Severity ML A) / Antigravity
@@ -185,16 +185,16 @@ Only move one task per member into `IN_PROGRESS` at a time. Add the lock first, 
 Acceptance criteria:
 
 - [x] `run_quality_checks()` returns `QualityResult` with route, reasons, and scores.
-- [x] Corrupt/unreadable → `MORE_EVIDENCE_REQUIRED`.
-- [x] Resolution below 224×224 → `MORE_EVIDENCE_REQUIRED`.
-- [x] Blurry/dark/overexposed/low-contrast → `rejection_reasons` populated.
-- [x] Exact SHA-256 duplicate → `DUPLICATE_REVIEW`.
-- [x] Near dHash duplicate (Hamming ≤ 4) → `DUPLICATE_REVIEW`.
-- [x] EXIF absent → `warnings["exif_absent"]` only; never sets `passed=False` or `route=FRAUD_REVIEW`.
+- [x] Corrupt/unreadable Ã¢â€ â€™ `MORE_EVIDENCE_REQUIRED`.
+- [x] Resolution below 224Ãƒâ€”224 Ã¢â€ â€™ `MORE_EVIDENCE_REQUIRED`.
+- [x] Blurry/dark/overexposed/low-contrast Ã¢â€ â€™ `rejection_reasons` populated.
+- [x] Exact SHA-256 duplicate Ã¢â€ â€™ `DUPLICATE_REVIEW`.
+- [x] Near dHash duplicate (Hamming Ã¢â€°Â¤ 4) Ã¢â€ â€™ `DUPLICATE_REVIEW`.
+- [x] EXIF absent Ã¢â€ â€™ `warnings["exif_absent"]` only; never sets `passed=False` or `route=FRAUD_REVIEW`.
 - [x] `draw_bounding_boxes()` and `save_annotated_image()` work and preserve original.
 - [x] 19 unit tests pass; full suite (56 tests) passes with no regression.
 - [x] Notebook 04 has 12 sections using real Colab dataset images.
-- [x] `ruff check ml/` — only 1 pre-existing Phase 2 warning remains (not our files).
+- [x] `ruff check ml/` Ã¢â‚¬â€ only 1 pre-existing Phase 2 warning remains (not our files).
 
 Evidence: 19 new tests pass (56 total); `quality/runtime_checker.py` and extended `image_checks.py` committed; notebook 04 fully implemented with real dataset path configuration.
 
@@ -206,7 +206,7 @@ Validation commands:
 
 ---
 
-### SDATA-001 — Severity dataset audit and manifest freeze
+### SDATA-001 â€” Severity dataset audit and manifest freeze
 
 - Phase: 4
 - Owner: Member 3 (Severity ML A) / Antigravity
@@ -236,3 +236,34 @@ Validation commands:
 - `.venv\Scripts\pytest.exe ml/tests/test_severity_audit.py -v`
 - `.venv\Scripts\pytest.exe ml/tests/ -q`
 - Run `notebooks/05_severity_dataset_audit.ipynb` top-to-bottom
+
+---
+
+### ML-003 â€” Per-Epoch Balanced Resampling Comparison (50:50, 40:60, 30:70, 20:80)
+
+- Phase: 2 (Extension)
+- Owner: Member 2 / Antigravity
+- Reviewer: Member 1
+- Status: IN_PROGRESS
+- Priority: P1
+- Dependencies: ML-001 accepted
+- Files allowed: ml/src/claimvision_ml/fraud/, ml/tests/test_balanced_sampler.py,
+  ml/artifacts/fraud/balanced/, ml/results/fraud/balanced_*,
+  notebooks/02b_fraud_balanced_resampling_comparison.ipynb,
+  docs/MODEL_CARD_FRAUD_MNV2_V1.md, docs/EXPERIMENT_LOG.md,
+  docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md
+- Files prohibited: severity/, detection/, costing/, backend routes, frontend app
+- Objective: train 4 MobileNetV2 models with per-epoch balanced resampling (50:50, 40:60, 30:70, 20:80) keeping suspicious class fixed (325 train) and rotating genuine class; compare on held-out test set against baseline
+
+Acceptance criteria:
+- [x] `BalancedEpochSampler` implemented with fixed suspicious class and rotating genuine sample per epoch.
+- [x] 12 unit tests pass in `test_balanced_sampler.py`; full suite (68 tests) passes with no regression.
+- [ ] Comparison notebook `02b_fraud_balanced_resampling_comparison.ipynb` executed top-to-bottom.
+- [ ] Side-by-side comparison table, PR curves, and confusion matrices generated across all 4 ratios + baseline.
+- [ ] Best model checkpoint and threshold JSON exported.
+- [ ] Experiment log and model card updated with real metrics.
+
+Validation commands:
+- `.venv\Scripts\pytest.exe ml/tests/test_balanced_sampler.py -v`
+- `.venv\Scripts\pytest.exe ml/tests/ -q`
+- Run `notebooks/02b_fraud_balanced_resampling_comparison.ipynb` top-to-bottom

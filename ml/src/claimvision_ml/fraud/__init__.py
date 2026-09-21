@@ -1,21 +1,27 @@
-﻿"""fraud - visual fraud-risk classifier and deterministic integrity signals.
+"""fraud - visual fraud-risk classifier and deterministic integrity signals.
 
 Implemented in Phase 2 (notebooks 02 and 03).
 
 Public API
 ----------
-FraudClassifier     MobileNetV2 + custom head (nn.Module).
-build_fraud_model   Build a new model (frozen backbone, Stage A ready).
-load_fraud_model    Load from a .pt checkpoint.
-export_onnx         Export to ONNX for backend inference.
-FraudDataset        PyTorch Dataset reading frozen manifest CSVs.
-get_class_weights   Compute inverse-frequency pos_weight for BCEWithLogitsLoss.
-get_transforms      Augmentation pipeline for train / val / test.
-FraudResult         Dataclass returned by predict_fraud.
-predict_fraud       Primary runtime function called by the FastAPI backend.
+FraudClassifier         MobileNetV2 + custom head (nn.Module).
+build_fraud_model       Build a new model (frozen backbone, Stage A ready).
+load_fraud_model        Load from a .pt checkpoint.
+export_onnx             Export to ONNX for backend inference.
+FraudDataset            PyTorch Dataset reading frozen manifest CSVs.
+BalancedEpochSampler    Per-epoch hard undersampling sampler (ML-003).
+get_class_weights       Compute inverse-frequency pos_weight for BCEWithLogitsLoss.
+get_transforms          Augmentation pipeline for train / val / test.
+FraudResult             Dataclass returned by predict_fraud.
+predict_fraud           Primary runtime function called by the FastAPI backend.
 """
 
-from claimvision_ml.fraud.dataset import FraudDataset, get_class_weights, get_transforms
+from claimvision_ml.fraud.dataset import (
+    BalancedEpochSampler,
+    FraudDataset,
+    get_class_weights,
+    get_transforms,
+)
 from claimvision_ml.fraud.model import (
     FraudClassifier,
     build_fraud_model,
@@ -32,6 +38,7 @@ __all__ = [
     "export_onnx",
     "save_preprocessing_config",
     "FraudDataset",
+    "BalancedEpochSampler",
     "get_class_weights",
     "get_transforms",
     "FraudResult",
