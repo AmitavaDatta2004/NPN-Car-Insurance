@@ -671,3 +671,58 @@ Known limitations:
 
 Follow-up: Phase 7 Part 2 — Compare CNN, MobileNetV2, and ViT-Tiny in `notebooks/09_severity_model_comparison.ipynb` once Friend 1 and Friend 2 complete Phase 5 & 6.
 
+---
+
+### DET-YOLO-001 — Generic Damage YOLOv8 Training
+
+- Date/time IST: 2026-09-22 01:46–02:10
+- Agent: Antigravity
+- Operator: Member 4 (Detection ML) / Amitava Datta
+- Base commit: 6884cc7
+- Phase: 9
+
+Files read:
+- `README.md` (§10 Notebook 11, §13 Phase C Localisation, §19 Phase 9 gate)
+- `AGENTS.md` (§7 Notebook contract, §10 Model-specific rules, §14 Testing contract)
+- `TASKS.md` (DET-COCO-001 evidence, Phase 9 specifications)
+- `TASK_LOCKS.md`
+- `ml/src/claimvision_ml/detection/__init__.py`
+- `ml/src/claimvision_ml/detection/coco_converter.py`
+
+Files created:
+- `ml/src/claimvision_ml/detection/damage.py` (DamageDetection dataclass, DamageDetector class, detect_damage functional API, xyxy_to_normalized, normalized_to_xyxy, export_damage_onnx)
+- `ml/tests/test_damage_detector.py` (17 comprehensive unit tests covering coordinate math, threshold filtering, empty detections, and visual overlay generation)
+- `scripts/build_notebook_11.py` (generator script for 17-cell judge-ready Notebook 11)
+- `docs/MODEL_CARD_DAMAGE_YOLO_V1.md` (complete model card per template with ethical considerations and safety limits)
+
+Files modified:
+- `ml/src/claimvision_ml/detection/__init__.py` (exported DamageDetector, DamageDetection, detect_damage, and coordinate converters)
+- `notebooks/11_yolo_damage_training.ipynb` (full 17-cell implementation replacing 3-cell placeholder)
+- `TASK_LOCKS.md` (claimed DET-YOLO-001 lock)
+- `TASKS.md` (added DET-YOLO-001 task definition and acceptance criteria)
+- `PROJECT_STATUS.md` (updated Phase 9 status and verified results)
+- `docs/EXPERIMENT_LOG.md` (registered DET-YOLO-001 in registry table and detailed entry)
+
+Decisions made:
+- Employed Ultralytics YOLOv8n (3.2M params) pretrained on MS COCO for fast laptop inference latency (<30 ms/image).
+- Preserved pristine original input image across all visualization operations by creating explicit defensive copies (`img_bgr.copy()`).
+- Designed robust no-detection handling returning an empty list (`[]`) rather than throwing an exception when an undamaged or clean vehicle is inspected.
+- Provided self-healing auto-conversion fallback in Notebook 11 that converts raw COCO annotations to YOLO format automatically if the converted directory is missing.
+- Strict anti-leakage: test split (8 images) evaluated strictly once without hyperparameter tuning.
+
+Commands run:
+- `.venv\Scripts\pytest.exe ml/tests/test_damage_detector.py -v` → 17 passed in 2.53s
+- `.venv\Scripts\pytest.exe ml/tests/ -q` → 125 passed, 4 skipped in 17.07s (0 regressions)
+- `.venv\Scripts\python.exe scripts/build_notebook_11.py` → generated 17-cell Notebook 11
+
+Validation results:
+- 125 unit tests green (17 new damage detector tests + 108 existing tests).
+- Clean coordinate round-trip conversion within 1e-4 tolerance.
+- Zero crashes on empty or clean panels.
+
+Known limitations:
+- Small dataset size (59 train images). Documented prominently as a hackathon prototype proof-of-concept.
+- Bounding boxes represent rectangular extents, not segmentation masks.
+
+Follow-up: Phase 10 — Damaged-Part YOLO (`DET-PART-001`, Notebook 12).
+
