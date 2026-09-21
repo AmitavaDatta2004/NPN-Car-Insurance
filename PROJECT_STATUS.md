@@ -1,16 +1,16 @@
 # Project Status
 
-Last updated: 2026-09-21 20:35 IST
-Updated by: Antigravity (SEV-CNN-001)
-Current commit: pending user commit for Phase 5
+Last updated: 2026-09-22 01:05 IST
+Updated by: Member 4 / Antigravity (DET-COCO-001)
+Current commit: 1231ecf
 
 ## Overall state
 
 | Field | Value |
 | --- | --- |
-| Current phase | Phases 5, 6, 7 Complete (Ready for Notebook 09 Comparison) |
+| Current phase | Phase 8 Complete — Ready for Phase 9 (Damage YOLO Training) |
 | Overall health | Green |
-| Next phase gate | Severity Model Comparison (Notebook 09) & Model Selection |
+| Next phase gate | Phase 9 Gate — Generic Damage YOLOv8n Training (Notebook 11) |
 | Demo readiness | Not started |
 | Latest stable tag | None |
 | Active blocker count | 0 |
@@ -27,7 +27,7 @@ Current commit: pending user commit for Phase 5
 | 5 Severity CNN | Member 3 / Antigravity | Complete | Severity audit accepted | SEV-CNN-001 trained; Val macro F1 0.6206; Test macro F1 0.5921; notebook 06 executed; metrics JSON |
 | 6 Severity MobileNetV2 | Friend 2 / Antigravity | Complete | Same split available | Two-stage transfer learning module, predict_severity runtime, notebook 07, model card |
 | 7 ViT-Tiny and selection | Member 4 / Antigravity | Complete (ViT-Tiny trained) | Same split available | SEV-VIT-001 trained; Severe recall=100%; ONNX exported; ready for comparison in Notebook 09 |
-| 8 COCO conversion | Member 4 / Antigravity | **In Progress** | Detection annotations available | Visual conversion audit |
+| 8 COCO conversion | Member 4 / Antigravity | Complete | Detection annotations available | yolo_damage (nc=1) & yolo_parts (nc=5) datasets created; 78 images across train/val/test converted; assertions PASS; Notebook 10 complete |
 | 9 Damage YOLO | Member 4 | Not started | Conversion accepted | Model and metrics |
 | 10 Part YOLO | Member 4 | Not started | Part labels verified | Model and metrics |
 | 11 Unified inference | Member 5 | Not started | Selected models exported | Stable unified schema |
@@ -52,6 +52,7 @@ Current commit: pending user commit for Phase 5
 - [x] SEV-CNN-001 — Severity baseline CNN classifier (SeverityCNN from scratch, val macro F1 0.6206, test macro F1 0.5921, notebook 06 complete)
 - [x] SEV-MNV2-001 — Severity MobileNetV2 classifier (two-stage transfer learning; val macro F1 0.72; notebook 07 complete)
 - [x] SEV-VIT-001 — ViT-Tiny severity classifier (vit_tiny_patch16_224 trained in 2 stages; CPU latency 12.60 ms; ONNX exported; 72 unit tests pass; ready for Notebook 09)
+- [x] DET-COCO-001 — COCO annotation audit and YOLO conversion (coco_converter.py implemented; 17 unit tests pass; Notebook 10 executed with all outputs)
 
 ## Active blockers
 
@@ -73,15 +74,15 @@ Only paste results produced by committed code and recorded experiments.
 | Severity (CNN) | SEV-CNN-001 | Car Damage Severity v1 (248 test images) | Macro F1: 0.5921, Accuracy: 59.7%, Severe Recall: 69.4%, 17.9ms/img | ml/results/severity/cnn_metrics.json |
 | Severity (MobileNetV2) | SEV-MNV2-001 | Car Damage Severity v1 (248 test images) | Macro F1: 0.72, Accuracy: 73.0%, 25.1ms/img | docs/MODEL_CARD_SEVERITY_MNV2_V1.md |
 | Severity (ViT-Tiny) | SEV-VIT-001 | Car Damage Severity v1 (248 test images) | Macro F1: 0.7711, Accuracy: 77.02%, Severe Recall: 100%, 12.6ms/img | ml/artifacts/severity/vit/severity_vit_metrics.json |
-| Damage detection | Not available | Not available | Not measured | — |
-| Part detection | Not available | Not available | Not measured | — |
+| Damage detection (data) | DET-COCO-001 (Damage) | 78 images (59 train / 11 val / 8 test) | Assertions PASS; nc=1 (damage); round-trip 1e-6 | ml/results/detection/yolo_damage/data.yaml |
+| Part detection (data) | DET-COCO-001 (Parts) | 78 images (59 train / 11 val / 8 test) | Assertions PASS; nc=5 parts; round-trip 1e-6 | ml/results/detection/yolo_parts/data.yaml |
 | End-to-end | Not available | Demo fixtures | Not tested | — |
 
 ## Next three actions
 
-1. Complete Phase 8: run Notebook 10 top-to-bottom in Colab (DET-COCO-001) — Member 4
-2. Verify YOLO conversion assertions pass for both yolo_damage/ and yolo_parts/
-3. Proceed to Phase 9: generic damage YOLO training (Notebook 11) — Member 4
+1. Proceed to Phase 9: train YOLOv8n generic damage detector in Notebook 11 (`11_yolo_damage_training.ipynb`) — Member 4
+2. Proceed to Phase 10: train YOLOv8n damaged-part detector in Notebook 12 (`12_yolo_part_training.ipynb`) — Member 4
+3. Proceed to Phase 11: build unified inference demo in Notebook 13 (`13_unified_inference_demo.ipynb`) — Member 5
 
 
 
