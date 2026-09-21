@@ -1,1 +1,1 @@
-# schemas package — implementation begins in Phase 12.
+# schemas package - implementation begins in Phase 12.

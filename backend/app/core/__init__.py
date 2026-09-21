@@ -1,1 +1,1 @@
-# core package — implementation begins in Phase 12.
+# core package - implementation begins in Phase 12.

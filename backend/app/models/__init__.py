@@ -1,1 +1,1 @@
-# models package — implementation begins in Phase 12.
+# models package - implementation begins in Phase 12.

@@ -1,1 +1,1 @@
-# app package — implementation begins in Phase 12.
+# app package - implementation begins in Phase 12.

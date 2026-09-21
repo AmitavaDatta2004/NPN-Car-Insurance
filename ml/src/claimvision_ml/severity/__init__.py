@@ -4,19 +4,16 @@ Implemented in Phases 5–7 (notebooks 06–09).
 
 Public API
 ----------
-SeverityMobileNetV2        MobileNetV2 + custom 3-class head (nn.Module).
-build_severity_mobilenet   Factory function to construct model.
-load_severity_checkpoint   Load model from .pt checkpoint.
-save_severity_checkpoint   Save model and metadata to .pt checkpoint.
-export_onnx                Export model to ONNX with parity verification.
-SeverityDataset            PyTorch Dataset reading frozen CSV manifests.
-get_severity_transforms    Train / Val / Test augmentation pipelines.
-get_severity_class_weights Compute balanced class weights for CrossEntropyLoss.
-SEVERITY_CLASSES           Tuple of class names: ("minor", "moderate", "severe").
-SEVERITY_CLASS_TO_ID       Dictionary mapping class name to integer ID.
-SEVERITY_ID_TO_CLASS       Dictionary mapping integer ID to class name.
-SeverityResult             Dataclass returned by predict_severity.
-predict_severity           Standalone runtime function for backend & notebooks.
+MobileNetV2 (Phase 6):
+  SeverityMobileNetV2, build_severity_mobilenet, load_severity_checkpoint,
+  save_severity_checkpoint, export_onnx, predict_severity, SeverityResult
+
+ViT-Tiny (Phase 7):
+  SeverityViTTiny, build_vit_model, load_vit_model, save_vit_checkpoint,
+  export_vit_onnx, predict_severity_vit, SeverityViTResult, get_vit_transforms
+
+Shared:
+  SeverityDataset, SEVERITY_CLASSES, SEVERITY_CLASS_TO_ID, SEVERITY_ID_TO_CLASS
 """
 
 from __future__ import annotations
@@ -39,21 +36,46 @@ from claimvision_ml.severity.mobilenet import (
     save_severity_checkpoint,
 )
 from claimvision_ml.severity.predict import SeverityResult, predict_severity
+from claimvision_ml.severity.vit import (
+    CLASS_TO_ID,
+    ID_TO_CLASS,
+    SeverityViTResult,
+    SeverityViTTiny,
+    build_vit_model,
+    export_vit_onnx,
+    get_vit_transforms,
+    load_vit_model,
+    predict_severity_vit,
+    save_vit_checkpoint,
+)
 
 __all__ = [
+    # Common taxonomy
+    "SEVERITY_CLASSES",
+    "SEVERITY_CLASS_TO_ID",
+    "SEVERITY_ID_TO_CLASS",
+    "CLASS_TO_ID",
+    "ID_TO_CLASS",
+    "IMAGENET_MEAN",
+    "IMAGENET_STD",
+    "SeverityDataset",
+    "get_severity_transforms",
+    "get_severity_class_weights",
+    # MobileNetV2 (Phase 6)
     "SeverityMobileNetV2",
     "build_severity_mobilenet",
     "load_severity_checkpoint",
     "save_severity_checkpoint",
     "export_onnx",
-    "SeverityDataset",
-    "get_severity_transforms",
-    "get_severity_class_weights",
-    "SEVERITY_CLASSES",
-    "SEVERITY_CLASS_TO_ID",
-    "SEVERITY_ID_TO_CLASS",
-    "IMAGENET_MEAN",
-    "IMAGENET_STD",
     "SeverityResult",
     "predict_severity",
+    # ViT-Tiny (Phase 7)
+    "SeverityViTTiny",
+    "build_vit_model",
+    "load_vit_model",
+    "save_vit_checkpoint",
+    "export_vit_onnx",
+    "predict_severity_vit",
+    "SeverityViTResult",
+    "get_vit_transforms",
 ]

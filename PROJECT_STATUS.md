@@ -1,16 +1,16 @@
 # Project Status
 
-Last updated: 2026-09-21 01:45 IST
-Updated by: Antigravity (CV-001)
-Current commit: de7f653 (pending user commit for Phase 3)
+Last updated: 2026-09-21 18:15 IST
+Updated by: Antigravity (SEV-VIT-001)
+Current commit: 28debd5 (pending user commit for Phase 7)
 
 ## Overall state
 
 | Field | Value |
 | --- | --- |
-| Current phase | Phase 4 Complete (Phase 5 Ready) |
+| Current phase | Phase 7 Complete (Parallel Phase 5 & 6 In Progress) |
 | Overall health | Green |
-| Next phase gate | Baseline Severity CNN (Phase 5) |
+| Next phase gate | Model Comparison (Notebook 09) once Phase 5 & 6 conclude |
 | Demo readiness | Not started |
 | Latest stable tag | None |
 | Active blocker count | 0 |
@@ -26,7 +26,7 @@ Current commit: de7f653 (pending user commit for Phase 3)
 | 4 Severity audit | Member 3 | Complete | Dataset available | Frozen manifests (1,631 images: 1,140 train, 243 val, 248 test); 0 leakage; 64 tests pass |
 | 5 Severity CNN | Friend 1 | In progress (parallel) | Severity audit accepted | Baseline report |
 | 6 Severity MobileNetV2 | Friend 2 / Antigravity | Complete | Same split available | Two-stage transfer learning module, predict_severity runtime, notebook 07, model card |
-| 7 ViT-Tiny and selection | Friend 3 | In progress (parallel) | Same split available | Selection decision |
+| 7 ViT-Tiny and selection | Member 4 / Antigravity | Complete (ViT-Tiny trained) | Same split available | SEV-VIT-001 trained; Severe recall=100%; ONNX exported; ready for comparison in Notebook 09 |
 | 8 COCO conversion | Member 4 | Not started | Detection annotations available | Visual conversion audit |
 | 9 Damage YOLO | Member 4 | Not started | Conversion accepted | Model and metrics |
 | 10 Part YOLO | Member 4 | Not started | Part labels verified | Model and metrics |
@@ -49,6 +49,8 @@ Current commit: de7f653 (pending user commit for Phase 3)
 - [x] CV-001 — OpenCV evidence-integrity runtime checker (run_quality_checks(); QualityResult; 19 new tests; 56 total pass; notebook 04 12 sections)
 - [x] SDATA-001 — Severity dataset audit & manifest freeze (1,631 images; 0 corrupt; 11 exact dupe groups & 32 pHash clusters; 0 leakage 70/15/15 split; 64 total tests pass)
 - [/] ML-003 — Per-epoch balanced resampling comparison (50:50, 40:60, 30:70, 20:80; BalancedEpochSampler tested; notebook 02b in progress)
+- [x] SEV-MNV2-001 — Severity MobileNetV2 classifier (two-stage transfer learning; val macro F1 0.72; notebook 07 complete)
+- [x] SEV-VIT-001 — ViT-Tiny severity classifier (vit_tiny_patch16_224 trained in 2 stages; CPU latency 12.60 ms; ONNX exported; 72 unit tests pass; ready for Notebook 09)
 
 ## Active blockers
 

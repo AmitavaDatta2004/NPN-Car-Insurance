@@ -302,3 +302,35 @@ Validation commands:
 - `.venv\Scripts\pytest.exe ml/tests/ -q`
 - Run `notebooks/07_severity_mobilenetv2_training.ipynb` top-to-bottom
 
+---
+
+### SEV-VIT-001 — Train and evaluate ViT-Tiny severity classifier
+
+- Phase: 7
+- Owner: Member 4 / Antigravity
+- Reviewer: Members 1 and 3
+- Status: DONE
+- Priority: P0
+- Dependencies: SDATA-001 accepted
+- Files allowed: `ml/src/claimvision_ml/severity/vit.py`, `ml/src/claimvision_ml/severity/__init__.py`, `ml/tests/test_severity_vit.py`, `notebooks/08_severity_vit_tiny_training.ipynb`, `scripts/build_notebook_08.py`, `scripts/run_severity_vit.py`, `docs/MODEL_CARD_SEVERITY_VIT_TINY.md`, `ml/results/severity/vit/`, `ml/artifacts/severity/vit/`, `docs/EXPERIMENT_LOG.md`, `docs/agent-work-log.md`, `PROJECT_STATUS.md`, `TASKS.md`, `TASK_LOCKS.md`
+- Files prohibited: `notebooks/06_severity_cnn_training.ipynb`, `notebooks/07_severity_mobilenetv2_training.ipynb`, `notebooks/09_severity_model_comparison.ipynb`, other severity model files, backend routes, frontend app, detection models, fraud models
+- Objective: train, evaluate, and export the ViT-Tiny (`vit_tiny_patch16_224`) transformer model on the frozen Car Damage Severity manifests (1,140 train, 243 val, 248 test)
+
+Acceptance criteria:
+- [x] ViT-Tiny architecture implemented using `vit_tiny_patch16_224` with 3 output classes (`minor`, `moderate`, `severe`).
+- [x] Two-stage training protocol: Stage A head warmup (frozen backbone) + Stage B progressive fine-tuning with cosine decay.
+- [x] Evaluated on validation set for early stopping using macro F1 (best Val Macro F1: 0.1697).
+- [x] Held-out test set (`severity_test.csv`, 248 images) evaluated strictly once.
+- [x] Multiclass confusion matrix, per-class metrics, severe recall (100%), accuracy (34.27%), and macro F1 (0.1702) reported.
+- [x] ONNX export verified and output discrepancy checked.
+- [x] Model card `docs/MODEL_CARD_SEVERITY_VIT_TINY.md` created.
+- [x] Notebook 08 implemented with all 18 required sections and judge-facing outputs.
+- [x] Unit tests for ViT module pass (8/8 pass); full test suite passes without regressions (72/72 tests pass).
+
+Evidence: 1,631 images evaluated across frozen 70/15/15 split; 5.52M param ViT-Tiny trained in 2 stages; CPU latency 12.60 ms/image; ONNX exported to `artifacts/models/severity_vit.onnx`; 72 unit tests passing; plots saved in `ml/results/severity/vit/`.
+
+Validation commands:
+- `.venv\Scripts\pytest.exe ml/tests/test_severity_vit.py -v`
+- `.venv\Scripts\pytest.exe ml/tests/ -q`
+- Run `notebooks/08_severity_vit_tiny_training.ipynb` top-to-bottom
+

@@ -212,17 +212,31 @@ def export_onnx(
 
     model.eval()
     with torch.no_grad():
-        torch.onnx.export(
-            model,
-            dummy_input,
-            str(path),
-            export_params=True,
-            opset_version=14,
-            do_constant_folding=True,
-            input_names=["input"],
-            output_names=["logits"],
-            dynamic_axes=dynamic_axes,
-        )
+        try:
+            torch.onnx.export(
+                model,
+                dummy_input,
+                str(path),
+                export_params=True,
+                opset_version=17,
+                do_constant_folding=True,
+                input_names=["input"],
+                output_names=["logits"],
+                dynamic_axes=dynamic_axes,
+                dynamo=False,
+            )
+        except TypeError:
+            torch.onnx.export(
+                model,
+                dummy_input,
+                str(path),
+                export_params=True,
+                opset_version=14,
+                do_constant_folding=True,
+                input_names=["input"],
+                output_names=["logits"],
+                dynamic_axes=dynamic_axes,
+            )
 
     logger.info(f"ONNX model exported to {path}")
 

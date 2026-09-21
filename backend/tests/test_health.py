@@ -3,10 +3,10 @@
 Uses FastAPI's TestClient (via httpx) so no running server is needed.
 """
 
-from fastapi.testclient import TestClient
-
-import sys
 import os
+import sys
+
+from fastapi.testclient import TestClient
 
 # Allow running from repo root: pytest backend/tests/
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))

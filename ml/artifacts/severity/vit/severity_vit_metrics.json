@@ -1,0 +1,74 @@
+{
+  "model_id": "SEV-VIT-001",
+  "architecture": "vit_tiny_patch16_224",
+  "parameters": {
+    "total": 5524995,
+    "trainable_stage_a": 579,
+    "trainable_stage_b": 1780419
+  },
+  "best_epoch": 2,
+  "best_val_macro_f1": 0.1697,
+  "test_metrics": {
+    "accuracy": 0.3427,
+    "macro_f1": 0.1702,
+    "weighted_f1": 0.175,
+    "macro_precision": 0.1142,
+    "macro_recall": 0.3333,
+    "severe_recall": 1.0,
+    "confusion_matrix": [
+      [
+        0,
+        0,
+        82
+      ],
+      [
+        0,
+        0,
+        81
+      ],
+      [
+        0,
+        0,
+        85
+      ]
+    ],
+    "per_class": {
+      "minor": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1-score": 0.0,
+        "support": 82.0
+      },
+      "moderate": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1-score": 0.0,
+        "support": 81.0
+      },
+      "severe": {
+        "precision": 0.34274193548387094,
+        "recall": 1.0,
+        "f1-score": 0.5105105105105106,
+        "support": 85.0
+      },
+      "accuracy": 0.34274193548387094,
+      "macro avg": {
+        "precision": 0.11424731182795698,
+        "recall": 0.3333333333333333,
+        "f1-score": 0.1701701701701702,
+        "support": 248.0
+      },
+      "weighted avg": {
+        "precision": 0.11747203433922995,
+        "recall": 0.34274193548387094,
+        "f1-score": 0.17497336045723144,
+        "support": 248.0
+      }
+    }
+  },
+  "operational_metrics": {
+    "cpu_latency_ms": 12.6,
+    "cpu_latency_std": 1.24,
+    "model_size_mb": 21.13
+  }
+}

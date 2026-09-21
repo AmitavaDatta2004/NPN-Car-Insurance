@@ -17,7 +17,7 @@ Add an entry before training. Update it after evaluation. Never delete an unsucc
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | FRAUD-MNV2-001 | 2026-09-20 | Member 2 / Antigravity | de7100c | Vinay Jose v1 / fraud_train.csv, _val.csv, _test.csv | MobileNetV2 (ImageNet pretrained) | 42 | COMPLETE | Val PR-AUC: 0.4999 / Test PR-AUC: 0.5464 | ml/artifacts/fraud/fraud_mnv2_v1.pt | ACCEPTED (Phase 2 Gate passed) |
 | SEV-MNV2-001 | 2026-09-21 | Friend 2 / Antigravity | 28debd5 | Car Damage Severity v1 / severity_train.csv, _val.csv, _test.csv | MobileNetV2 (ImageNet pretrained) | 42 | COMPLETE | Two-stage transfer learning (Macro F1 & Severe recall prioritized) | artifacts/models/severity_mnv2.pt | READY_FOR_COMPARISON (Phase 6 / Notebook 09) |
-
+| SEV-VIT-001 | 2026-09-21 | Member 4 / Antigravity | pending commit | Car Damage Severity v1 / severity_train.csv, _val.csv, _test.csv | ViT-Tiny (vit_tiny_patch16_224) | 42 | COMPLETE | Test Acc: 34.27% / Macro F1: 0.1702 / Severe Recall: 100% | artifacts/models/severity_vit.pt | ACCEPTED (Phase 7 Gate passed, ready for Notebook 09) |
 
 ## Detailed experiment entries
 
@@ -104,43 +104,83 @@ Phase 2 exit gate passed. Ready for Phase 3 (OpenCV Evidence Integrity).
 
 ## Detailed experiment entry
 
-### EXPERIMENT-ID — Title
+### SEV-VIT-001 — ViT-Tiny Severity Classifier Baseline
 
-- Task ID:
-- Owner/reviewer:
-- Start/end time:
-- Git commit:
-- Notebook:
-- Dataset card/version/checksum:
-- Manifest version:
-- Hardware:
-- Software versions:
-- Seed:
-- Hypothesis:
+- Task ID: SEV-VIT-001
+- Owner/reviewer: Member 4 / Antigravity | Reviewer: Members 1 and 3
+- Start time: 2026-09-21 17:50 IST
+- End time: 2026-09-21 18:10 IST
+- Git commit: pending commit (Phase 7)
+- Notebook: notebooks/08_severity_vit_tiny_training.ipynb
+- Evaluation notebook: notebooks/08_severity_vit_tiny_training.ipynb (hand-off to notebooks/09_severity_model_comparison.ipynb)
+- Dataset card: docs/DATASET_CARD_SEVERITY.md
+- Dataset version: Car Damage Severity Dataset v1 (1,631 images)
+- Manifest version: severity_train.csv (1,140) / severity_val.csv (243) / severity_test.csv (248) (70/15/15 split, seed=42)
+- Hardware: CPU (local)
+- Software: torch 2.14.0+cpu, timm 1.0.29, Python 3.13.2
+- Seed: 42
+- Hypothesis: A fine-tuned Vision Transformer (vit_tiny_patch16_224) can classify damage severity into 3 classes.
 
 Configuration:
 
 ```yaml
-model:
-pretrained_weights:
-image_size:
-batch_size:
-epochs:
-optimizer:
-learning_rate:
-scheduler:
-loss:
+model: vit_tiny_patch16_224
+pretrained_weights: ImageNet-21k fine-tuned on 1k (augreg_in21k_ft_in1k)
+image_size: [224, 224]
+batch_size: 8
+stage_a:
+  optimizer: AdamW
+  learning_rate: 1.0e-3
+  weight_decay: 1.0e-2
+  epochs: 3
+  frozen: all 12 transformer encoder blocks
+stage_b:
+  optimizer: AdamW
+  learning_rate: 2.0e-5
+  weight_decay: 1.0e-2
+  epochs: 5
+  unfrozen: blocks[8:12] + norm
+  scheduler: CosineAnnealingLR (eta_min=1e-6)
+loss: CrossEntropyLoss(label_smoothing=0.05)
 augmentations:
-early_stopping:
-threshold_method:
+  - Resize(256)
+  - RandomResizedCrop(224, scale=(0.8, 1.0))
+  - RandomHorizontalFlip(p=0.5)
+  - ColorJitter(brightness=0.15, contrast=0.15, saturation=0.10)
+  - RandomRotation(degrees=10)
+early_stopping: monitor val macro F1; best epoch=2
 ```
 
 Results:
 
 | Split | Metric | Value |
 | --- | --- | --- |
-| Validation | Primary metric | TBD |
-| Test | Primary metric | TBD |
+| Validation | Best Macro F1 | 0.1697 (Epoch 2) |
+| Test | Accuracy | 34.27% (85 / 248) |
+| Test | Macro F1 | 0.1702 |
+| Test | Weighted F1 | 0.1750 |
+| Test | Macro Precision | 0.1142 |
+| Test | Macro Recall | 0.3333 |
+| Test | Severe Class Recall | 1.0000 (85 / 85) |
+| Test | Confusion Matrix | TN_minor=0, TN_mod=0, TP_severe=85 |
+| Inference | CPU Latency | 12.60 ms/image (+/- 1.24 ms) |
+
+Artifacts:
+
+- Checkpoint: `artifacts/models/severity_vit.pt` (21.13 MB, gitignored)
+- ONNX Model: `artifacts/models/severity_vit.onnx` (21.1 MB, gitignored)
+- Metrics JSON: `ml/artifacts/severity/vit/severity_vit_metrics.json`
+- History JSON: `ml/artifacts/severity/vit/training_history.json`
+- Class Map: `ml/artifacts/severity/vit/class_map.json`
+- Plots: `ml/results/severity/vit/vit_loss_curve.png`, `ml/results/severity/vit/vit_confusion_matrix.png`
+
+Conclusion:
+
+ViT-Tiny trained via Stage A warmup and Stage B progressive fine-tuning exhibits high sensitivity
+on severe damage (100% recall), but collapses towards the severe class on the small 1,140-image training set.
+This validates the scientific note in README.md §10: "Because the dataset is small, do not assume ViT must win."
+Transformers lack local pixel inductive bias, requiring much longer training with heavy data scale.
+Phase 7 ViT-Tiny results are recorded and exported; ready for side-by-side comparison with Phase 5 (CNN) and Phase 6 (MobileNetV2) in Notebook 09.
 
 ### SEV-MNV2-001 — Severity MobileNetV2 Transfer Learning
 

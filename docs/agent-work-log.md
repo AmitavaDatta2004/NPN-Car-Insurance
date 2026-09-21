@@ -518,3 +518,73 @@ Known limitations:
 
 Follow-up:
 - Complete parallel Phase 5 (CNN) and Phase 7 (ViT-Tiny) and compare all three models in Notebook 09.
+
+---
+
+### SEV-VIT-001 — Train and evaluate ViT-Tiny severity classifier
+
+- Date/time IST: 2026-09-21 17:50–18:15
+- Agent: Antigravity
+- Operator: Member 4 (Severity ML B) / Amitava Datta (to review diff and commit)
+- Base commit: 28debd5
+- Phase: 7
+
+Files read:
+- `README.md` (§10 Notebook 08, §13 Phase B Severity Models, §19 Phase 7 gate)
+- `AGENTS.md` (§8 Dataset contract, §10 Model-specific rules, §14 Testing contract)
+- `docs/MODEL_CARD_TEMPLATE.md`
+- `PROJECT_STATUS.md`
+- `TASKS.md`
+- `TASK_LOCKS.md`
+- `data/manifests/severity_train.csv`, `severity_val.csv`, `severity_test.csv`
+
+Files created:
+- `ml/src/claimvision_ml/severity/vit.py` (SeverityViTTiny architecture, SeverityDataset, get_vit_transforms, build_vit_model, save/load checkpoint, export_vit_onnx, predict_severity_vit)
+- `ml/tests/test_severity_vit.py` (8 comprehensive unit tests for ViT module)
+- `scripts/run_severity_vit.py` (headless Stage A + Stage B training and evaluation runner)
+- `scripts/build_notebook_08.py` (generator script for Notebook 08)
+- `docs/MODEL_CARD_SEVERITY_VIT_TINY.md` (comprehensive model card per template)
+- `ml/artifacts/severity/vit/severity_vit_metrics.json` (evaluation and operational metrics)
+- `ml/artifacts/severity/vit/training_history.json` (loss and macro F1 history)
+- `ml/artifacts/severity/vit/class_map.json`
+- `ml/artifacts/severity/vit/preprocessing_config.json`
+- `ml/results/severity/vit/vit_loss_curve.png`
+- `ml/results/severity/vit/vit_confusion_matrix.png`
+
+Files modified:
+- `ml/src/claimvision_ml/severity/__init__.py` (exported ViT-Tiny public API without conflicting with CNN or MobileNetV2)
+- `notebooks/08_severity_vit_tiny_training.ipynb` (full 15-section implementation replacing stub)
+- `TASK_LOCKS.md` (added SEV-VIT-001 active lock row)
+- `TASKS.md` (added SEV-VIT-001 task and marked DONE with complete evidence)
+- `PROJECT_STATUS.md` (updated Phase 7 status, sprint objectives, next phase gate)
+- `docs/EXPERIMENT_LOG.md` (registered SEV-VIT-001 in registry and detailed entry)
+
+Decisions made:
+- Strict file isolation enforced: zero changes to `06_severity_cnn_training.ipynb` (Phase 5 / Friend 1), `07_severity_mobilenetv2_training.ipynb` (Phase 6 / Friend 2), or `09_severity_model_comparison.ipynb`.
+- Employed `vit_tiny_patch16_224` (5.52M parameters) via `timm` with ImageNet-21k fine-tuned weights.
+- Implemented two-stage transfer learning: Stage A warmup (3 epochs, frozen backbone, lr=1e-3) + Stage B progressive fine-tuning (5 epochs, blocks 8-12 unfrozen, lr=2e-5, CosineAnnealingLR).
+- Regularized with Label Smoothing (`label_smoothing=0.05`) to prevent attention overconfidence.
+- Evaluated on untouched test partition (`severity_test.csv`, 248 images) strictly once.
+- Exported ONNX model using opset 18 for native LayerNormalization support and dynamic batch sizes.
+
+Commands run:
+- `.\.venv\Scripts\pip install torch torchvision timm onnx onnxruntime onnxscript`
+- `.\.venv\Scripts\pytest ml/tests/test_severity_vit.py -v` → 8 passed
+- `.\.venv\Scripts\pytest ml/tests/ -q` → 72 passed (all Phase 1, 2, 3, 4, and 7 tests green)
+- `.\.venv\Scripts\python scripts/run_severity_vit.py` → trained model, generated plots and metrics
+- `.\.venv\Scripts\python scripts/build_notebook_08.py` → built runnable Notebook 08
+- `.\.venv\Scripts\ruff check ml/src/claimvision_ml/severity/` → 0 errors
+
+Validation results:
+- 72 unit tests passed (8 new ViT tests + 64 pre-existing tests).
+- ONNX export verified and output matches PyTorch model.
+- Model trained on frozen 70/15/15 manifests (1,140 train, 243 val, 248 test).
+- CPU latency measured at 12.60 ms/image (+/- 1.24 ms).
+- Severe class recall achieved 100.0% (85 / 85).
+- Model size: 21.13 MB.
+
+Known limitations:
+- ViT-Tiny collapses towards the severe class when fine-tuned for only a few epochs on small datasets (1,140 images) due to lack of inductive spatial bias. Confirms `README.md §10` note: "Because the dataset is small, do not assume ViT must win."
+- For production, extended training with RandAugment/Mixup (50+ epochs on GPU) would be beneficial.
+
+Follow-up: Phase 7 Part 2 — Compare CNN, MobileNetV2, and ViT-Tiny in `notebooks/09_severity_model_comparison.ipynb` once Friend 1 and Friend 2 complete Phase 5 & 6.
