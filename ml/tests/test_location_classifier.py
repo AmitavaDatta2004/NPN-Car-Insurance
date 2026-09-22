@@ -275,3 +275,35 @@ def test_classification_report_sparse_classes_safe():
     assert len(rpt) >= 5
     cm = confusion_matrix(y_true, y_pred, labels=labels_list)
     assert cm.shape == (5, 5)
+
+
+def test_measure_cpu_latency_preserves_device():
+    """Verify measure_cpu_latency does not leave model on CPU if it was originally on another device."""
+    from claimvision_ml.location.mobilenet import LocationMobileNet
+    from PIL import Image
+
+    model = LocationMobileNet(num_classes=5, dropout=0.3, pretrained=False)
+    orig_device = next(model.parameters()).device
+    img = Image.new("RGB", (224, 224))
+    model.measure_cpu_latency(img, num_runs=2)
+    assert next(model.parameters()).device == orig_device
+
+
+def test_load_location_checkpoints_set_device(tmp_path):
+    """Verify load_location_mobilenet and load_location_efficientnet explicitly place model on target device."""
+    from claimvision_ml.location.mobilenet import LocationMobileNet, load_location_mobilenet
+    from claimvision_ml.location.efficientnet import LocationEfficientNet, load_location_efficientnet
+
+    m = LocationMobileNet(num_classes=5, dropout=0.3, pretrained=False)
+    ckpt_m = tmp_path / "m.pt"
+    torch.save(m.state_dict(), ckpt_m)
+
+    loaded_m = load_location_mobilenet(ckpt_m, device="cpu")
+    assert next(loaded_m.parameters()).device == torch.device("cpu")
+
+    e = LocationEfficientNet(num_classes=5, dropout=0.3, pretrained=False)
+    ckpt_e = tmp_path / "e.pt"
+    torch.save(e.state_dict(), ckpt_e)
+
+    loaded_e = load_location_efficientnet(ckpt_e, device="cpu")
+    assert next(loaded_e.parameters()).device == torch.device("cpu")

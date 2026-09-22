@@ -346,8 +346,11 @@ STAGE_B_LR     = 5e-5
 PATIENCE_B     = 10
 
 # Load best Stage A weights, unfreeze last blocks
+model = model.to(device)
 model.load_state_dict(torch.load(best_ckpt, map_location=device, weights_only=True))
+model = model.to(device)
 model.unfreeze_last_blocks(n_blocks=2)
+model = model.to(device)
 counts = model.parameter_count()
 print(f'Stage B — Unfreezing last 2 MobileNetV2 blocks')
 print(f'Trainable params now: {counts[\"trainable\"]:,}')
@@ -432,49 +435,151 @@ plt.show()
 """))
 
 # ── Cell 10 — Validation metrics + confusion matrix ─────────────────────────
-cells.append(code("""# Cell 10 — Validation: per-class metrics and confusion matrix
-from sklearn.metrics import classification_report, confusion_matrix
+cells.append(code("""# Cell 10 — Comprehensive Validation Classification Metrics & Analysis
+import json
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    classification_report,
+    confusion_matrix,
+)
 
+model = model.to(device)
 model.load_state_dict(torch.load(best_ckpt, map_location=device, weights_only=True))
+model = model.to(device)
 model.eval()
 
-all_preds, all_labels = [], []
+all_preds, all_labels, all_probs = [], [], []
 with torch.no_grad():
     for imgs, labels in val_loader:
         imgs = imgs.to(device)
-        preds = model(imgs).argmax(1).cpu().tolist()
+        logits = model(imgs)
+        probs = torch.softmax(logits, dim=1).cpu().numpy()
+        preds = logits.argmax(1).cpu().tolist()
         all_preds.extend(preds)
         all_labels.extend(labels.tolist())
+        all_probs.extend(probs)
 
-# Explicitly pass all 5 label IDs to prevent ValueError when classes have 0 support
 labels_list = list(range(len(LOCATION_CLASSES)))
 
-print('=== Validation Classification Report ===')
-print(classification_report(
+# 1. Global Summary Metrics
+accuracy = accuracy_score(all_labels, all_preds)
+macro_f1 = f1_score(all_labels, all_preds, labels=labels_list, average='macro', zero_division=0)
+weighted_f1 = f1_score(all_labels, all_preds, labels=labels_list, average='weighted', zero_division=0)
+macro_prec = precision_score(all_labels, all_preds, labels=labels_list, average='macro', zero_division=0)
+macro_rec = recall_score(all_labels, all_preds, labels=labels_list, average='macro', zero_division=0)
+
+print('================================================================')
+print('=== Location MobileNetV2 — Validation Classification Metrics ===')
+print('================================================================')
+print(f'Overall Accuracy    : {accuracy:6.4f}  ({accuracy*100:5.2f}%)')
+print(f'Macro F1 Score      : {macro_f1:6.4f}')
+print(f'Weighted F1 Score   : {weighted_f1:6.4f}')
+print(f'Macro Precision     : {macro_prec:6.4f}')
+print(f'Macro Recall        : {macro_rec:6.4f}')
+print('----------------------------------------------------------------')
+
+# 2. Per-Class Metrics Table
+report_dict = classification_report(
     all_labels,
     all_preds,
     labels=labels_list,
     target_names=LOCATION_CLASSES,
-    digits=4,
+    output_dict=True,
     zero_division=0,
-))
+)
 
+per_class_rows = []
+for cid, cname in enumerate(LOCATION_CLASSES):
+    metrics = report_dict.get(cname, {})
+    per_class_rows.append({
+        'Class ID': cid,
+        'Part Name': cname,
+        'Precision': metrics.get('precision', 0.0),
+        'Recall': metrics.get('recall', 0.0),
+        'F1-Score': metrics.get('f1-score', 0.0),
+        'Support': int(metrics.get('support', 0)),
+    })
+
+metrics_df = pd.DataFrame(per_class_rows)
+print('\\n=== Per-Class Classification Report ===')
+print(metrics_df.to_string(index=False, formatters={
+    'Precision': '{:.4f}'.format,
+    'Recall': '{:.4f}'.format,
+    'F1-Score': '{:.4f}'.format,
+}))
+
+# 3. Save Metrics JSON Artifact
+metrics_payload = {
+    'model': 'MobileNetV2',
+    'accuracy': float(accuracy),
+    'macro_f1': float(macro_f1),
+    'weighted_f1': float(weighted_f1),
+    'macro_precision': float(macro_prec),
+    'macro_recall': float(macro_rec),
+    'per_class': {row['Part Name']: {
+        'precision': float(row['Precision']),
+        'recall': float(row['Recall']),
+        'f1': float(row['F1-Score']),
+        'support': int(row['Support']),
+    } for row in per_class_rows}
+}
+metrics_json_path = output_dir / 'location_mobilenetv2_metrics.json'
+with open(metrics_json_path, 'w', encoding='utf-8') as f:
+    json.dump(metrics_payload, f, indent=2)
+print(f'\\nMetrics saved to JSON: {metrics_json_path}')
+
+# 4. Visualizations: Side-by-Side Confusion Matrix (Counts & Normalized) + Per-Class F1
 cm = confusion_matrix(all_labels, all_preds, labels=labels_list)
-fig, ax = plt.subplots(figsize=(7, 6))
-sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
-            xticklabels=LOCATION_CLASSES, yticklabels=LOCATION_CLASSES, ax=ax)
-ax.set_xlabel('Predicted'); ax.set_ylabel('Ground Truth')
-ax.set_title('Validation Confusion Matrix — Location MobileNetV2')
+cm_norm = cm.astype('float') / np.maximum(cm.sum(axis=1)[:, np.newaxis], 1e-9)
+
+fig, axes = plt.subplots(1, 3, figsize=(20, 5))
+
+# (a) Absolute Confusion Matrix
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=False,
+            xticklabels=LOCATION_CLASSES, yticklabels=LOCATION_CLASSES, ax=axes[0])
+axes[0].set_title('Confusion Matrix (Counts)', fontsize=12, fontweight='bold')
+axes[0].set_xlabel('Predicted Class')
+axes[0].set_ylabel('True Class')
+
+# (b) Normalized Confusion Matrix (Recall per class)
+sns.heatmap(cm_norm, annot=True, fmt='.2f', cmap='Blues', cbar=False,
+            xticklabels=LOCATION_CLASSES, yticklabels=LOCATION_CLASSES, ax=axes[1])
+axes[1].set_title('Normalized Confusion Matrix (Recall)', fontsize=12, fontweight='bold')
+axes[1].set_xlabel('Predicted Class')
+axes[1].set_ylabel('True Class')
+
+# (c) Per-Class F1 Score Bar Chart
+colors = ['#2b5c8f' if f1 >= 0.5 else '#d9534f' for f1 in metrics_df['F1-Score']]
+bars = axes[2].bar(metrics_df['Part Name'], metrics_df['F1-Score'], color=colors, edgecolor='black', alpha=0.85)
+axes[2].axhline(0.5, color='gray', linestyle='--', label='Target F1 (0.50)')
+axes[2].set_ylim(0, 1.05)
+axes[2].set_title('Per-Class F1 Score (Green/Blue >= 0.50)', fontsize=12, fontweight='bold')
+axes[2].set_ylabel('F1 Score')
+axes[2].tick_params(axis='x', rotation=30)
+axes[2].legend(loc='upper right')
+for bar in bars:
+    h = bar.get_height()
+    axes[2].text(bar.get_x() + bar.get_width()/2., h + 0.02, f'{h:.2f}', ha='center', va='bottom', fontsize=9, fontweight='bold')
+
 plt.tight_layout()
-plt.savefig(output_dir / 'location_mobilenetv2_val_cm.png', dpi=200)
+cm_plot_path = output_dir / 'location_mobilenetv2_val_cm.png'
+plt.savefig(cm_plot_path, dpi=200)
 plt.show()
+print(f'Evaluation plots saved: {cm_plot_path}')
 """))
 
 # ── Cell 11 — Visual inspection ─────────────────────────────────────────────
 cells.append(code("""# Cell 11 — Visual inspection: correct and incorrect validation predictions
 from claimvision_ml.location.inference import classify_location
 
+model = model.to(device)
 model.eval()
 correct_examples, wrong_examples = [], []
 
@@ -535,6 +640,9 @@ print('=== HELD-OUT TEST SET FORWARD INFERENCE ===')
 print('NOTE: The COCO test split contains NO ground-truth labels.')
 print('Running purely in forward-inference mode to generate qualitative visual predictions.\\n')
 
+model = model.to(device)
+model.eval()
+
 test_img_dir = RAW_DIR / 'test'
 test_images = sorted([f for f in test_img_dir.iterdir() if f.suffix.lower() in ('.jpg', '.jpeg', '.png')]) if test_img_dir.exists() else []
 print(f'Found {len(test_images)} held-out unannotated test images.\\n')
@@ -570,6 +678,7 @@ if test_images:
 cells.append(code("""# Cell 14 — Inference Latency & Model Size Benchmark
 sample_img = test_images[0] if test_images else val_ds.samples[0][0]
 latency_ms = model.measure_cpu_latency(sample_img, num_runs=15)
+model = model.to(device)
 ckpt_size_mb = best_ckpt.stat().st_size / (1024 * 1024) if best_ckpt.exists() else 14.0
 
 print('=== Benchmark Summary ===')
@@ -583,6 +692,7 @@ print('PASS: Meets latency requirements for judge demonstration.')
 # ── Cell 15 — Export artifacts ──────────────────────────────────────────────
 cells.append(code("""# Cell 15 — Artifact Export (PyTorch .pt + ONNX)
 import shutil
+from claimvision_ml.location.mobilenet import build_location_mobilenet
 from claimvision_ml.location.inference import export_location_onnx
 
 models_dir = REPO_ROOT / 'artifacts' / 'models'
@@ -593,9 +703,11 @@ shutil.copy2(str(best_ckpt), str(pt_dst))
 print(f'PyTorch checkpoint: {pt_dst}')
 
 onnx_dst = models_dir / 'location_mobilenetv2.onnx'
-model.load_state_dict(torch.load(best_ckpt, map_location='cpu', weights_only=True))
-model.eval().cpu()
-onnx_path = export_location_onnx(model, onnx_dst)
+# Export ONNX using a dedicated CPU model copy so the notebook model is untouched
+export_model = build_location_mobilenet(dropout=0.3, num_classes=5, pretrained=False)
+export_model.load_state_dict(torch.load(best_ckpt, map_location='cpu', weights_only=True))
+export_model.eval().cpu()
+onnx_path = export_location_onnx(export_model, onnx_dst)
 print(f'ONNX model       : {onnx_path}')
 print(f'ONNX size        : {onnx_path.stat().st_size / 1024 / 1024:.2f} MB')
 """))

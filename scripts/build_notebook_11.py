@@ -105,12 +105,10 @@ except ImportError:
     IN_COLAB = False
 
 if IN_COLAB:
-    from google.colab import drive  # type: ignore
-    if not Path("/content/drive").exists():
-        drive.mount("/content/drive")
     COLAB_BASE = Path("/content/NPN-Car-Insurance")
     if not COLAB_BASE.exists():
-        COLAB_BASE = Path("/content")
+        import subprocess
+        subprocess.run(["git", "clone", "https://github.com/AmitavaDatta2004/NPN-Car-Insurance.git", str(COLAB_BASE)], check=True)
     REPO_ROOT = COLAB_BASE
 else:
     REPO_ROOT = Path.cwd()

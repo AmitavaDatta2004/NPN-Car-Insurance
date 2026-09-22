@@ -259,8 +259,11 @@ plt.tight_layout(); plt.savefig(output_dir / 'location_efficientnet_stage_a_curv
 cells.append(code("""# Cell 8 — Stage B: Unfreeze last 2 EfficientNet blocks and fine-tune
 STAGE_B_EPOCHS = 15; STAGE_B_LR = 5e-5; PATIENCE_B = 10
 
+model = model.to(device)
 model.load_state_dict(torch.load(best_ckpt, map_location=device, weights_only=True))
+model = model.to(device)
 model.unfreeze_last_blocks(n_blocks=2)
+model = model.to(device)
 print(f'Stage B trainable params: {model.parameter_count()[\"trainable\"]:,}')
 optimizer_b = optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=STAGE_B_LR, weight_decay=1e-4)
 scheduler_b = CosineAnnealingLR(optimizer_b, T_max=STAGE_B_EPOCHS, eta_min=1e-6)
@@ -274,75 +277,199 @@ for epoch in range(1, STAGE_B_EPOCHS + 1):
     model.train(); train_loss = 0.0
     for imgs, labels in train_loader:
         imgs, labels = imgs.to(device), labels.to(device)
-        optimizer_b.zero_grad(); loss = criterion(model(imgs), labels); loss.backward(); optimizer_b.step()
+        optimizer_b.zero_grad()
+        logits = model(imgs); loss = criterion(logits, labels)
+        loss.backward(); optimizer_b.step()
         train_loss += loss.item() * imgs.size(0)
     train_loss /= len(train_loader.dataset)
-    model.eval(); val_loss = correct = total = 0
+
+    model.eval(); val_loss, correct, total = 0.0, 0, 0
     with torch.no_grad():
         for imgs, labels in val_loader:
-            imgs, labels = imgs.to(device), labels.to(device); logits = model(imgs)
+            imgs, labels = imgs.to(device), labels.to(device)
+            logits = model(imgs)
             val_loss += criterion(logits, labels).item() * imgs.size(0)
             correct += (logits.argmax(1) == labels).sum().item(); total += imgs.size(0)
     val_loss /= len(val_loader.dataset); val_acc = correct / total
-    history_b['train_loss'].append(train_loss); history_b['val_loss'].append(val_loss); history_b['val_acc'].append(val_acc)
+
+    history_b['train_loss'].append(train_loss)
+    history_b['val_loss'].append(val_loss)
+    history_b['val_acc'].append(val_acc)
     scheduler_b.step()
+
     if val_acc > best_b_acc or (val_acc == best_b_acc and val_loss < best_b_loss):
         best_b_acc = val_acc; best_b_loss = val_loss; patience_count_b = 0
         torch.save(model.state_dict(), best_ckpt)
     else:
         patience_count_b += 1
+
     if epoch % 5 == 0 or epoch == 1:
-        print(f'Epoch {epoch:>3}/{STAGE_B_EPOCHS} | Train: {train_loss:.4f} | Val: {val_loss:.4f} | Acc: {val_acc:.3f} (Best: {best_b_acc:.3f})')
-    if patience_count_b >= PATIENCE_B: print(f'Early stop epoch {epoch}'); break
-print(f'Stage B complete. Best val acc: {best_b_acc:.4f} (Val Loss: {best_b_loss:.4f})')
+        print(f'Epoch {epoch:>3}/{STAGE_B_EPOCHS} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.3f} (Best: {best_b_acc:.3f})')
+    if patience_count_b >= PATIENCE_B:
+        print(f'Early stopping at epoch {epoch}'); break
+
+print(f'\\nStage B complete. Best val accuracy: {best_b_acc:.4f}')
 """))
 
 # ── Cell 9 — Stage B curves ─────────────────────────────────────────────────
-cells.append(code("""# Cell 9 — Stage B Training Curves
-e = range(1, len(history_b['train_loss'])+1)
+cells.append(code("""# Cell 9 — Stage B Training & Validation Curves
 fig, axes = plt.subplots(1, 2, figsize=(12, 4))
-axes[0].plot(e, history_b['train_loss'], label='Train Loss'); axes[0].plot(e, history_b['val_loss'], label='Val Loss')
-axes[0].set_title('Stage B — Loss (EfficientNet-B0 Last 2 Blocks)'); axes[0].legend(); axes[0].grid(True, alpha=0.3)
-axes[1].plot(e, history_b['val_acc'], color='green'); axes[1].set_title('Stage B — Val Accuracy'); axes[1].grid(True, alpha=0.3)
+epochs_b = range(1, len(history_b['train_loss']) + 1)
+axes[0].plot(epochs_b, history_b['train_loss'], label='Train Loss', color='tab:blue', lw=2)
+axes[0].plot(epochs_b, history_b['val_loss'],   label='Val Loss',   color='tab:orange', lw=2)
+axes[0].set_title('Stage B — Loss Curves (EfficientNet-B0)'); axes[0].set_xlabel('Epoch'); axes[0].legend(); axes[0].grid(True, alpha=0.3)
+
+axes[1].plot(epochs_b, history_b['val_acc'], color='tab:green', lw=2)
+axes[1].set_title('Stage B — Validation Accuracy'); axes[1].set_xlabel('Epoch'); axes[1].grid(True, alpha=0.3)
 plt.tight_layout(); plt.savefig(output_dir / 'location_efficientnet_stage_b_curves.png', dpi=200); plt.show()
 """))
 
-# ── Cell 10 — Validation metrics ────────────────────────────────────────────
-cells.append(code("""# Cell 10 — Validation: Per-class Metrics and Confusion Matrix
-from sklearn.metrics import classification_report, confusion_matrix
+# ── Cell 10 — Validation metrics + confusion matrix ─────────────────────────
+cells.append(code("""# Cell 10 — Comprehensive Validation Classification Metrics & Analysis
+import json
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    classification_report,
+    confusion_matrix,
+)
 
-model.load_state_dict(torch.load(best_ckpt, map_location=device, weights_only=True)); model.eval()
-all_preds, all_labels = [], []
+model = model.to(device)
+model.load_state_dict(torch.load(best_ckpt, map_location=device, weights_only=True))
+model = model.to(device)
+model.eval()
+
+all_preds, all_labels, all_probs = [], [], []
 with torch.no_grad():
     for imgs, labels in val_loader:
-        preds = model(imgs.to(device)).argmax(1).cpu().tolist()
-        all_preds.extend(preds); all_labels.extend(labels.tolist())
+        imgs = imgs.to(device)
+        logits = model(imgs)
+        probs = torch.softmax(logits, dim=1).cpu().numpy()
+        preds = logits.argmax(1).cpu().tolist()
+        all_preds.extend(preds)
+        all_labels.extend(labels.tolist())
+        all_probs.extend(probs)
 
 labels_list = list(range(len(LOCATION_CLASSES)))
 
-print('=== Validation Classification Report ===')
-print(classification_report(
+# 1. Global Summary Metrics
+accuracy = accuracy_score(all_labels, all_preds)
+macro_f1 = f1_score(all_labels, all_preds, labels=labels_list, average='macro', zero_division=0)
+weighted_f1 = f1_score(all_labels, all_preds, labels=labels_list, average='weighted', zero_division=0)
+macro_prec = precision_score(all_labels, all_preds, labels=labels_list, average='macro', zero_division=0)
+macro_rec = recall_score(all_labels, all_preds, labels=labels_list, average='macro', zero_division=0)
+
+print('===================================================================')
+print('=== Location EfficientNet-B0 — Validation Classification Metrics ===')
+print('===================================================================')
+print(f'Overall Accuracy    : {accuracy:6.4f}  ({accuracy*100:5.2f}%)')
+print(f'Macro F1 Score      : {macro_f1:6.4f}')
+print(f'Weighted F1 Score   : {weighted_f1:6.4f}')
+print(f'Macro Precision     : {macro_prec:6.4f}')
+print(f'Macro Recall        : {macro_rec:6.4f}')
+print('-------------------------------------------------------------------')
+
+# 2. Per-Class Metrics Table
+report_dict = classification_report(
     all_labels,
     all_preds,
     labels=labels_list,
     target_names=LOCATION_CLASSES,
-    digits=4,
+    output_dict=True,
     zero_division=0,
-))
+)
 
+per_class_rows = []
+for cid, cname in enumerate(LOCATION_CLASSES):
+    metrics = report_dict.get(cname, {})
+    per_class_rows.append({
+        'Class ID': cid,
+        'Part Name': cname,
+        'Precision': metrics.get('precision', 0.0),
+        'Recall': metrics.get('recall', 0.0),
+        'F1-Score': metrics.get('f1-score', 0.0),
+        'Support': int(metrics.get('support', 0)),
+    })
+
+metrics_df = pd.DataFrame(per_class_rows)
+print('\\n=== Per-Class Classification Report ===')
+print(metrics_df.to_string(index=False, formatters={
+    'Precision': '{:.4f}'.format,
+    'Recall': '{:.4f}'.format,
+    'F1-Score': '{:.4f}'.format,
+}))
+
+# 3. Save Metrics JSON Artifact
+metrics_payload = {
+    'model': 'EfficientNet-B0',
+    'accuracy': float(accuracy),
+    'macro_f1': float(macro_f1),
+    'weighted_f1': float(weighted_f1),
+    'macro_precision': float(macro_prec),
+    'macro_recall': float(macro_rec),
+    'per_class': {row['Part Name']: {
+        'precision': float(row['Precision']),
+        'recall': float(row['Recall']),
+        'f1': float(row['F1-Score']),
+        'support': int(row['Support']),
+    } for row in per_class_rows}
+}
+metrics_json_path = output_dir / 'location_efficientnet_metrics.json'
+with open(metrics_json_path, 'w', encoding='utf-8') as f:
+    json.dump(metrics_payload, f, indent=2)
+print(f'\\nMetrics saved to JSON: {metrics_json_path}')
+
+# 4. Visualizations: Side-by-Side Confusion Matrix (Counts & Normalized) + Per-Class F1
 cm = confusion_matrix(all_labels, all_preds, labels=labels_list)
-fig, ax = plt.subplots(figsize=(7, 6))
-sns.heatmap(cm, annot=True, fmt='d', cmap='Greens', xticklabels=LOCATION_CLASSES, yticklabels=LOCATION_CLASSES, ax=ax)
-ax.set_xlabel('Predicted'); ax.set_ylabel('Ground Truth')
-ax.set_title('Validation Confusion Matrix — Location EfficientNet-B0')
-plt.tight_layout(); plt.savefig(output_dir / 'location_efficientnet_val_cm.png', dpi=200); plt.show()
+cm_norm = cm.astype('float') / np.maximum(cm.sum(axis=1)[:, np.newaxis], 1e-9)
+
+fig, axes = plt.subplots(1, 3, figsize=(20, 5))
+
+# (a) Absolute Confusion Matrix
+sns.heatmap(cm, annot=True, fmt='d', cmap='Greens', cbar=False,
+            xticklabels=LOCATION_CLASSES, yticklabels=LOCATION_CLASSES, ax=axes[0])
+axes[0].set_title('Confusion Matrix (Counts)', fontsize=12, fontweight='bold')
+axes[0].set_xlabel('Predicted Class')
+axes[0].set_ylabel('True Class')
+
+# (b) Normalized Confusion Matrix (Recall per class)
+sns.heatmap(cm_norm, annot=True, fmt='.2f', cmap='Greens', cbar=False,
+            xticklabels=LOCATION_CLASSES, yticklabels=LOCATION_CLASSES, ax=axes[1])
+axes[1].set_title('Normalized Confusion Matrix (Recall)', fontsize=12, fontweight='bold')
+axes[1].set_xlabel('Predicted Class')
+axes[1].set_ylabel('True Class')
+
+# (c) Per-Class F1 Score Bar Chart
+colors = ['#2e7d32' if f1 >= 0.5 else '#d9534f' for f1 in metrics_df['F1-Score']]
+bars = axes[2].bar(metrics_df['Part Name'], metrics_df['F1-Score'], color=colors, edgecolor='black', alpha=0.85)
+axes[2].axhline(0.5, color='gray', linestyle='--', label='Target F1 (0.50)')
+axes[2].set_ylim(0, 1.05)
+axes[2].set_title('Per-Class F1 Score (Green >= 0.50)', fontsize=12, fontweight='bold')
+axes[2].set_ylabel('F1 Score')
+axes[2].tick_params(axis='x', rotation=30)
+axes[2].legend(loc='upper right')
+for bar in bars:
+    h = bar.get_height()
+    axes[2].text(bar.get_x() + bar.get_width()/2., h + 0.02, f'{h:.2f}', ha='center', va='bottom', fontsize=9, fontweight='bold')
+
+plt.tight_layout()
+cm_plot_path = output_dir / 'location_efficientnet_val_cm.png'
+plt.savefig(cm_plot_path, dpi=200)
+plt.show()
+print(f'Evaluation plots saved: {cm_plot_path}')
 """))
 
 # ── Cell 11 — Visual inspection ─────────────────────────────────────────────
 cells.append(code("""# Cell 11 — Visual Inspection: Correct and Incorrect Validation Predictions
 from claimvision_ml.location.inference import classify_location
 
+model = model.to(device)
 model.eval()
 correct_examples, wrong_examples = [], []
 for full_path, label_id in val_ds.samples[:20]:
@@ -388,6 +515,9 @@ print('=== HELD-OUT TEST SET FORWARD INFERENCE ===')
 print('NOTE: The COCO test split contains NO ground-truth labels.')
 print('Running purely in forward-inference mode to generate qualitative visual predictions.\\n')
 
+model = model.to(device)
+model.eval()
+
 test_img_dir = RAW_DIR / 'test'
 test_images = sorted([f for f in test_img_dir.iterdir() if f.suffix.lower() in ('.jpg', '.jpeg', '.png')]) if test_img_dir.exists() else []
 print(f'Found {len(test_images)} held-out unannotated test images.\\n')
@@ -423,6 +553,7 @@ if test_images:
 cells.append(code("""# Cell 14 — Inference Latency & Model Size
 sample_img = test_images[0] if test_images else val_ds.samples[0][0]
 latency_ms = model.measure_cpu_latency(sample_img, num_runs=15)
+model = model.to(device)
 ckpt_size_mb = best_ckpt.stat().st_size / (1024 * 1024) if best_ckpt.exists() else 20.0
 print(f'Architecture   : EfficientNet-B0 (5 location classes)')
 print(f'CPU Latency    : {latency_ms:.2f} ms/image')
@@ -434,6 +565,7 @@ print('PASS: Latency within acceptable range.')
 # ── Cell 15 — Export ────────────────────────────────────────────────────────
 cells.append(code("""# Cell 15 — Export artifacts (PyTorch + ONNX)
 import shutil
+from claimvision_ml.location.efficientnet import build_location_efficientnet
 from claimvision_ml.location.inference import export_location_onnx
 
 models_dir = REPO_ROOT / 'artifacts' / 'models'
@@ -442,8 +574,10 @@ models_dir.mkdir(parents=True, exist_ok=True)
 pt_dst = models_dir / 'location_efficientnet.pt'
 shutil.copy2(str(best_ckpt), str(pt_dst)); print(f'PyTorch: {pt_dst}')
 
-model.load_state_dict(torch.load(best_ckpt, map_location='cpu', weights_only=True)); model.eval().cpu()
-onnx_path = export_location_onnx(model, models_dir / 'location_efficientnet.onnx')
+export_model = build_location_efficientnet(dropout=0.3, num_classes=5, pretrained=False)
+export_model.load_state_dict(torch.load(best_ckpt, map_location='cpu', weights_only=True))
+export_model.eval().cpu()
+onnx_path = export_location_onnx(export_model, models_dir / 'location_efficientnet.onnx')
 print(f'ONNX   : {onnx_path} ({onnx_path.stat().st_size / 1024 / 1024:.2f} MB)')
 """))
 

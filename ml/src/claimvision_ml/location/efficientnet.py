@@ -135,6 +135,7 @@ class LocationEfficientNet(nn.Module):
         from PIL import Image as PILImage
         import numpy as np
 
+        orig_device = next(self.parameters()).device
         self.eval()
         device = torch.device("cpu")
         self.to(device)
@@ -161,6 +162,7 @@ class LocationEfficientNet(nn.Module):
                 t0 = time.perf_counter()
                 self(tensor)
                 times.append((time.perf_counter() - t0) * 1000.0)
+        self.to(orig_device)
         return float(sum(times) / len(times))
 
 
@@ -225,5 +227,6 @@ def load_location_efficientnet(
     model = LocationEfficientNet(num_classes=num_classes, dropout=dropout, pretrained=False)
     state = torch.load(checkpoint_path, map_location=device, weights_only=True)
     model.load_state_dict(state)
+    model.to(torch.device(device))
     model.eval()
     return model

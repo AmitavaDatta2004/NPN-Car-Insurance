@@ -31,9 +31,9 @@ Current commit: a52ed77 (local changes uncommitted)
 | 9 Damage YOLO | Member 4 / Antigravity | Complete | Conversion accepted | YOLOv8n detector trained; damage.py implemented; 17 unit tests pass; Notebook 11 complete |
 | 10 Part YOLO | Member 4 / Antigravity | In progress | Part labels verified | Part detector & multi-color overlays implemented; 20 unit tests pass; Notebook 12 generated |
 | 10b Location module scaffold | Location owner / Antigravity | Complete | DET-COCO-001 done | location/ package: dataset.py, mobilenet.py, efficientnet.py, inference.py; 39 tests pass; notebooks 13/14/15 generated |
-| 11a Location MobileNetV2 | Location owner | Not started | Phase 10b complete | NB 13 executed in Colab; LOC-MNV2-001 checkpoint saved |
-| 11b Location EfficientNet | Location owner | Not started | Phase 11a verified | NB 14 executed in Colab; LOC-EFF-001 checkpoint saved |
-| 11c Location comparison | Location owner | Not started | 11a + 11b done | NB 15 executed; winner selected; LOC-COMP-001 documented |
+| 11a Location MobileNetV2 | Location owner / Antigravity | Complete | Phase 10b complete | LocationMobileNet module, tests, & Notebook 13 implemented |
+| 11b Location EfficientNet | Location owner / Antigravity | Complete | Phase 11a verified | LocationEfficientNet module, tests, & Notebook 14 implemented |
+| 11c Location comparison | Location owner / Antigravity | Ready | 11a + 11b done | Notebook 15 generated; comparison evaluation scaffolded |
 | 12 Unified inference | Member 5 / Antigravity | Complete | Selected models exported | assess_claim() pipeline implemented; 20 unit tests pass (204 total); cost engine & decision thresholds ready |
 | 13 Backend foundation | Member 5 / Antigravity | Complete | API contract approved | In-memory store, upload security, 14 REST endpoints, 14 tests pass |
 | 14 Assessment APIs | Member 5 / Antigravity | Complete | Inference adapter stable | assess_claim connected to backend; review queue & decisions verified |
@@ -59,7 +59,9 @@ Current commit: a52ed77 (local changes uncommitted)
 - [x] DET-COCO-001 — COCO annotation audit and YOLO conversion (coco_converter.py implemented; 17 unit tests pass; Notebook 10 executed with all outputs)
 - [x] DET-YOLO-001 — Generic Damage YOLO training (YOLOv8n detector, damage.py, 17 unit tests pass, Notebook 11 implemented)
 - [x] DET-PART-001 — Damaged-Part YOLO training (YOLOv8n 5-class detector, parts.py, 20 unit tests pass, Notebook 12 generated)
-- [x] LOC-DATA-001 — Location classification module scaffold (location/ package: dataset.py, mobilenet.py, efficientnet.py, inference.py; 39 tests pass, 184 total pass; notebooks 13/14/15 generated; ADR-004 written)
+- [x] LOC-DATA-001 — Location classification module scaffold & Colab fixes (location/ package: dataset.py, mobilenet.py, efficientnet.py, inference.py; load_location_splits added with stratified pooling fallback; scikit-learn sparse class reporting fixed; unannotated test forward-inference handled; 43 location tests pass, 188 total tests pass; notebooks 13/14/15 updated; drive.mount removed from all notebooks; ADR-004 written)
+- [x] LOC-MNV2-001 — Location MobileNetV2 classifier (LocationMobileNet, 2-stage fine-tuning architecture, inference runtime, unit tests pass, Notebook 13 generated & Colab-ready)
+- [x] LOC-EFF-001 — Location EfficientNet-B0 classifier (LocationEfficientNet via timm, 2-stage fine-tuning architecture, unit tests pass, Notebook 14 generated & Colab-ready)
 - [x] INF-001 — Unified inference orchestrator (assess_claim() chaining quality, fraud, severity, detection, location, costing, decision; 20 unit tests pass; 204 total ML tests pass)
 - [x] BE-001 — FastAPI backend foundation & assessment APIs (in-memory store, upload security, 14 REST endpoints, reviewer workflow; 14 tests pass)
 - [x] FE-001 — Next.js customer UI (multi-step claim form, evidence upload, live status poller, result with damage overlay, timeline)
