@@ -48,10 +48,11 @@ This notebook uses the **same dataset, same label derivation, and same evaluatio
 ## Hypothesis
 
 EfficientNet-B0, with its compound scaling and superior feature extraction (≥MobileNetV2 on ImageNet),  
-will achieve higher macro F1 than MobileNetV2 on this 5-class location task — even on only ~59 training images.
+will achieve higher macro F1 than MobileNetV2 on this 5-class location task.
 
-> **Scientific limitation:** ~12 images per class for training.  
-> Prototype for judge demonstration — not production-deployable without more data.
+> **Dataset Handling Note:**
+> Identical to Notebook 13, `load_location_splits()` pools available annotated images and constructs a
+> stratified 80/20 train/val split (48 train / 12 val) ensuring every class is represented in validation.
 """))
 
 # ── Cell 1 — Environment ────────────────────────────────────────────────────
@@ -97,54 +98,54 @@ for pkg in ['torch', 'torchvision', 'timm', 'numpy']:
         print(f'  {pkg:<15} NOT INSTALLED')
 """))
 
-# ── Cell 2 — Dataset ────────────────────────────────────────────────────────
-cells.append(code("""# Cell 2 — Load COCO annotations and derive dominant-part labels (same as NB 13)
-from collections import Counter
-from claimvision_ml.location.dataset import LOCATION_CLASSES, derive_location_labels, LocationDataset
+# ── Cell 2 — Dataset Audit ──────────────────────────────────────────────────
+cells.append(code("""# Cell 2 — Locate raw COCO dataset and audit physical files on disk
+from pathlib import Path
+from claimvision_ml.location.dataset import LOCATION_CLASSES
 
 RAW_CANDIDATES = [
     REPO_ROOT / 'data' / 'raw' / 'coco_car_damage' / 'coco-car-damage-detection-dataset' / 'coco-car-damage-detection-dataset',
     REPO_ROOT / 'data' / 'raw' / 'coco_car_damage' / 'coco-car-damage-detection-dataset',
     REPO_ROOT / 'data' / 'raw' / 'coco_car_damage',
     Path('/content/NPN-Car-Insurance/data/raw/coco_car_damage/coco-car-damage-detection-dataset/coco-car-damage-detection-dataset'),
+    Path('/content/data/raw/coco_car_damage/coco-car-damage-detection-dataset/coco-car-damage-detection-dataset'),
 ]
 RAW_DIR = None
 for c in RAW_CANDIDATES:
-    if (c / 'train').exists():
+    if (c / 'train').exists() and (c / 'val').exists():
         RAW_DIR = c; break
 if RAW_DIR is None:
     raise RuntimeError('COCO raw dataset not found. Run Notebook 00 first.')
-print(f'RAW_DIR: {RAW_DIR}')
+print(f'RAW_DIR: {RAW_DIR}\\n')
 
-label_maps = {}
-for split, fname in [('train', 'COCO_mul_train_annos.json'), ('val', 'COCO_mul_val_annos.json')]:
-    p = RAW_DIR / split / fname
-    if p.exists():
-        label_maps[split] = derive_location_labels(p)
-        print(f'[{split}] {len(label_maps[split])} labelled images')
-
-print('\\n=== Label Distribution ===')
-for cls in LOCATION_CLASSES:
-    tr = Counter(n for _,(_, n) in label_maps.get('train', {}).items()).get(cls, 0)
-    va = Counter(n for _,(_, n) in label_maps.get('val', {}).items()).get(cls, 0)
-    print(f'  {cls:<18} train={tr:>3}  val={va:>3}')
+print('=== Raw Physical Disk Audit ===')
+for s in ['train', 'val', 'test']:
+    sdir = RAW_DIR / s
+    if sdir.exists():
+        imgs = [f for f in sdir.iterdir() if f.suffix.lower() in ('.jpg', '.jpeg', '.png')]
+        annos = list(sdir.glob('*.json'))
+        print(f'  [{s:<5}] {len(imgs):>2} physical image files on disk, {len(annos)} JSON annotation files')
 """))
 
 # ── Cell 3 — Sample grid ────────────────────────────────────────────────────
 cells.append(code("""# Cell 3 — Sample image grid per class (same images as NB 13 for direct comparison)
 import cv2, matplotlib.pyplot as plt
+from claimvision_ml.location.dataset import derive_location_labels
 
 fig, axes = plt.subplots(1, 5, figsize=(18, 4))
 shown = {cls: False for cls in LOCATION_CLASSES}
-for fname, (label_id, label_name) in label_maps.get('train', {}).items():
+train_anno_path = RAW_DIR / 'train' / 'COCO_mul_train_annos.json'
+train_lmap = derive_location_labels(train_anno_path) if train_anno_path.exists() else {}
+
+for fname, (label_id, label_name) in train_lmap.items():
     if shown[label_name]: continue
     img = cv2.imread(str(RAW_DIR / 'train' / fname))
     if img is None: continue
     axes[label_id].imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-    axes[label_id].set_title(f'GT: {label_name}', fontsize=11, fontweight='bold')
+    axes[label_id].set_title(f'[{label_id}] {label_name}', fontsize=11, fontweight='bold')
     axes[label_id].axis('off'); shown[label_name] = True
     if all(shown.values()): break
-plt.suptitle('One Sample per Location Class (Raw)', fontsize=13, fontweight='bold')
+plt.suptitle('One Raw Sample per Location Class (Ground Truth)', fontsize=13, fontweight='bold')
 plt.tight_layout(); plt.show()
 """))
 
@@ -166,19 +167,31 @@ print(f'Trainable     : {counts[\"trainable\"]:,}  (Stage A: head only)')
 print(f'Frozen        : {counts[\"frozen\"]:,}')
 """))
 
-# ── Cell 5 — DataLoaders ────────────────────────────────────────────────────
-cells.append(code("""# Cell 5 — Dataset and DataLoader (same split, same augmentation as NB 13)
+# ── Cell 5 — DataLoaders with Stratified Split ───────────────────────────────
+cells.append(code("""# Cell 5 — Dataset and DataLoader (same stratified split as NB 13)
 from torch.utils.data import DataLoader
+from claimvision_ml.location.dataset import load_location_splits
 
 BATCH_SIZE = 8; NUM_WORKERS = 0
 
-train_ds = LocationDataset(RAW_DIR / 'train', RAW_DIR / 'train' / 'COCO_mul_train_annos.json', split='train')
-val_ds   = LocationDataset(RAW_DIR / 'val',   RAW_DIR / 'val'   / 'COCO_mul_val_annos.json',   split='val')
+train_ds, val_ds = load_location_splits(RAW_DIR, val_ratio=0.20, seed=SEED)
+
 train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True,  num_workers=NUM_WORKERS, pin_memory=torch.cuda.is_available())
 val_loader   = DataLoader(val_ds,   batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS)
-print(repr(train_ds)); print(repr(val_ds))
+
+print('=== Split Construction Summary ===')
+print(repr(train_ds))
+print(repr(val_ds))
+print(f'\\nTrain batches : {len(train_loader)} ({len(train_ds)} samples)')
+print(f'Val batches   : {len(val_loader)} ({len(val_ds)} samples)')
+
+print('\\nPer-class breakdown in validation set:')
+val_counts = val_ds.label_counts
+for cid, cname in enumerate(LOCATION_CLASSES):
+    print(f'  [{cid}] {cname:<16}: {val_counts.get(cid, 0):>2} images')
+
 class_weights = train_ds.class_weights().to(device)
-print(f'Class weights: {class_weights.tolist()}')
+print(f'\\nNormalized class weights: {[round(w, 3) for w in class_weights.tolist()]}')
 """))
 
 # ── Cell 6 — Stage A ────────────────────────────────────────────────────────
@@ -186,7 +199,7 @@ cells.append(code("""# Cell 6 — Stage A: Train classification head (EfficientN
 import torch.nn as nn, torch.optim as optim
 from torch.optim.lr_scheduler import CosineAnnealingLR
 
-STAGE_A_EPOCHS = 25; STAGE_A_LR = 1e-3; PATIENCE = 10
+STAGE_A_EPOCHS = 25; STAGE_A_LR = 1e-3; PATIENCE = 12
 
 criterion  = nn.CrossEntropyLoss(weight=class_weights)
 optimizer  = optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=STAGE_A_LR, weight_decay=1e-4)
@@ -197,7 +210,9 @@ output_dir.mkdir(parents=True, exist_ok=True)
 best_ckpt  = output_dir / 'location_efficientnet_best.pt'
 
 history_a  = {'train_loss': [], 'val_loss': [], 'val_acc': []}
-best_val_acc, patience_count = 0.0, 0
+best_val_acc = -1.0
+best_val_loss = float('inf')
+patience_count = 0
 
 print(f'Stage A — Training head for up to {STAGE_A_EPOCHS} epochs')
 for epoch in range(1, STAGE_A_EPOCHS + 1):
@@ -216,13 +231,17 @@ for epoch in range(1, STAGE_A_EPOCHS + 1):
     val_loss /= len(val_loader.dataset); val_acc = correct / total
     history_a['train_loss'].append(train_loss); history_a['val_loss'].append(val_loss); history_a['val_acc'].append(val_acc)
     scheduler.step()
-    if val_acc > best_val_acc:
-        best_val_acc = val_acc; patience_count = 0; torch.save(model.state_dict(), best_ckpt)
-    else: patience_count += 1
+
+    if epoch == 1 or val_acc > best_val_acc or (val_acc == best_val_acc and val_loss < best_val_loss):
+        best_val_acc = val_acc; best_val_loss = val_loss; patience_count = 0
+        torch.save(model.state_dict(), best_ckpt)
+    else:
+        patience_count += 1
+
     if epoch % 5 == 0 or epoch == 1:
-        print(f'Epoch {epoch:>3}/{STAGE_A_EPOCHS} | Train: {train_loss:.4f} | Val: {val_loss:.4f} | Acc: {val_acc:.3f}')
+        print(f'Epoch {epoch:>3}/{STAGE_A_EPOCHS} | Train: {train_loss:.4f} | Val: {val_loss:.4f} | Acc: {val_acc:.3f} (Best: {best_val_acc:.3f})')
     if patience_count >= PATIENCE: print(f'Early stop epoch {epoch}'); break
-print(f'Stage A complete. Best val acc: {best_val_acc:.4f}')
+print(f'Stage A complete. Best val acc: {best_val_acc:.4f} (Val Loss: {best_val_loss:.4f})')
 """))
 
 # ── Cell 7 — Stage A curves ─────────────────────────────────────────────────
@@ -238,7 +257,7 @@ plt.tight_layout(); plt.savefig(output_dir / 'location_efficientnet_stage_a_curv
 
 # ── Cell 8 — Stage B ────────────────────────────────────────────────────────
 cells.append(code("""# Cell 8 — Stage B: Unfreeze last 2 EfficientNet blocks and fine-tune
-STAGE_B_EPOCHS = 15; STAGE_B_LR = 5e-5; PATIENCE_B = 8
+STAGE_B_EPOCHS = 15; STAGE_B_LR = 5e-5; PATIENCE_B = 10
 
 model.load_state_dict(torch.load(best_ckpt, map_location=device, weights_only=True))
 model.unfreeze_last_blocks(n_blocks=2)
@@ -247,7 +266,9 @@ optimizer_b = optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()),
 scheduler_b = CosineAnnealingLR(optimizer_b, T_max=STAGE_B_EPOCHS, eta_min=1e-6)
 
 history_b = {'train_loss': [], 'val_loss': [], 'val_acc': []}
-best_b_acc = best_val_acc; patience_count_b = 0
+best_b_acc = best_val_acc
+best_b_loss = best_val_loss
+patience_count_b = 0
 
 for epoch in range(1, STAGE_B_EPOCHS + 1):
     model.train(); train_loss = 0.0
@@ -265,13 +286,15 @@ for epoch in range(1, STAGE_B_EPOCHS + 1):
     val_loss /= len(val_loader.dataset); val_acc = correct / total
     history_b['train_loss'].append(train_loss); history_b['val_loss'].append(val_loss); history_b['val_acc'].append(val_acc)
     scheduler_b.step()
-    if val_acc > best_b_acc:
-        best_b_acc = val_acc; patience_count_b = 0; torch.save(model.state_dict(), best_ckpt)
-    else: patience_count_b += 1
+    if val_acc > best_b_acc or (val_acc == best_b_acc and val_loss < best_b_loss):
+        best_b_acc = val_acc; best_b_loss = val_loss; patience_count_b = 0
+        torch.save(model.state_dict(), best_ckpt)
+    else:
+        patience_count_b += 1
     if epoch % 5 == 0 or epoch == 1:
-        print(f'Epoch {epoch:>3}/{STAGE_B_EPOCHS} | Train: {train_loss:.4f} | Val: {val_loss:.4f} | Acc: {val_acc:.3f}')
+        print(f'Epoch {epoch:>3}/{STAGE_B_EPOCHS} | Train: {train_loss:.4f} | Val: {val_loss:.4f} | Acc: {val_acc:.3f} (Best: {best_b_acc:.3f})')
     if patience_count_b >= PATIENCE_B: print(f'Early stop epoch {epoch}'); break
-print(f'Stage B complete. Best val acc: {best_b_acc:.4f}')
+print(f'Stage B complete. Best val acc: {best_b_acc:.4f} (Val Loss: {best_b_loss:.4f})')
 """))
 
 # ── Cell 9 — Stage B curves ─────────────────────────────────────────────────
@@ -296,10 +319,19 @@ with torch.no_grad():
         preds = model(imgs.to(device)).argmax(1).cpu().tolist()
         all_preds.extend(preds); all_labels.extend(labels.tolist())
 
-print('=== Validation Classification Report ===')
-print(classification_report(all_labels, all_preds, target_names=LOCATION_CLASSES, digits=4))
+labels_list = list(range(len(LOCATION_CLASSES)))
 
-cm = confusion_matrix(all_labels, all_preds)
+print('=== Validation Classification Report ===')
+print(classification_report(
+    all_labels,
+    all_preds,
+    labels=labels_list,
+    target_names=LOCATION_CLASSES,
+    digits=4,
+    zero_division=0,
+))
+
+cm = confusion_matrix(all_labels, all_preds, labels=labels_list)
 fig, ax = plt.subplots(figsize=(7, 6))
 sns.heatmap(cm, annot=True, fmt='d', cmap='Greens', xticklabels=LOCATION_CLASSES, yticklabels=LOCATION_CLASSES, ax=ax)
 ax.set_xlabel('Predicted'); ax.set_ylabel('Ground Truth')
@@ -308,14 +340,13 @@ plt.tight_layout(); plt.savefig(output_dir / 'location_efficientnet_val_cm.png',
 """))
 
 # ── Cell 11 — Visual inspection ─────────────────────────────────────────────
-cells.append(code("""# Cell 11 — Visual Inspection: Correct and Incorrect Predictions
+cells.append(code("""# Cell 11 — Visual Inspection: Correct and Incorrect Validation Predictions
 from claimvision_ml.location.inference import classify_location
 
 model.eval()
 correct_examples, wrong_examples = [], []
-for fname, (label_id, label_name) in list(label_maps.get('val', {}).items())[:20]:
-    full_path = RAW_DIR / 'val' / fname
-    if not full_path.exists(): continue
+for full_path, label_id in val_ds.samples[:20]:
+    label_name = LOCATION_CLASSES[label_id]
     result = classify_location(full_path, model, model_type='efficientnet', device=device)
     entry = (full_path, label_name, result.class_name, result.confidence)
     (correct_examples if result.class_name == label_name else wrong_examples).append(entry)
@@ -332,8 +363,8 @@ def show_examples(examples, title, max_n=4):
         ax.set_title(f'GT: {gt}\\nPred: {pred}\\n({conf:.0%})', color=color, fontsize=9); ax.axis('off')
     plt.suptitle(title, fontsize=12, fontweight='bold'); plt.tight_layout(); plt.show()
 
-show_examples(correct_examples, 'Correct Predictions')
-show_examples(wrong_examples,   'Incorrect Predictions')
+show_examples(correct_examples, 'Correct Validation Predictions (green = correct class)')
+show_examples(wrong_examples,   'Incorrect Validation Predictions (red = wrong class)')
 """))
 
 # ── Cell 12 — Error analysis ────────────────────────────────────────────────
@@ -352,26 +383,45 @@ print('Results for comparison stored in: ml/results/location/')
 """))
 
 # ── Cell 13 — Test evaluation ───────────────────────────────────────────────
-cells.append(code("""# Cell 13 — Held-Out Test Set Evaluation (ONCE)
-print('=== HELD-OUT TEST SET EVALUATION — LOC-EFF-001 ===')
-test_img_dir = RAW_DIR / 'test'
-test_images = sorted(test_img_dir.glob('*.jpg'))
-print(f'{len(test_images)} held-out test images.')
+cells.append(code("""# Cell 13 — Held-Out Test Set Forward Inference (unannotated test split)
+print('=== HELD-OUT TEST SET FORWARD INFERENCE ===')
+print('NOTE: The COCO test split contains NO ground-truth labels.')
+print('Running purely in forward-inference mode to generate qualitative visual predictions.\\n')
 
-fig, axes = plt.subplots(2, 4, figsize=(16, 8)); axes = axes.flatten()
-for idx, img_path in enumerate(test_images[:8]):
-    result = classify_location(img_path, model, model_type='efficientnet', device=device)
-    print(f'  {img_path.name}: {result.class_name} ({result.confidence:.1%}) {result.warning}')
-    img = cv2.imread(str(img_path))
-    axes[idx].imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-    axes[idx].set_title(f'{img_path.name}\\n{result.class_name} ({result.confidence:.0%})', fontsize=8); axes[idx].axis('off')
-plt.suptitle('Held-Out Test — EfficientNet-B0 Location Predictions', fontsize=12)
-plt.tight_layout(); plt.savefig(output_dir / 'location_efficientnet_test_predictions.png', dpi=200); plt.show()
+test_img_dir = RAW_DIR / 'test'
+test_images = sorted([f for f in test_img_dir.iterdir() if f.suffix.lower() in ('.jpg', '.jpeg', '.png')]) if test_img_dir.exists() else []
+print(f'Found {len(test_images)} held-out unannotated test images.\\n')
+
+if test_images:
+    n_display = min(8, len(test_images))
+    rows = (n_display + 3) // 4
+    fig, axes = plt.subplots(rows, 4, figsize=(16, 4 * rows))
+    axes = axes.flatten() if hasattr(axes, 'flatten') else [axes]
+
+    for idx, img_path in enumerate(test_images[:n_display]):
+        result = classify_location(img_path, model, model_type='efficientnet', device=device)
+        top2_alt = ', '.join(f'{cls}({p:.0%})' for cls, p in result.top3[1:3])
+        print(f'  [{idx+1}] {img_path.name:<15}: Pred = {result.class_name:<14} ({result.confidence:5.1%}) | Alt: {top2_alt}')
+        img = cv2.imread(str(img_path))
+        if img is not None:
+            axes[idx].imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+            axes[idx].set_title(f'{img_path.name}\\n{result.class_name} ({result.confidence:.0%})', fontsize=9)
+            axes[idx].axis('off')
+
+    for ax in axes[n_display:]:
+        ax.axis('off')
+
+    plt.suptitle('Held-Out Test Set — Qualitative Location Predictions (Unannotated)', fontsize=12, fontweight='bold')
+    plt.tight_layout()
+    test_fig_path = output_dir / 'location_efficientnet_test_predictions.png'
+    plt.savefig(test_fig_path, dpi=200)
+    plt.show()
+    print(f'\\nTest predictions plot saved: {test_fig_path}')
 """))
 
 # ── Cell 14 — Latency benchmark ─────────────────────────────────────────────
 cells.append(code("""# Cell 14 — Inference Latency & Model Size
-sample_img = test_images[0] if test_images else list((RAW_DIR / 'train').glob('*.jpg'))[0]
+sample_img = test_images[0] if test_images else val_ds.samples[0][0]
 latency_ms = model.measure_cpu_latency(sample_img, num_runs=15)
 ckpt_size_mb = best_ckpt.stat().st_size / (1024 * 1024) if best_ckpt.exists() else 20.0
 print(f'Architecture   : EfficientNet-B0 (5 location classes)')

@@ -238,15 +238,16 @@ class LocationDataset(Dataset):
 
     def __init__(
         self,
-        image_dir: str | Path,
-        coco_json_path: str | Path,
+        image_dir: str | Path | None = None,
+        coco_json_path: str | Path | None = None,
         split: Literal["train", "val", "test"] = "train",
         transform: transforms.Compose | None = None,
         image_size: int = LOCATION_IMAGE_SIZE,
         class_name_map: dict[str, str] | None = None,
+        samples: list[tuple[Path, int]] | None = None,
     ) -> None:
-        self.image_dir = Path(image_dir)
-        self.coco_json_path = Path(coco_json_path)
+        self.image_dir = Path(image_dir) if image_dir is not None else None
+        self.coco_json_path = Path(coco_json_path) if coco_json_path is not None else None
         self.split = split
         self.transform = (
             transform
@@ -254,20 +255,25 @@ class LocationDataset(Dataset):
             else get_location_transforms(split, image_size=image_size)
         )
 
-        # Derive labels
-        label_map = derive_location_labels(self.coco_json_path, class_name_map)
+        if samples is not None:
+            self.samples = [(Path(p), int(l)) for p, l in samples if Path(p).exists()]
+        else:
+            if self.image_dir is None or self.coco_json_path is None:
+                raise ValueError("Must provide either 'samples' or both 'image_dir' and 'coco_json_path'.")
+            # Derive labels
+            label_map = derive_location_labels(self.coco_json_path, class_name_map)
 
-        # Build list of (abs_path, label_id) for images that exist on disk
-        self.samples: list[tuple[Path, int]] = []
-        for fname, (label_id, _) in label_map.items():
-            img_path = self.image_dir / Path(fname).name
-            if img_path.exists():
-                self.samples.append((img_path, label_id))
+            # Build list of (abs_path, label_id) for images that exist on disk
+            self.samples = []
+            for fname, (label_id, _) in label_map.items():
+                img_path = self.image_dir / Path(fname).name
+                if img_path.exists():
+                    self.samples.append((img_path, label_id))
 
         if not self.samples:
+            source_desc = f"{self.image_dir} ({self.coco_json_path})" if samples is None else f"{len(samples)} provided samples"
             raise RuntimeError(
-                f"No valid images found in {self.image_dir} "
-                f"with annotations in {self.coco_json_path}. "
+                f"No valid images found for location dataset from {source_desc}. "
                 "Check that the COCO dataset is downloaded and paths are correct."
             )
 
@@ -291,14 +297,15 @@ class LocationDataset(Dataset):
         return dict(counter)
 
     def class_weights(self) -> torch.Tensor:
-        """Inverse-frequency class weights for ``CrossEntropyLoss(weight=...)``."""
+        """Inverse-frequency class weights normalized so mean weight = 1.0."""
         total = len(self.samples)
         counts = self.label_counts
         weights = []
         for cls_id in range(len(LOCATION_CLASSES)):
             count = counts.get(cls_id, 1)
-            weights.append(total / (len(LOCATION_CLASSES) * count))
-        return torch.tensor(weights, dtype=torch.float32)
+            weights.append(total / (len(LOCATION_CLASSES) * max(count, 1)))
+        weights_t = torch.tensor(weights, dtype=torch.float32)
+        return weights_t / weights_t.mean()
 
     def __repr__(self) -> str:
         counts = self.label_counts
@@ -306,3 +313,118 @@ class LocationDataset(Dataset):
             f"{LOCATION_CLASSES[i]}={counts.get(i, 0)}" for i in range(len(LOCATION_CLASSES))
         )
         return f"LocationDataset(split={self.split!r}, n={len(self)}, {class_summary})"
+
+
+# ---------------------------------------------------------------------------
+# Split loader
+# ---------------------------------------------------------------------------
+
+def load_location_splits(
+    raw_coco_dir: str | Path,
+    val_ratio: float = 0.20,
+    seed: int = 42,
+    image_size: int = LOCATION_IMAGE_SIZE,
+    class_name_map: dict[str, str] | None = None,
+) -> tuple[LocationDataset, LocationDataset]:
+    """Load train and validation LocationDatasets with robust handling for sparse val sets.
+
+    If the ``val/`` directory contains >= 5 images on disk, folder-based splits are used.
+    If ``val/`` has < 5 images on disk (such as in the truncated Kaggle archive where 10 of 11
+    val images are missing from the folder), all available annotated images across train/ and val/
+    are pooled, and a reproducible stratified train/val split is generated so that every class
+    has validation samples and metrics are mathematically sound.
+
+    Parameters
+    ----------
+    raw_coco_dir:
+        Root directory containing ``train/`` and ``val/`` folders.
+    val_ratio:
+        Proportion of images to allocate to validation if pooling is needed (default 0.20).
+    seed:
+        Random seed for the stratified split (default 42).
+    image_size:
+        Target image dimension (default 224).
+    class_name_map:
+        Optional category mapping overrides.
+
+    Returns
+    -------
+    tuple of (train_dataset, val_dataset)
+    """
+    raw_coco_dir = Path(raw_coco_dir)
+    train_dir = raw_coco_dir / "train"
+    val_dir = raw_coco_dir / "val"
+    train_json = train_dir / "COCO_mul_train_annos.json"
+    val_json = val_dir / "COCO_mul_val_annos.json"
+
+    # 1. Collect all valid annotated samples from train/
+    train_samples: list[tuple[Path, int]] = []
+    if train_json.exists() and train_dir.exists():
+        lmap_train = derive_location_labels(train_json, class_name_map)
+        for fname, (lid, _) in lmap_train.items():
+            ip = train_dir / Path(fname).name
+            if ip.exists():
+                train_samples.append((ip, lid))
+
+    # 2. Collect all valid annotated samples from val/
+    val_samples: list[tuple[Path, int]] = []
+    if val_json.exists() and val_dir.exists():
+        lmap_val = derive_location_labels(val_json, class_name_map)
+        for fname, (lid, _) in lmap_val.items():
+            ip = val_dir / Path(fname).name
+            if ip.exists():
+                val_samples.append((ip, lid))
+
+    # 3. Check if val has enough physical images
+    if len(val_samples) >= 5 and len(set(l for _, l in val_samples)) >= 3:
+        # Sufficient validation samples in folder
+        train_ds = LocationDataset(
+            samples=train_samples, split="train", image_size=image_size
+        )
+        val_ds = LocationDataset(
+            samples=val_samples, split="val", image_size=image_size
+        )
+        return train_ds, val_ds
+
+    # 4. Fallback: pool all annotated images and perform stratified split
+    all_samples = train_samples + val_samples
+    if not all_samples:
+        raise RuntimeError(
+            f"No annotated images found in {train_dir} or {val_dir}. "
+            "Please check raw dataset paths."
+        )
+
+    from sklearn.model_selection import train_test_split
+
+    labels = [l for _, l in all_samples]
+    label_counts = Counter(labels)
+    n_classes = len(label_counts)
+
+    # Calculate validation count; ensure at least n_classes when stratifying if enough samples
+    val_count = max(int(round(val_ratio * len(all_samples))), n_classes)
+    train_count = len(all_samples) - val_count
+
+    can_stratify = (
+        all(cnt >= 2 for cnt in label_counts.values())
+        and val_count >= n_classes
+        and train_count >= n_classes
+    )
+
+    stratify_arg = labels if can_stratify else None
+    test_size_arg = val_count if can_stratify else val_ratio
+
+    pooled_train, pooled_val = train_test_split(
+        all_samples,
+        test_size=test_size_arg,
+        random_state=seed,
+        stratify=stratify_arg,
+    )
+
+    train_ds = LocationDataset(
+        samples=pooled_train, split="train", image_size=image_size
+    )
+    val_ds = LocationDataset(
+        samples=pooled_val, split="val", image_size=image_size
+    )
+
+    return train_ds, val_ds

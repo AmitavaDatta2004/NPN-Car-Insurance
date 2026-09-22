@@ -26,6 +26,7 @@ from claimvision_ml.location.dataset import (
     LocationDataset,
     derive_location_labels,
     get_location_transforms,
+    load_location_splits,
 )
 from claimvision_ml.location.inference import (
     LocationClassification,
@@ -41,6 +42,7 @@ __all__ = [
     "LocationClassifier",
     "derive_location_labels",
     "get_location_transforms",
+    "load_location_splits",
     "classify_location",
     "export_location_onnx",
 ]
