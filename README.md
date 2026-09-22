@@ -2,6 +2,114 @@
 
 > This README is the controlling implementation specification for DEV NEXUS, Codex, Antigravity, and every team member working on the project. Read it completely before creating or editing code. Implement the phases in order. Do not silently change architecture, labels, datasets, thresholds, API contracts, database schemas, or the project scope.
 
+
+---
+
+## ⚡ Quickstart: How to Run the Project
+
+This section provides complete, copy-pasteable instructions for setting up and running **ClaimVision AI** across both local development environments and Google Colab.
+
+### 1. Prerequisites
+- **Operating System:** Windows 10/11, macOS, or Linux
+- **Python:** `3.11.x` (recommended)
+- **Node.js:** `18.x` or `20.x` LTS with `npm`
+- **Git:** Installed and configured
+
+---
+
+### 2. Environment Setup (One-Time)
+
+#### A. Clone the Repository
+```powershell
+git clone https://github.com/AmitavaDatta2004/NPN-Car-Insurance.git
+cd "NPN Car Insurance"
+```
+
+#### B. Setup Python Virtual Environment
+```powershell
+# Create virtual environment
+python -m venv .venv
+
+# Activate on Windows PowerShell:
+.\.venv\Scripts\Activate.ps1
+# (Or on Linux / macOS: source .venv/bin/activate)
+
+# Upgrade pip & install local ML package in editable mode
+python -m pip install --upgrade pip
+pip install -e ml/
+pip install -r ml/requirements.txt
+```
+
+#### C. Setup Frontend Dependencies
+```powershell
+cd frontend
+npm install
+cd ..
+```
+
+---
+
+### 3. Running the Machine Learning Pipelines & Notebooks
+
+All 16 numbered pipeline notebooks live inside `notebooks/`.
+
+#### Option A: Running on Google Colab (Recommended for GPU Training)
+1. Open the repository in **VS Code**.
+2. Open **`notebooks/00_environment_and_data_download.ipynb`**.
+3. In the top-right kernel picker, select **Colab Server** $\rightarrow$ select **GPU (T4)**.
+4. Run **Notebook `00`** once:
+   - Automatically syncs the latest GitHub commits to Colab.
+   - Downloads all required datasets (`vinayjose/car-damage-dataset`, `prajwalbhamere/car-damage-severity-dataset`) directly to `data/raw/` (skips if already present).
+5. Open any downstream notebook (`01_fraud_dataset_audit.ipynb`, `02_fraud_mobilenetv2_training.ipynb`, etc.) on the **same Colab GPU kernel** and click **Run All**.
+
+#### Option B: Running Completely Locally (CPU / Local GPU)
+1. Open any notebook in VS Code.
+2. In the top-right kernel picker, select **Python Environments** $\rightarrow$ select your local **`.venv`**.
+3. Run **Notebook `00`** once to download datasets into `data/raw/`.
+4. Run any notebook locally (all OpenCV audits, feature extraction, and model evaluations run smoothly on local CPU).
+
+---
+
+### 4. Running the Backend API Server
+
+The backend provides asynchronous REST API endpoints for claim assessment, image quality checks, fraud scoring, and repair cost estimation.
+
+```powershell
+# From the project root with .venv activated:
+uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
+```
+- **API Root / Health:** `http://127.0.0.1:8000/api/v1/health`
+- **Interactive Swagger Docs:** `http://127.0.0.1:8000/api/v1/docs`
+- **OpenAPI JSON Schema:** `http://127.0.0.1:8000/api/v1/openapi.json`
+
+---
+
+### 5. Running the Frontend Customer & Reviewer Dashboard
+
+The frontend is a Next.js (App Router, Tailwind CSS, TypeScript) application for policyholders to submit claims and reviewers to triage flagged cases.
+
+```powershell
+cd frontend
+npm run dev
+```
+- **Application URL:** `http://localhost:3000`
+
+---
+
+### 6. Running the Automated Test Suite
+
+Ensure all unit tests pass before committing any changes:
+
+```powershell
+# Run ML package unit tests
+pytest ml/tests/ -v
+
+# Run Backend unit tests
+pytest backend/tests/ -v
+```
+
+---
+
 ## 1 Project summary
 
 ClaimVision AI is an AI-assisted vehicle insurance claim triage system. A policyholder submits claim information and photographs of a damaged vehicle. The system checks whether the evidence is usable, produces a visual fraud-risk score, identifies visible damage and damaged vehicle parts, predicts overall damage severity, estimates an indicative repair-cost range, and recommends the appropriate human workflow.
