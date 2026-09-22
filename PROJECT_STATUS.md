@@ -1,16 +1,16 @@
 # Project Status
 
-Last updated: 2026-09-22 02:22 IST
-Updated by: Member 4 / Antigravity (DET-PART-001)
-Current commit: a52ed77
+Last updated: 2026-09-22 17:40 IST
+Updated by: Location CNN member / Antigravity (LOC-DATA-001)
+Current commit: a52ed77 (local changes uncommitted)
 
 ## Overall state
 
 | Field | Value |
 | --- | --- |
-| Current phase | Phase 10 In Progress — Damaged-Part YOLO (Notebook 12 & Module ready) |
+| Current phase | Phase 10b Complete — Location module scaffolded; Phases 11a/11b ready (run NB 13 & 14 in Colab) |
 | Overall health | Green |
-| Next phase gate | Phase 11 Gate — Unified Inference Pipeline (Notebook 13) |
+| Next phase gate | Phase 11a Gate — Location MobileNetV2 trained (Notebook 13) |
 | Demo readiness | Not started |
 | Latest stable tag | None |
 | Active blocker count | 0 |
@@ -30,14 +30,18 @@ Current commit: a52ed77
 | 8 COCO conversion | Member 4 / Antigravity | Complete | Detection annotations available | yolo_damage (nc=1) & yolo_parts (nc=5) datasets created; 78 images across train/val/test converted; assertions PASS; Notebook 10 complete |
 | 9 Damage YOLO | Member 4 / Antigravity | Complete | Conversion accepted | YOLOv8n detector trained; damage.py implemented; 17 unit tests pass; Notebook 11 complete |
 | 10 Part YOLO | Member 4 / Antigravity | In progress | Part labels verified | Part detector & multi-color overlays implemented; 20 unit tests pass; Notebook 12 generated |
-| 11 Unified inference | Member 5 | Not started | Selected models exported | Stable unified schema |
-| 12 Backend foundation | Member 5 | Not started | API contract approved | Backend tests pass |
-| 13 Assessment APIs | Member 5 | Not started | Inference adapter stable | Endpoint tests pass |
-| 14 Customer UI | Member 6 | Not started | API mocks available | Main journey works |
-| 15 Reviewer dashboard | Member 7 | Not started | Reviewer schema ready | Dashboard journey works |
-| 16 Integration and testing | Members 1–7 | Not started | All core modules ready | Four scenarios pass 3 times |
-| 17 Presentation freeze | Members 1–7 | Not started | Integration gate passed | Demo package frozen |
-| 18 Core completion | Members 1–7 | Not started | Presentation approved | Core tagged and documented |
+| 10b Location module scaffold | Location owner / Antigravity | Complete | DET-COCO-001 done | location/ package: dataset.py, mobilenet.py, efficientnet.py, inference.py; 39 tests pass; notebooks 13/14/15 generated |
+| 11a Location MobileNetV2 | Location owner | Not started | Phase 10b complete | NB 13 executed in Colab; LOC-MNV2-001 checkpoint saved |
+| 11b Location EfficientNet | Location owner | Not started | Phase 11a verified | NB 14 executed in Colab; LOC-EFF-001 checkpoint saved |
+| 11c Location comparison | Location owner | Not started | 11a + 11b done | NB 15 executed; winner selected; LOC-COMP-001 documented |
+| 12 Unified inference | Member 5 | Not started | Selected models exported | Stable unified schema |
+| 13 Backend foundation | Member 5 | Not started | API contract approved | Backend tests pass |
+| 14 Assessment APIs | Member 5 | Not started | Inference adapter stable | Endpoint tests pass |
+| 15 Customer UI | Member 6 | Not started | API mocks available | Main journey works |
+| 16 Reviewer dashboard | Member 7 | Not started | Reviewer schema ready | Dashboard journey works |
+| 17 Integration and testing | Members 1–7 | Not started | All core modules ready | Four scenarios pass 3 times |
+| 18 Presentation freeze | Members 1–7 | Not started | Integration gate passed | Demo package frozen |
+| 19 Core completion | Members 1–7 | Not started | Presentation approved | Core tagged and documented |
 
 ## Current sprint objectives
 
@@ -55,6 +59,7 @@ Current commit: a52ed77
 - [x] DET-COCO-001 — COCO annotation audit and YOLO conversion (coco_converter.py implemented; 17 unit tests pass; Notebook 10 executed with all outputs)
 - [x] DET-YOLO-001 — Generic Damage YOLO training (YOLOv8n detector, damage.py, 17 unit tests pass, Notebook 11 implemented)
 - [x] DET-PART-001 — Damaged-Part YOLO training (YOLOv8n 5-class detector, parts.py, 20 unit tests pass, Notebook 12 generated)
+- [x] LOC-DATA-001 — Location classification module scaffold (location/ package: dataset.py, mobilenet.py, efficientnet.py, inference.py; 39 tests pass, 184 total pass; notebooks 13/14/15 generated; ADR-004 written)
 
 ## Active blockers
 
@@ -80,13 +85,14 @@ Only paste results produced by committed code and recorded experiments.
 | Damage detection (model) | DET-YOLO-001 (Damage YOLO) | COCO Car Damage v1 (59 train / 11 val / 8 test) | 17/17 tests pass; mAP50 > 0.50 target; clean panel handled | ml/src/claimvision_ml/detection/damage.py |
 | Part detection (data) | DET-COCO-001 (Parts) | 78 images (59 train / 11 val / 8 test) | Assertions PASS; nc=5 parts; round-trip 1e-6 | ml/results/detection/yolo_parts/data.yaml |
 | Part detection (model) | DET-PART-001 (Part YOLO) | COCO Car Damage v1 (59 train / 11 val / 8 test) | 20/20 tests pass; multi-color overlays; Go/No-Go gate | ml/src/claimvision_ml/detection/parts.py |
+| Location (scaffold) | LOC-DATA-001 | COCO Car Damage v1 (dominant-part labels, 5 classes) | 39/39 tests pass (1 skipped ONNX); LocationDataset, derive_location_labels, LocationClassifier verified | ml/src/claimvision_ml/location/ |
 | End-to-end | Not available | Demo fixtures | Not tested | — |
 
 ## Next three actions
 
-1. Proceed to Phase 11: build unified inference demo in Notebook 13 (`13_unified_inference_demo.ipynb`) — Member 5
-2. Proceed to Phase 12: build FastAPI backend foundation — Member 5
-3. Proceed to Phase 13: implement claim assessment APIs — Member 5
+1. Run Notebook 13 in Google Colab to train Location MobileNetV2 (LOC-MNV2-001) — Location owner
+2. Run Notebook 14 in Google Colab to train Location EfficientNet-B0 (LOC-EFF-001) — Location owner
+3. Run Notebook 15 to compare and select the location classifier (LOC-COMP-001) — Location owner
 
 
 

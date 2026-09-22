@@ -136,9 +136,12 @@ claimvision-ai/
 │   ├── 10_coco_annotation_audit_and_conversion.ipynb
 │   ├── 11_yolo_damage_training.ipynb
 │   ├── 12_yolo_part_training.ipynb
-│   ├── 13_unified_inference_demo.ipynb
-│   ├── 14_explainability_and_gradcam.ipynb
-│   └── 15_final_judge_results.ipynb
+│   ├── 13_location_mobilenetv2_training.ipynb
+│   ├── 14_location_efficientnet_training.ipynb
+│   ├── 15_location_model_comparison.ipynb
+│   ├── 16_unified_inference_demo.ipynb
+│   ├── 17_explainability_and_gradcam.ipynb
+│   └── 18_final_judge_results.ipynb
 ├── ml/
 │   ├── src/claimvision_ml/
 │   │   ├── data/
@@ -146,6 +149,7 @@ claimvision-ai/
 │   │   ├── fraud/
 │   │   ├── severity/
 │   │   ├── detection/
+│   │   ├── location/
 │   │   ├── costing/
 │   │   └── pipeline/
 │   ├── configs/
@@ -215,7 +219,8 @@ The team will use `main` directly. Because seven people and two coding agents ma
 | Fraud owner | Fraud notebooks and `ml/.../fraud` |
 | Severity owner A | Severity audit, CNN, MobileNetV2 |
 | Severity owner B | ViT-Tiny, comparison, Grad-CAM |
-| Detection owner | COCO, YOLO, OpenCV overlays |
+| Detection owner | COCO, YOLO, OpenCV overlays, Notebooks 10–12 |
+| Location owner | Location CNN notebooks 13–15 and `ml/.../location` |
 | Backend owner | `backend`, cost and decision services |
 | Frontend owner | `frontend`, UI and Playwright |
 
@@ -678,7 +683,48 @@ Required outputs:
 
 If unseen-image performance is poor, keep this model experimental and use the generic damage detector in the main demo.
 
-### Notebook 13 Unified inference demo
+### Notebook 13 Location MobileNetV2 training
+
+**Purpose:** train and evaluate MobileNetV2 as an image-level classifier for the five damaged-part location classes.
+
+Label derivation: each COCO training image is assigned a single dominant-part label — the part class whose bounding boxes are most frequent in that image (area tiebreak on ties).
+
+Required outputs:
+
+- per-class label distribution bar chart
+- sample image grid (one per class)
+- MobileNetV2 architecture summary with parameter counts
+- Stage A and Stage B training and validation curves
+- validation per-class precision, recall, and F1
+- validation confusion matrix
+- correct and incorrect prediction grids
+- qualitative error analysis
+- held-out test set visual predictions
+- CPU latency and model size benchmark
+- exported `.pt` and `.onnx` checkpoints
+- Go/No-Go gate decision
+
+### Notebook 14 Location EfficientNet-B0 training
+
+**Purpose:** train and evaluate EfficientNet-B0 (via timm) as an image-level classifier for the same five location classes, using the identical dataset, label derivation, and evaluation protocol as Notebook 13 so results are directly comparable.
+
+Required outputs: same structure as Notebook 13.
+
+### Notebook 15 Location model comparison
+
+**Purpose:** select the location classifier for the unified inference demo by comparing MobileNetV2 and EfficientNet-B0 on the same held-out validation split.
+
+Required outputs:
+
+- side-by-side classification reports
+- side-by-side confusion matrices
+- per-class F1 bar chart
+- latency and model-size table
+- shared difficult examples (images both models got wrong)
+- qualitative test-set predictions
+- final selection decision and justification
+
+### Notebook 16 Unified inference demo
 
 **Purpose:** show every model working in the correct runtime order.
 
@@ -696,6 +742,7 @@ Required output structure:
   "fraud": {},
   "damage": {"regions": []},
   "severity": {},
+  "location": {},
   "cost": {},
   "decision": {},
   "model_versions": {}
@@ -711,7 +758,7 @@ The notebook must visibly demonstrate:
 - annotated output
 - final JSON and human-readable report
 
-### Notebook 14 Explainability and Grad-CAM
+### Notebook 17 Explainability and Grad-CAM
 
 **Purpose:** explain classifier attention and limitations.
 
@@ -724,7 +771,7 @@ Required outputs:
 - incorrect prediction example
 - warning that attention does not prove causal reasoning
 
-### Notebook 15 Final judge results
+### Notebook 18 Final judge results
 
 **Purpose:** provide one polished evidence notebook that judges can inspect quickly.
 
@@ -735,6 +782,7 @@ Include:
 - fraud metrics
 - severity comparison
 - YOLO metrics
+- location classification comparison
 - OpenCV examples
 - end-to-end scenarios
 - inference timings
@@ -761,7 +809,15 @@ Use the Car Damage Severity Dataset with three classes. Create an independent te
 
 Use the COCO Car Damage Detection Dataset for generic damage and five damaged-part classes. The dataset is extremely small. Use transfer learning and document the generalisation limitation. Do not make production claims.
 
-### 11.4 Optional damage-type dataset
+### 11.4 Location classification dataset
+
+The location CNN classifiers (Notebooks 13 and 14) reuse the COCO Car Damage Detection Dataset from §11.3. No additional images are collected.
+
+**Label derivation strategy:** each image is assigned a single dominant-part label — the part class (headlamp, front_bumper, hood, door, rear_bumper) whose bounding boxes appear most frequently in that image. On a tie, the part with the greatest total bounding-box area is selected. This produces clean single-label data from the existing multi-box COCO annotations without requiring any new manual labelling.
+
+**Constraint:** approximately 12 training images per class. Both models must use ImageNet pre-trained weights and two-stage fine-tuning. Results are prototype-quality and must never be represented as production-grade.
+
+### 11.5 Optional damage-type dataset
 
 Only add damage type after:
 
