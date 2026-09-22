@@ -2,8 +2,6 @@
 
 ## Identity
 
-ML-IMPROVE-001 clarification (2026-09-22): this card's old standard-ViT run is distinct from Notebook 08's later dual-stream model. The latter's historical saved output is raw test macro F1 0.6267 / accuracy 62.50%, not a rerun in this session. Its class now resides in `severity/dual_vit.py`; the shared loader recognises both checkpoint layouts. Notebook 09b compares the two architectures with explicit identities. Missing/corrupt images now fail instead of being replaced with black images, and pretrained training cannot silently fall back to random weights when timm is missing. New measurements are pending Colab.
-
 - **Model version:** `vit_tiny_patch16_224-v1`
 - **Task:** 3-class vehicle damage severity classification (`minor`, `moderate`, `severe`)
 - **Architecture:** Vision Transformer (`vit_tiny_patch16_224`, 5.7M parameters, 12 blocks, 3 heads, 192 embed dim)

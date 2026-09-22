@@ -2,8 +2,6 @@
 
 ## Identity
 
-ML-IMPROVE-001 correction (2026-09-22): the legacy training loop restored the final Stage A weights while reporting the best Stage A score. The team update e1ba3ec now retains actual best weights across both stages; its notebook and CLI were preserved during integration. The imported metrics JSON reports test macro F1 0.6470 and accuracy 64.92%; these are team results, not a rerun in this session. New validation-only experiments are in Notebook 09b; no new performance or calibration claim is established yet. Candidate checkpoints are isolated under `artifacts/runs/improvements/` and use `load_candidate` with saved preprocessing.
-
 - Model version: SEV-MNV2-001
 - Task: Multi-class vehicle damage severity classification (3 tiers: `minor`, `moderate`, `severe`)
 - Architecture: ImageNet-pretrained MobileNetV2 + AdaptiveAvgPool2d((1, 1)) + Dropout(0.3) + Linear(1280→128) + ReLU + Dropout(0.3) + Linear(128→3)

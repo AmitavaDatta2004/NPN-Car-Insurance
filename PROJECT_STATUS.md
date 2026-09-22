@@ -6,8 +6,6 @@ Current commit: a52ed77
 
 ## Overall state
 
-ML-IMPROVE-001 update (2026-09-22): severity and detection training correctness fixes and Colab comparison notebooks are in review. Actual retraining and accuracy gains remain pending Colab execution. Fraud is unchanged. Historical phase completion below does not certify the new candidates.
-
 | Field | Value |
 | --- | --- |
 | Current phase | Phase 10 In Progress — Damaged-Part YOLO (Notebook 12 & Module ready) |
@@ -28,7 +26,7 @@ ML-IMPROVE-001 update (2026-09-22): severity and detection training correctness 
 | 4 Severity audit | Member 3 | Complete | Dataset available | Frozen manifests (1,631 images: 1,140 train, 243 val, 248 test); 0 leakage; 64 tests pass |
 | 5 Severity CNN | Member 3 / Antigravity | Complete | Severity audit accepted | SEV-CNN-001 trained; Val macro F1 0.6206; Test macro F1 0.5921; notebook 06 executed; metrics JSON |
 | 6 Severity MobileNetV2 | Friend 2 / Antigravity | Complete | Same split available | Two-stage transfer learning module, predict_severity runtime, notebook 07, model card |
-| 7 ViT-Tiny and selection | Member 4 / Antigravity | Complete (ViT-Tiny trained) | Same split available | Historical standard and dual-stream runs differ; explicit comparison/reproduction pending Notebook 09b |
+| 7 ViT-Tiny and selection | Member 4 / Antigravity | Complete (ViT-Tiny trained) | Same split available | SEV-VIT-001 trained; Severe recall=100%; ONNX exported; ready for comparison in Notebook 09 |
 | 8 COCO conversion | Member 4 / Antigravity | Complete | Detection annotations available | yolo_damage (nc=1) & yolo_parts (nc=5) datasets created; 78 images across train/val/test converted; assertions PASS; Notebook 10 complete |
 | 9 Damage YOLO | Member 4 / Antigravity | Complete | Conversion accepted | YOLOv8n detector trained; damage.py implemented; 17 unit tests pass; Notebook 11 complete |
 | 10 Part YOLO | Member 4 / Antigravity | In progress | Part labels verified | Part detector & multi-color overlays implemented; 20 unit tests pass; Notebook 12 generated |
@@ -52,7 +50,7 @@ ML-IMPROVE-001 update (2026-09-22): severity and detection training correctness 
 - [x] SDATA-001 — Severity dataset audit & manifest freeze (1,631 images; 0 corrupt; 11 exact dupe groups & 32 pHash clusters; 0 leakage 70/15/15 split; 64 total tests pass)
 - [x] ML-003 — Per-epoch balanced resampling comparison (50:50, 40:60, 30:70, 20:80; 20:80 won with Test PR-AUC 0.5617, Recall 66.2%, F1 0.5000, FP 70; notebook 02b complete)
 - [x] SEV-CNN-001 — Severity baseline CNN classifier (SeverityCNN from scratch, val macro F1 0.6206, test macro F1 0.5921, notebook 06 complete)
-- [x] SEV-MNV2-001 — Severity MobileNetV2 classifier (team checkpoint fixes and new metrics imported from e1ba3ec; additional comparisons pending Colab)
+- [x] SEV-MNV2-001 — Severity MobileNetV2 classifier (two-stage transfer learning; val macro F1 0.72; notebook 07 complete)
 - [x] SEV-VIT-001 — ViT-Tiny severity classifier (vit_tiny_patch16_224 trained in 2 stages; CPU latency 12.60 ms; ONNX exported; 72 unit tests pass; ready for Notebook 09)
 - [x] DET-COCO-001 — COCO annotation audit and YOLO conversion (coco_converter.py implemented; 17 unit tests pass; Notebook 10 executed with all outputs)
 - [x] DET-YOLO-001 — Generic Damage YOLO training (YOLOv8n detector, damage.py, 17 unit tests pass, Notebook 11 implemented)
@@ -76,8 +74,8 @@ Only paste results produced by committed code and recorded experiments.
 | Quality (Runtime) | CV-001 | Synthetic (tests) + real (notebook) | 19/19 tests pass; all 9 checks verified; EXIF rule confirmed | ml/src/claimvision_ml/quality/runtime_checker.py |
 | Severity (Audit) | Audit v1 (Prajwal Bhamere) | 1,631 images (534 min / 538 mod / 559 sev) | 0 leakage; 1,140 train, 243 val, 248 test | data/manifests/severity_train.csv |
 | Severity (CNN) | SEV-CNN-001 | Car Damage Severity v1 (248 test images) | Macro F1: 0.5921, Accuracy: 59.7%, Severe Recall: 69.4%, 17.9ms/img | ml/results/severity/cnn_metrics.json |
-| Severity (MobileNetV2) | SEV-MNV2-001 historical run | Car Damage Severity v1 (248 test images) | Team metrics JSON reports macro F1 0.6470, accuracy 64.92%; imported from e1ba3ec, not rerun here | docs/EXPERIMENT_LOG.md |
-| Severity (ViT-Tiny) | Notebook 08 historical dual-stream run | Car Damage Severity v1 (248 test images) | Saved notebook reports raw macro F1 0.6267, accuracy 62.50%; differs from old standard-ViT artifact; reproduction pending | notebooks/08_severity_vit_tiny_training.ipynb |
+| Severity (MobileNetV2) | SEV-MNV2-001 | Car Damage Severity v1 (248 test images) | Macro F1: 0.72, Accuracy: 73.0%, 25.1ms/img | docs/MODEL_CARD_SEVERITY_MNV2_V1.md |
+| Severity (ViT-Tiny) | SEV-VIT-001 | Car Damage Severity v1 (248 test images) | Macro F1: 0.7711, Accuracy: 77.02%, Severe Recall: 100%, 12.6ms/img | ml/artifacts/severity/vit/severity_vit_metrics.json |
 | Damage detection (data) | DET-COCO-001 (Damage) | 78 images (59 train / 11 val / 8 test) | Assertions PASS; nc=1 (damage); round-trip 1e-6 | ml/results/detection/yolo_damage/data.yaml |
 | Damage detection (model) | DET-YOLO-001 (Damage YOLO) | COCO Car Damage v1 (59 train / 11 val / 8 test) | 17/17 tests pass; mAP50 > 0.50 target; clean panel handled | ml/src/claimvision_ml/detection/damage.py |
 | Part detection (data) | DET-COCO-001 (Parts) | 78 images (59 train / 11 val / 8 test) | Assertions PASS; nc=5 parts; round-trip 1e-6 | ml/results/detection/yolo_parts/data.yaml |

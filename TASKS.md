@@ -35,29 +35,6 @@ Risks/notes:
 
 ## Initial repository tasks
 
-### ML-IMPROVE-001 — Colab severity and detection improvement experiments
-
-- Phase: Revisit severity 5–7 and detection 9–10 at team leader request
-- Owner: Team lead / Codex
-- Reviewer: Team lead
-- Status: REVIEW
-- Dependencies: Frozen severity manifests and COCO audit; datasets downloaded in Colab by Notebook 00
-- Files allowed: severity and detection modules/tests, associated training scripts and notebooks 06–12, README.md, model cards, experiment/work logs, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md
-- Files prohibited: fraud modules/notebooks/artifacts, application/API contracts, frozen manifests
-- Objective: repair training correctness and provide reproducible validation-only improvement experiments in Colab; retain baseline artifacts until improvement is measured.
-
-Acceptance criteria:
-- [x] Best validation checkpoint is retained across every training stage.
-- [x] Missing/corrupt or ambiguously resolved severity images fail explicitly; frozen splits are preserved.
-- [x] CNN, MobileNetV2 and ViT have reproducible candidate training with validation-only selection and recorded configuration.
-- [x] Damage and part YOLO experiments validate data and never score unannotated test images as negatives.
-- [x] Regression tests and notebook/static checks pass; fraud files remain unchanged.
-- [x] Colab commands and artifact handling are documented; pending GPU experiments are distinguished from measured improvements.
-
-Validation: targeted pytest, full ML pytest suite, Ruff on changed Python files, notebook JSON/source validation, git diff --check.
-
-Actual model improvement remains pending until Colab experiments produce comparative results. No accuracy target is fabricated or guaranteed.
-
 ### CFG-001 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Install repository configuration pack
 
 - Phase: 0

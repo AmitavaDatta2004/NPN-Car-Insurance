@@ -30,9 +30,31 @@ IMAGENET_STD = [0.229, 0.224, 0.225]
 
 def resolve_image_path(path_str: str, base_dirs: list[Path] | None = None) -> Path:
     """Resolve an image path across local, repository, and Colab environments."""
-    from claimvision_ml.severity.inputs import resolve_image
+    p = Path(path_str)
+    if p.is_file():
+        return p
 
-    return resolve_image(path_str, base_dirs or ())
+    search_roots = base_dirs or [
+        Path.cwd(),
+        Path(__file__).resolve().parents[4],  # repo root
+        Path("/content/NPN-Car-Insurance"),
+        Path("/content"),
+    ]
+
+    # Try relative to search roots
+    for root in search_roots:
+        candidate = root / path_str
+        if candidate.is_file():
+            return candidate
+
+    # Try matching filename inside car_damage_severity
+    filename = p.name
+    for root in search_roots:
+        matches = list(root.glob(f"**/car_damage_severity/**/{filename}"))
+        if matches:
+            return matches[0]
+
+    return p
 
 
 class SeverityDataset(Dataset):

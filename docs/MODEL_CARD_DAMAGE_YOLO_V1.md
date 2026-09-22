@@ -2,8 +2,6 @@
 
 ## Identity
 
-ML-IMPROVE-001 clarification (2026-09-22): performance targets below are not measured achievements. Notebook 11b provides isolated validation-only YOLOv8n augmentation comparisons for generic damage and damaged parts. The supplied eight test images are unannotated and cannot support test mAP/precision/recall. Only audited annotated train/validation splits are used; new results remain pending Colab training. Existing Notebook 11 is preserved because remote main received a teammate update during this task.
-
 - **Model version**: `DET-YOLO-001`
 - **Task**: Single-class generic exterior vehicle damage localisation (`damage`, `nc=1`)
 - **Architecture**: Ultralytics YOLOv8n (`yolov8n.pt`, CSPDarknet53 backbone + PANet neck, ~3.2M parameters)

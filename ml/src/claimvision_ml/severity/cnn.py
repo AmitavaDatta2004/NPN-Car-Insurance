@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import json
 import time
+import warnings
 from pathlib import Path
 from typing import Literal
 
@@ -75,9 +76,40 @@ def _resolve_severity_image_path(raw_path: str) -> Path:
         A :class:`Path` pointing to the file.  If not found, returns the
         original path as a ``Path`` object (caller decides how to handle).
     """
-    from claimvision_ml.severity.inputs import resolve_image
+    p = Path(raw_path)
+    if p.is_file():
+        return p
 
-    return resolve_image(raw_path)
+    # Normalise separators
+    norm = str(raw_path).replace("\\", "/")
+
+    # Strategy 1: try relative to known base directories
+    marker = "data/raw/"
+    if marker in norm:
+        rel = norm[norm.index(marker):]
+        candidates = [
+            Path.cwd(),
+            Path("/content/NPN-Car-Insurance"),
+            Path.cwd().parent,
+            Path.cwd().parent.parent,
+        ]
+        for base in candidates:
+            candidate = (base / rel).resolve()
+            if candidate.is_file():
+                return candidate
+
+    # Strategy 2: filename-only fallback inside known severity dataset dirs
+    fname = Path(norm).name
+    search_dirs = [
+        Path("data/raw/car_damage_severity"),
+        Path("/content/NPN-Car-Insurance/data/raw/car_damage_severity"),
+    ]
+    for d in search_dirs:
+        for found in d.rglob(fname):
+            if found.is_file():
+                return found
+
+    return p  # not found — let caller warn or skip
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -135,7 +167,16 @@ class SeverityDataset(Dataset):
         )
         df["_exists"] = df["_resolved_path"].apply(lambda p: Path(p).is_file())
 
-        self.df = df.reset_index(drop=True)
+        n_missing = (~df["_exists"]).sum()
+        if n_missing > 0:
+            warnings.warn(
+                f"{n_missing} image(s) in {self.manifest_path.name} could not "
+                "be resolved on disk and will be skipped. "
+                "Check that the dataset is downloaded to data/raw/car_damage_severity/.",
+                stacklevel=2,
+            )
+
+        self.df = df[df["_exists"]].reset_index(drop=True)
         self.split = split
         self.transform = (
             transform

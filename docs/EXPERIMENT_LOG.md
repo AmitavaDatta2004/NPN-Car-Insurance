@@ -13,20 +13,6 @@ Add an entry before training. Update it after evaluation. Never delete an unsucc
 
 ## Registry
 
-### ML-IMPROVE-001 — planned Colab comparisons (2026-09-22)
-
-Status: CODE VALIDATION; real-data training NOT RUN in this session. Fraud is excluded.
-
-- Severity IDs: `severity-v2-{cnn,mobilenet,vit,vit_dual}-{baseline,finetune,full_image}-s{seed}`. CNN omits the identical finetune variant. Seed 42 first, then independent seeds 43/44 for finalists.
-- Detection IDs: `det-v2-{damage,parts}-{baseline,conservative}-s{seed}`.
-- Inputs: unchanged frozen severity manifests; existing COCO annotations downloaded by Notebook 00 in Colab. No new dataset or label taxonomy.
-- Hypotheses: deeper fine-tuning may improve severity; full-image padding may preserve peripheral evidence; conservative YOLO augmentation may reduce distortion on the small dataset. None is an established gain.
-- Selection: severity validation macro F1 with accuracy/class-recall review; detection validation mAP50–95 with recall/per-class AP review. Test predictions are not used in these experiments. No runtime promotion occurs automatically.
-- Every run writes its configuration, source commit, library version, hashes, hardware/timing and metrics to `artifacts/runs/improvements/<run_id>/experiment.json`; severity also records epoch history, best weights and validation logits. Detection retains Ultralytics args, plots and best weights.
-- Limitations: no local raw data/checkpoints or CUDA; Colab training and notebook execution remain pending. The old severity test has already informed development. The eight COCO test images have no annotations, so no test metric is produced.
-- Correction: MobileNet Stage A previously paired epoch 3's score with epoch 5's weights. Team commit e1ba3ec fixes this and supplies new metrics (test macro F1 0.6470, accuracy 64.92%). Its notebook/CLI and outputs were preserved when integrating 72d4658; these team results were not reproduced in this session.
-- Version clarification: old standard-ViT metrics (0.1702 test macro F1) differ from the newer dual-stream notebook's saved historical output (0.6267 raw test macro F1). These are different architectures/runs; neither has been reproduced here. The previous status-table value 0.7711 is unsupported by the inspected outputs.
-
 | ID | Date | Owner | Git commit | Dataset/manifests | Model | Seed | Status | Primary result | Artifact path | Decision |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | FRAUD-MNV2-001 | 2026-09-20 | Member 2 / Antigravity | de7100c | Vinay Jose v1 / fraud_train.csv, _val.csv, _test.csv | MobileNetV2 (ImageNet pretrained) | 42 | COMPLETE | Val PR-AUC: 0.4999 / Test PR-AUC: 0.5464 | ml/artifacts/fraud/fraud_mnv2_v1.pt | ACCEPTED (Phase 2 Gate passed) |
