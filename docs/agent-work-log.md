@@ -23,6 +23,59 @@ Required by README §7.1 rule 5.
 
 ## Log
 
+### LOC-DATA-001 — Location Dataset Module, Classifier Models & Notebooks (Phase 10b / 11a-c Scaffold)
+
+- Date/time IST: 2026-09-22 17:22 – 17:55
+- Agent: Antigravity
+- Operator: Team Lead / Mentor direction
+- Base commit: a52ed77
+- Files read: README.md, AGENTS.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md, docs/DECISIONS.md, docs/EXPERIMENT_LOG.md
+- Files changed:
+  - ml/src/claimvision_ml/location/__init__.py (NEW — exports public location API)
+  - ml/src/claimvision_ml/location/dataset.py (NEW — LocationDataset, dominant-part label derivation, transforms)
+  - ml/src/claimvision_ml/location/mobilenet.py (NEW — LocationMobileNet, 2-stage fine-tuning architecture)
+  - ml/src/claimvision_ml/location/efficientnet.py (NEW — LocationEfficientNet via timm, 2-stage fine-tuning architecture)
+  - ml/src/claimvision_ml/location/inference.py (NEW — LocationClassification dataclass, LocationClassifier wrapper, ONNX export)
+  - ml/tests/test_location_dataset.py (NEW — 18 unit tests)
+  - ml/tests/test_location_classifier.py (NEW — 22 unit tests)
+  - scripts/build_notebook_13.py (NEW — generates Notebook 13)
+  - scripts/build_notebook_14.py (NEW — generates Notebook 14)
+  - scripts/build_notebook_15.py (NEW — generates Notebook 15)
+  - notebooks/13_location_mobilenetv2_training.ipynb (NEW — 18 cells)
+  - notebooks/14_location_efficientnet_training.ipynb (NEW — 18 cells)
+  - notebooks/15_location_model_comparison.ipynb (NEW — 12 cells)
+  - notebooks/16_unified_inference_demo.ipynb (renamed from 13)
+  - notebooks/17_explainability_and_gradcam.ipynb (renamed from 14)
+  - notebooks/18_final_judge_results.ipynb (renamed from 15)
+  - docs/DATASET_CARD_LOCATION.md (NEW — location classification dataset card)
+  - docs/MODEL_CARD_LOCATION_MNV2_V1.md (NEW — MobileNetV2 location model card)
+  - docs/MODEL_CARD_LOCATION_EFF_V1.md (NEW — EfficientNet-B0 location model card)
+  - docs/DECISIONS.md (ADR-004 added)
+  - docs/EXPERIMENT_LOG.md (registry table updated with LOC-MNV2-001, LOC-EFF-001, LOC-COMP-001)
+  - README.md (§6, §7.2, §10, §11.4 updated)
+  - TASKS.md (LOC-DATA-001, LOC-MNV2-001, LOC-EFF-001, LOC-COMP-001 added)
+  - PROJECT_STATUS.md (Phase tracker and objectives updated)
+  - TASK_LOCKS.md (active lock recorded)
+  - docs/agent-work-log.md (this entry)
+- Decisions made:
+  - Added new image-level location classification track per mentor directive.
+  - Reused existing COCO Car Damage dataset (59 train / 11 val / 8 test).
+  - Adopted dominant-part label derivation: count of bounding boxes with total bounding box area tiebreak.
+  - Compared MobileNetV2 (torchvision) and EfficientNet-B0 (timm), both with 2-stage transfer learning fine-tuning.
+  - Inserted new notebooks at positions 13, 14, 15 and renumbered 13–15 to 16–18.
+- Commands run:
+  - `python scripts/build_notebook_13.py; python scripts/build_notebook_14.py; python scripts/build_notebook_15.py`
+  - `.venv\Scripts\python.exe -m pytest ml/tests/test_location_dataset.py ml/tests/test_location_classifier.py -v` → 39 passed, 1 skipped (ONNX)
+  - `.venv\Scripts\python.exe -m pytest ml/tests/ -q` → 184 passed, 5 skipped (zero regressions)
+- Validation results:
+  - All 40 location unit tests passing/expectedly skipped; full ML test suite clean with 184 passed.
+  - Clean imports from `claimvision_ml.location`.
+- Known limitations / follow-up:
+  - Dataset is very small (~12 images per class). Both models must be run in Google Colab to produce actual weights, plots, and metrics.
+  - Checkpoints and final evaluation numbers should be backfilled into model cards and experiment logs after Colab execution.
+
+---
+
 ### DET-COCO-001 — COCO Annotation Audit and YOLO Conversion (Phase 8)
 
 - Date/time IST: 2026-09-21 23:55 – 2026-09-22 00:05
