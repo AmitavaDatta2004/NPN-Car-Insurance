@@ -118,37 +118,19 @@ class SeverityDataset(Dataset):
         return len(self.df)
 
     def _resolve_image_path(self, raw_path: str) -> Path:
-        p = Path(raw_path)
-        if p.is_file():
-            return p
+        from claimvision_ml.severity.inputs import resolve_image
 
-        # Check relative to dataset_root
-        if self.dataset_root:
-            candidate = self.dataset_root / p.name
-            if candidate.is_file():
-                return candidate
-            candidate_sub = self.dataset_root / p
-            if candidate_sub.is_file():
-                return candidate_sub
-
-        # Search known root patterns
-        for prefix in [Path("."), Path("data/raw"), Path("data/raw/car_damage_severity")]:
-            candidate = prefix / p
-            if candidate.is_file():
-                return candidate
-
-        return p
+        roots = [self.dataset_root] if self.dataset_root else []
+        return resolve_image(raw_path, roots)
 
     def __getitem__(self, idx: int) -> tuple[torch.Tensor, int]:
         row = self.df.iloc[idx]
         image_path_str = str(row["image_path"])
         img_path = self._resolve_image_path(image_path_str)
 
-        try:
-            image = Image.open(img_path).convert("RGB")
-        except Exception:
-            # Fallback black image if corrupt/missing during headless tests
-            image = Image.new("RGB", (224, 224), color=(0, 0, 0))
+        from claimvision_ml.severity.inputs import read_rgb
+
+        image = read_rgb(img_path)
 
         label_id = int(row["label_id"])
 
@@ -186,7 +168,9 @@ if TORCH_AVAILABLE:
                     drop_rate=drop_rate,
                 )
             else:
-                # Lightweight pure-PyTorch ViT-Tiny fallback if timm is being installed
+                if pretrained:
+                    raise RuntimeError("timm is required for pretrained ViT training; no random fallback allowed.")
+                # Untrained fallback is only available for explicit pretrained=False.
                 self.backbone = _create_fallback_vit_tiny(
                     pretrained=pretrained,
                     num_classes=num_classes,
@@ -321,18 +305,20 @@ def save_vit_checkpoint(
 def load_vit_model(
     checkpoint_path: str | Path,
     device: str = "cpu",
-) -> SeverityViTTiny:
-    """Load SeverityViTTiny from a .pt checkpoint."""
+) -> nn.Module:
+    """Load standard or Notebook 08 dual-stream ViT weights without pretraining downloads."""
     if not TORCH_AVAILABLE:
         raise RuntimeError("PyTorch is required to load checkpoints.")
 
-    model = SeverityViTTiny(pretrained=False, num_classes=3)
     checkpoint = torch.load(str(checkpoint_path), map_location=device, weights_only=False)
+    state = checkpoint.get("model_state_dict", checkpoint)
+    if "head.0.weight" in state and "backbone.patch_embed.proj.weight" in state:
+        from claimvision_ml.severity.dual_vit import DualStreamSeverityViT
 
-    if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
-        model.load_state_dict(checkpoint["model_state_dict"])
+        model = DualStreamSeverityViT(pretrained=False)
     else:
-        model.load_state_dict(checkpoint)
+        model = SeverityViTTiny(pretrained=False, num_classes=3)
+    model.load_state_dict(state)
 
     model.to(device)
     model.eval()
@@ -452,4 +438,5 @@ def predict_severity_vit(
         confidence=confidence,
         probabilities=probabilities,
         inference_ms=t_elapsed_ms,
+        model_version=("vit_tiny_dual_stream-v1" if hasattr(model, "head") else "vit_tiny_patch16_224-v1"),
     )

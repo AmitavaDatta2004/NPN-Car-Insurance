@@ -1,5 +1,17 @@
 # Agent Work Log
 
+## ML-IMPROVE-001 — Colab severity/detection improvement implementation (2026-09-22)
+
+- Owner: Team lead / Codex. Scope authorized in conversation; training runs in Colab after Notebook 00. Fraud excluded.
+- Base: 72d4658 after user-authorized pull and reconciliation. The user authorized pulling the team commits and continuing reconciliation; Notebook 11 remains intact. New Notebook 11b contains independent, audited experiments.
+- Changes: retained upstream MobileNet Stage A/B checkpoint fix and corrected legacy generator; strict severity path/decode handling; extracted existing dual-stream ViT and added runtime loading; reusable validation-only severity/detection runners; Colab comparison notebooks; regression tests; corrected unsupported severity status-table metrics.
+- Validation: full ML suite after integration: 158 passed, 4 skipped; targeted improvement/ViT tests 21 passed. Skip conditions are unavailable optional ONNX/raw-data fixtures. Ruff checks on changed Python files, formatting checks on new files, compileall, notebook source compilation with IPython transformations, and git diff --check passed.
+- Synthetic fixtures only test code correctness; their metrics are not project/model results. All real-data improvement results remain pending GPU training and restart/run-all in Colab.
+- Artifacts: unexecuted notebooks 09b and 11b; no new trained weights or measured accuracy. Existing outputs in Notebook 08 are historical; the newer team Notebook 07 and CLI were preserved exactly because they already contain the checkpoint correction.
+- Commands: README's ML-IMPROVE-001 validation commands, plus compileall and JSON/IPython notebook source checks.
+- Limitations: small COCO dataset, no labelled detection test, previously examined severity test, no automatic model promotion. Complete runs have immutable IDs; interrupted runs require a new prefix.
+- Follow-up: execute Notebook 00, 09b, 11b on Colab; repeat finalists across seeds; review metrics before selecting runtime models.
+
 Every agent-assisted change is recorded here before editing begins.
 Required by README §7.1 rule 5.
 

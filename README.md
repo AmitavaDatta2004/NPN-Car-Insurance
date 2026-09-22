@@ -809,6 +809,38 @@ OpenCV is a deterministic image-processing and visualisation layer, not the frau
 
 ## 13 Model training order
 
+### Colab improvement experiments (ML-IMPROVE-001)
+
+Fraud is excluded from this improvement task. Run Notebook 00 in the same Colab GPU runtime first; it installs the environment and places datasets under `data/raw`. Use the existing frozen severity manifests, not a new random split.
+
+1. Open `notebooks/09b_severity_improvement_experiments.ipynb` and run all cells. It compares CNN, MobileNetV2, standard ViT-Tiny and the existing dual-stream ViT using corrected checkpoint selection, partial versus full fine-tuning, and a full-image padding ablation. Every candidate is selected using validation macro F1; accuracy, class recall, ordinal errors, calibration, size and CPU latency are reported.
+2. Open `notebooks/11b_detection_improvement_experiments.ipynb` and run the data audit and box grids. Inspect the boxes before the training cell. It converts Notebook 00's COCO data into fresh, audited train/validation datasets and compares YOLOv8n default augmentation against a conservative recipe for generic damage and damaged parts. This is independent of the team's existing Notebook 11. Unannotated test images are excluded from quantitative evaluation.
+3. Start with seed 42. Repeat promising configurations with seeds 43 and 44; assess mean performance and class-wise regressions. Keep the baseline when improvements are not supported. The experiment notebooks do not promote or overwrite runtime models.
+4. Download the results archive using the final code cell before the Colab runtime expires. All weights, converted data and results live under `artifacts/runs/improvements/<run_id>/`. Never commit that directory wholesale. Record selected lightweight metrics in the experiment log only after inspecting actual outputs.
+
+Run IDs are immutable. Completed runs can be reused; interrupted runs require a new `RUN_PREFIX` (no automatic resume). Detection conversion changes require a new `DATA_VERSION`. Do not run the legacy test-evaluating notebooks repeatedly during tuning. The historical severity test has already been examined; new independently labelled evidence is needed for a fresh generalisation claim. Detection currently has no labelled held-out test split.
+
+Severity candidate loading uses the matching saved preprocessing:
+
+```python
+from claimvision_ml.severity.experiments import load_candidate
+model, transform = load_candidate("artifacts/runs/improvements/<run_id>/best.pt")
+```
+
+The team's updated Notebook 07 and CLI already repair the historical checkpoint bug; their source and saved outputs were preserved during integration. Notebook 08's existing dual-stream class is now reusable in `severity/dual_vit.py`; the ViT loader recognises both historical architectures. Candidate checkpoints from Notebook 09b use their own explicit architecture/preprocessing metadata and must be loaded with `load_candidate`.
+
+Local validation (no real model accuracy claim):
+
+```powershell
+.venv/Scripts/python.exe -m pytest ml/tests/test_improvement_experiments.py -q
+.venv/Scripts/python.exe -m pytest ml/tests/ -q
+.venv/Scripts/python.exe scripts/build_improvement_notebooks.py
+.venv/Scripts/python.exe -m ruff check ml/src/claimvision_ml/severity/experiments.py ml/src/claimvision_ml/severity/inputs.py ml/src/claimvision_ml/severity/dual_vit.py ml/src/claimvision_ml/detection/experiments.py ml/tests/test_improvement_experiments.py scripts/build_improvement_notebooks.py scripts/train_severity_mobilenet.py scripts/build_notebook_07.py
+git diff --check
+```
+
+Status: implementation is locally tested; GPU training, restart/run-all and measured improvement remain pending Colab execution. No accuracy increase is claimed from code changes alone.
+
 ### Phase A Fraud first
 
 1. Download and audit dataset.
