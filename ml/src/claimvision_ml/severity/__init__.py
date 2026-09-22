@@ -25,6 +25,9 @@ from __future__ import annotations
 
 from claimvision_ml.severity.cnn import (
     CNN_IMAGE_SIZE,
+    # new improvement: native 4:3 aspect ratio matching dataset median
+    CNN_IMAGE_SIZE_4_3,
+    SEBlock,
     SeverityCNN,
     build_cnn_model,
     export_onnx as export_cnn_onnx,
@@ -79,6 +82,9 @@ __all__ = [
     "get_severity_class_weights",
     # Baseline CNN (Phase 5)
     "CNN_IMAGE_SIZE",
+    # new improvement: native 4:3 aspect ratio matching dataset median
+    "CNN_IMAGE_SIZE_4_3",
+    "SEBlock",
     "SeverityCNN",
     "build_cnn_model",
     "load_cnn_model",
