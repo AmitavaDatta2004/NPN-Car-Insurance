@@ -52,8 +52,10 @@ SEVERITY_ID_TO_CLASS: dict[int, str] = {0: "minor", 1: "moderate", 2: "severe"}
 _IMAGENET_MEAN = [0.485, 0.456, 0.406]
 _IMAGENET_STD = [0.229, 0.224, 0.225]
 
-# Default image size for this CNN (per README §10 Notebook 06)
+# Default image size for legacy square baseline
 CNN_IMAGE_SIZE: int = 160
+# new improvement: native 4:3 aspect ratio matching dataset median (194x259)
+CNN_IMAGE_SIZE_4_3: tuple[int, int] = (192, 256)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -133,7 +135,7 @@ class SeverityDataset(Dataset):
             transforms are applied.
         transform: Optional override transform.  If ``None``, uses the
             default transform for the given split.
-        image_size: Target square image size (default 160).
+        image_size: Target image size (default 160 or (192, 256)).
     """
 
     def __init__(
@@ -141,27 +143,19 @@ class SeverityDataset(Dataset):
         manifest_path: str | Path,
         split: Literal["train", "val", "test"] = "train",
         transform: transforms.Compose | None = None,
-        image_size: int = CNN_IMAGE_SIZE,
+        image_size: tuple[int, int] | int = CNN_IMAGE_SIZE_4_3,
     ) -> None:
         self.manifest_path = Path(manifest_path)
         if not self.manifest_path.exists():
-            raise FileNotFoundError(
-                f"Severity manifest not found: {self.manifest_path}. "
-                "Run notebooks/05_severity_dataset_audit.ipynb first."
-            )
+            raise FileNotFoundError(f"Manifest not found: {self.manifest_path}")
 
         df = pd.read_csv(self.manifest_path)
-
-        # Validate required columns
-        required = {"image_path", "label_id"}
-        missing_cols = required - set(df.columns)
-        if missing_cols:
+        if "image_path" not in df.columns or "label_id" not in df.columns:
             raise ValueError(
-                f"Manifest missing required columns: {missing_cols}. "
-                f"Found: {df.columns.tolist()}"
+                f"Manifest {manifest_path} must have 'image_path' and 'label_id' columns."
             )
 
-        # Resolve paths cross-platform
+        # Cross-platform resolution
         df["_resolved_path"] = df["image_path"].apply(
             lambda p: str(_resolve_severity_image_path(str(p)))
         )
@@ -170,9 +164,9 @@ class SeverityDataset(Dataset):
         n_missing = (~df["_exists"]).sum()
         if n_missing > 0:
             warnings.warn(
-                f"{n_missing} image(s) in {self.manifest_path.name} could not "
-                "be resolved on disk and will be skipped. "
-                "Check that the dataset is downloaded to data/raw/car_damage_severity/.",
+                f"{n_missing} of {len(df)} images could not be found on disk. "
+                "Ensure data/raw/car_damage_severity is populated.",
+                UserWarning,
                 stacklevel=2,
             )
 
@@ -183,8 +177,6 @@ class SeverityDataset(Dataset):
             if transform is not None
             else get_severity_transforms(split, image_size=image_size)
         )
-
-        # Cache label distribution for reporting
         self._label_counts: dict[int, int] = (
             self.df["label_id"].value_counts().to_dict()
         )
@@ -241,21 +233,19 @@ class SeverityDataset(Dataset):
 
 def get_severity_transforms(
     split: Literal["train", "val", "test"],
-    image_size: int = CNN_IMAGE_SIZE,
+    image_size: tuple[int, int] | int = CNN_IMAGE_SIZE_4_3,
 ) -> transforms.Compose:
     """Return the augmentation pipeline for a given data split.
 
-    Train:  gentle augmentation — flip, crop, colour jitter, rotation.
-    Val/test: deterministic resize + centre-crop only.
+    # new improvement: full-canvas native 4:3 aspect ratio (192x256) matching dataset median (194x259)
+    # new improvement: removed destructive CenterCrop so bumper, headlight, and corner damage is 100% preserved
+    # new improvement: streamlined edge-preserving augmentation (no rotation or multi-scale crop blur)
 
     ImageNet mean/std normalisation is applied in all splits.
 
-    Note: Augmentation is kept conservative.  Scratches and surface texture
-    are important signal; aggressive transforms risk destroying them.
-
     Args:
         split: ``"train"``, ``"val"``, or ``"test"``.
-        image_size: Target square image side (default 160 for baseline CNN).
+        image_size: Target spatial size (default (192, 256) for native 4:3).
 
     Returns:
         ``transforms.Compose`` pipeline.
@@ -263,22 +253,25 @@ def get_severity_transforms(
     if split not in ("train", "val", "test"):
         raise ValueError(f"Invalid split {split!r}. Must be 'train', 'val', or 'test'.")
 
+    # new improvement: support both rectangular (H, W) and square resolutions
+    target_size = (image_size, image_size) if isinstance(image_size, int) else tuple(image_size)
     normalise = transforms.Normalize(mean=_IMAGENET_MEAN, std=_IMAGENET_STD)
-    resize_to = int(image_size * 256 / 224)  # scale to 180 for 160 target
 
     if split == "train":
         return transforms.Compose([
-            transforms.RandomResizedCrop(image_size, scale=(0.75, 1.0)),
+            # new improvement: full-canvas resize to native 4:3 without cropping
+            transforms.Resize(target_size),
+            # new improvement: clean horizontal flip (damage symmetry, zero edge blur)
             transforms.RandomHorizontalFlip(p=0.5),
-            transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.1, hue=0.05),
-            transforms.RandomRotation(degrees=15),
+            # new improvement: subtle ambient lighting jitter (no edge distortion)
+            transforms.ColorJitter(brightness=0.1, contrast=0.1),
             transforms.ToTensor(),
             normalise,
         ])
-    else:  # val or test — deterministic only
+    else:  # val or test — deterministic full-canvas evaluation
         return transforms.Compose([
-            transforms.Resize(resize_to),
-            transforms.CenterCrop(image_size),
+            # new improvement: no CenterCrop — retains full car width and all bumper/fender damage
+            transforms.Resize(target_size),
             transforms.ToTensor(),
             normalise,
         ])
@@ -288,19 +281,52 @@ def get_severity_transforms(
 # Model
 # ─────────────────────────────────────────────────────────────────────────────
 
+class SEBlock(nn.Module):
+    """Squeeze-and-Excitation channel attention block.
+
+    Recalibrates channel feature maps dynamically to emphasize damage deformation
+    cues over background paint and scenery textures.
+    """
+
+    def __init__(self, channels: int, reduction: int = 16) -> None:
+        super().__init__()
+        reduced = max(channels // reduction, 4)
+        self.fc = nn.Sequential(
+            nn.AdaptiveAvgPool2d(1),
+            nn.Flatten(),
+            nn.Linear(channels, reduced, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Linear(reduced, channels, bias=False),
+            nn.Sigmoid(),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        b, c, _, _ = x.shape
+        w = self.fc(x).view(b, c, 1, 1)
+        return x * w
+
+
 class SeverityCNN(nn.Module):
     """Baseline severity classifier trained from scratch.
 
-    4-block convolutional network (conv → bn → relu → pool) followed by
-    global average pooling and a two-layer classification head.
+    4-block convolutional network (conv → bn → relu → pool) with a 2-layer
+    non-linear classification head (Linear → ReLU → Dropout → Linear).
+    Also supports optional Squeeze-and-Excitation (SE) channel attention and
+    direct head configurations for ablation and checkpoint compatibility.
 
-    This model establishes a performance floor for the MobileNetV2 and
-    ViT-Tiny transfer-learning experiments in Phases 6 and 7.
+    # new improvement: Block 4 uses 128->128 channels (extra_conv_channels=128 default),
+    # eliminating the 295,000 parameter bottleneck (over 70% of network) to prevent overfitting on 1,140 images.
+    # new improvement: full-canvas native 4:3 input (192x256) matching dataset median (194x259).
 
     Args:
         num_classes: Number of output classes (default 3).
-        dropout: Dropout probability in the classifier head.
-        use_extra_conv: If True, adds a 4th conv block (128→256 channels).
+        dropout: Dropout probability in the classifier head (default 0.4).
+        use_extra_conv: If True, adds a 4th conv block (default True).
+        extra_conv_channels: Channel width for block 4 (default 128 to prevent bottleneck).
+        use_se: If True, attaches an SE attention block to block 4 (default False).
+        direct_head: If True, uses GAP → Dropout → Linear(feature_dim, num_classes).
+            If False (default), retains the 2-layer non-linear head needed to isolate
+            intermediate (moderate) severity boundaries.
     """
 
     def __init__(
@@ -308,11 +334,18 @@ class SeverityCNN(nn.Module):
         num_classes: int = 3,
         dropout: float = 0.4,
         use_extra_conv: bool = True,
+        # new improvement: extra_conv_channels defaults to 128 instead of 256, eliminating the 295k parameter bottleneck
+        extra_conv_channels: int = 128,
+        use_se: bool = False,
+        direct_head: bool = False,
     ) -> None:
         super().__init__()
         self._num_classes = num_classes
         self._dropout = dropout
         self._use_extra_conv = use_extra_conv
+        self._extra_conv_channels = extra_conv_channels
+        self._use_se = use_se
+        self._direct_head = direct_head
 
         # Block 1 — 3 → 32
         self.block1 = nn.Sequential(
@@ -335,26 +368,37 @@ class SeverityCNN(nn.Module):
             nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
         )
-        # Block 4 (optional) — 128 → 256
+        # Block 4 (optional)
+        # new improvement: 128 -> extra_conv_channels (default 128) avoids massive parameter explosion
         if use_extra_conv:
-            self.block4: nn.Module = nn.Sequential(
-                nn.Conv2d(128, 256, kernel_size=3, padding=1, bias=False),
-                nn.BatchNorm2d(256),
+            layers: list[nn.Module] = [
+                nn.Conv2d(128, extra_conv_channels, kernel_size=3, padding=1, bias=False),
+                nn.BatchNorm2d(extra_conv_channels),
                 nn.ReLU(inplace=True),
-            )
-            feature_dim = 256
+            ]
+            if use_se:
+                layers.append(SEBlock(extra_conv_channels))
+            self.block4: nn.Module = nn.Sequential(*layers)
+            feature_dim = extra_conv_channels
         else:
             self.block4 = nn.Identity()
             feature_dim = 128
 
         # Global average pooling + classification head
         self.pool = nn.AdaptiveAvgPool2d((1, 1))
-        self.classifier = nn.Sequential(
-            nn.Linear(feature_dim, 128),
-            nn.ReLU(inplace=True),
-            nn.Dropout(p=dropout),
-            nn.Linear(128, num_classes),
-        )
+        if direct_head:
+            self.classifier = nn.Sequential(
+                nn.Dropout(p=dropout),
+                nn.Linear(feature_dim, num_classes),
+            )
+        else:
+            # new improvement: 2-layer MLP head preserving non-linear separation without parameter bloat
+            self.classifier = nn.Sequential(
+                nn.Linear(feature_dim, 128),
+                nn.ReLU(inplace=True),
+                nn.Dropout(p=dropout),
+                nn.Linear(128, num_classes),
+            )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward pass.
@@ -387,19 +431,24 @@ class SeverityCNN(nn.Module):
 def build_cnn_model(
     dropout: float = 0.4,
     use_extra_conv: bool = True,
+    # new improvement: extra_conv_channels=128 avoids the 295k parameter spike
+    extra_conv_channels: int = 128,
     num_classes: int = 3,
+    use_se: bool = False,
+    direct_head: bool = False,
 ) -> SeverityCNN:
     """Build and return a fresh :class:`SeverityCNN` (no pretrained weights).
 
-    Args:
-        dropout: Dropout probability in the classifier head.
-        use_extra_conv: Whether to include the 4th 128→256 conv block.
-        num_classes: Number of output severity classes.
-
-    Returns:
-        ``SeverityCNN`` in training mode.
+    # new improvement: builds balanced architecture without Block 4 bottleneck
     """
-    return SeverityCNN(num_classes=num_classes, dropout=dropout, use_extra_conv=use_extra_conv)
+    return SeverityCNN(
+        num_classes=num_classes,
+        dropout=dropout,
+        use_extra_conv=use_extra_conv,
+        extra_conv_channels=extra_conv_channels,
+        use_se=use_se,
+        direct_head=direct_head,
+    )
 
 
 def load_cnn_model(
@@ -408,15 +457,8 @@ def load_cnn_model(
 ) -> SeverityCNN:
     """Load a :class:`SeverityCNN` from a saved ``.pt`` checkpoint.
 
-    The checkpoint must have been saved with::
-
-        torch.save({
-            "model_state_dict": model.state_dict(),
-            "num_classes": 3,
-            "dropout": 0.4,
-            "use_extra_conv": True,
-            ...
-        }, path)
+    Supports both improved checkpoints (with direct head and SE attention)
+    and legacy checkpoints with automatic state dict shape detection.
 
     Args:
         checkpoint_path: Path to the ``.pt`` file.
@@ -444,16 +486,42 @@ def load_cnn_model(
             "Ensure it was saved with the standard ClaimVision checkpoint format."
         )
 
+    state_dict = checkpoint["model_state_dict"]
     num_classes = checkpoint.get("num_classes", 3)
     dropout = checkpoint.get("dropout", 0.4)
     use_extra_conv = checkpoint.get("use_extra_conv", True)
+
+    # new improvement: auto-detect Block 4 channel dimension (128 vs legacy 256)
+    if "extra_conv_channels" in checkpoint:
+        extra_conv_channels = int(checkpoint["extra_conv_channels"])
+    elif "block4.0.weight" in state_dict:
+        extra_conv_channels = state_dict["block4.0.weight"].shape[0]
+    else:
+        extra_conv_channels = 128
+
+    # Auto-detect SEBlock presence if not explicitly stored
+    if "use_se" in checkpoint:
+        use_se = bool(checkpoint["use_se"])
+    else:
+        use_se = any("block4.3" in k or "fc.2.weight" in k for k in state_dict.keys())
+
+    # Auto-detect direct head vs legacy 2-layer head
+    if "direct_head" in checkpoint:
+        direct_head = bool(checkpoint["direct_head"])
+    elif "classifier.1.weight" in state_dict and "classifier.3.weight" not in state_dict:
+        direct_head = True
+    else:
+        direct_head = False
 
     model = SeverityCNN(
         num_classes=num_classes,
         dropout=dropout,
         use_extra_conv=use_extra_conv,
+        extra_conv_channels=extra_conv_channels,
+        use_se=use_se,
+        direct_head=direct_head,
     )
-    model.load_state_dict(checkpoint["model_state_dict"])
+    model.load_state_dict(state_dict)
     model.to(device)
     model.eval()
     return model
@@ -478,6 +546,10 @@ def save_cnn_checkpoint(
         "num_classes": model._num_classes,
         "dropout": model._dropout,
         "use_extra_conv": model._use_extra_conv,
+        # new improvement: records extra_conv_channels for checkpoint reproducibility
+        "extra_conv_channels": getattr(model, "_extra_conv_channels", 128),
+        "use_se": getattr(model, "_use_se", False),
+        "direct_head": getattr(model, "_direct_head", False),
         "model_class": "SeverityCNN",
         "experiment_id": "SEV-CNN-001",
     }
@@ -489,7 +561,7 @@ def save_cnn_checkpoint(
 def export_onnx(
     model: SeverityCNN,
     output_path: str | Path,
-    image_size: int = CNN_IMAGE_SIZE,
+    image_size: tuple[int, int] | int = CNN_IMAGE_SIZE_4_3,
     device: str = "cpu",
 ) -> None:
     """Export a :class:`SeverityCNN` to ONNX format (opset 17).
@@ -506,8 +578,10 @@ def export_onnx(
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
+    # new improvement: supports both rectangular (H, W) and square dimensions
+    h, w = (image_size, image_size) if isinstance(image_size, int) else tuple(image_size)
     model.eval()
-    dummy = torch.zeros(1, 3, image_size, image_size, device=device)
+    dummy = torch.zeros(1, 3, h, w, device=device)
 
     try:
         torch.onnx.export(
@@ -537,19 +611,27 @@ def export_onnx(
         )
 
 
-def save_cnn_preprocessing_config(output_path: str | Path) -> None:
+def save_cnn_preprocessing_config(
+    output_path: str | Path,
+    # new improvement: records native 4:3 image dimensions
+    image_size: tuple[int, int] | int = CNN_IMAGE_SIZE_4_3,
+) -> None:
     """Write the preprocessing configuration used at training time.
 
+    # new improvement: records native 4:3 aspect ratio and edge-preserving settings
     This JSON is read by the unified pipeline (Phase 11) to ensure runtime
     preprocessing matches training preprocessing exactly.
 
     Args:
         output_path: Path to write the JSON file.
+        image_size: Target image dimensions (default (192, 256)).
     """
+    h, w = (image_size, image_size) if isinstance(image_size, int) else tuple(image_size)
     config = {
         "model": "SeverityCNN",
         "experiment_id": "SEV-CNN-001",
-        "image_size": [CNN_IMAGE_SIZE, CNN_IMAGE_SIZE],
+        # new improvement: native 4:3 aspect ratio matching dataset median (194x259)
+        "image_size": [h, w],
         "color_order": "RGB",
         "normalisation": {
             "mean": _IMAGENET_MEAN,
@@ -559,12 +641,13 @@ def save_cnn_preprocessing_config(output_path: str | Path) -> None:
                 "No ImageNet knowledge is transferred — this is a from-scratch model."
             ),
         },
-        "resize_strategy": f"Resize({int(CNN_IMAGE_SIZE * 256 / 224)}) + CenterCrop({CNN_IMAGE_SIZE}) for val/test",
+        # new improvement: full-canvas resize without destructive center crop
+        "resize_strategy": f"Resize(({h}, {w})) full-canvas for val/test (no crop)",
+        # new improvement: streamlined edge-preserving augmentations
         "training_augmentations": [
-            f"RandomResizedCrop({CNN_IMAGE_SIZE}, scale=(0.75, 1.0))",
+            f"Resize(({h}, {w}))",
             "RandomHorizontalFlip(p=0.5)",
-            "ColorJitter(brightness=0.2, contrast=0.2, saturation=0.1, hue=0.05)",
-            "RandomRotation(degrees=15)",
+            "ColorJitter(brightness=0.1, contrast=0.1)",
         ],
         "class_map": SEVERITY_ID_TO_CLASS,
         "classes": SEVERITY_CLASSES,
@@ -575,6 +658,7 @@ def save_cnn_preprocessing_config(output_path: str | Path) -> None:
         json.dump(config, f, indent=2)
 
 
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Inference helper — usable by Phase 11 unified pipeline
 # ─────────────────────────────────────────────────────────────────────────────
@@ -583,7 +667,8 @@ def predict_severity_cnn(
     image_path: str | Path,
     model: SeverityCNN,
     device: str = "cpu",
-    image_size: int = CNN_IMAGE_SIZE,
+    image_size: tuple[int, int] | int = CNN_IMAGE_SIZE_4_3,
+    class_weights: list[float] | None = None,
 ) -> dict:
     """Run single-image severity inference with the baseline CNN.
 
@@ -592,6 +677,9 @@ def predict_severity_cnn(
         model: ``SeverityCNN`` in eval mode.
         device: ``"cpu"`` or ``"cuda"``.
         image_size: Spatial dimension for inference transforms.
+        class_weights: Optional list of 3 calibration multipliers [w_minor, w_moderate, w_severe].
+            If provided, class selection uses argmax(probs * weights), enabling
+            validation-calibrated decision boundaries without retrained weights.
 
     Returns:
         Dictionary with keys:
@@ -611,7 +699,11 @@ def predict_severity_cnn(
     latency_ms = (time.perf_counter() - t0) * 1000.0
 
     probs = torch.softmax(logits, dim=1).squeeze(0).cpu().numpy()
-    pred_id = int(np.argmax(probs))
+    if class_weights is not None:
+        scores = probs * np.asarray(class_weights, dtype=np.float32)
+        pred_id = int(np.argmax(scores))
+    else:
+        pred_id = int(np.argmax(probs))
 
     return {
         "predicted_class": SEVERITY_ID_TO_CLASS[pred_id],
@@ -633,7 +725,7 @@ def predict_severity_cnn(
 
 def measure_cpu_latency(
     model: SeverityCNN,
-    image_size: int = CNN_IMAGE_SIZE,
+    image_size: tuple[int, int] | int = CNN_IMAGE_SIZE_4_3,
     n_warmup: int = 10,
     n_runs: int = 100,
 ) -> dict[str, float]:
@@ -641,7 +733,7 @@ def measure_cpu_latency(
 
     Args:
         model: ``SeverityCNN`` in eval mode.
-        image_size: Spatial dimension of dummy input.
+        image_size: Spatial dimension of dummy input (int or (H, W)).
         n_warmup: Number of warm-up forward passes (not timed).
         n_runs: Number of timed forward passes.
 
@@ -649,7 +741,8 @@ def measure_cpu_latency(
         ``{"mean_ms": float, "std_ms": float, "n_runs": int}``.
     """
     model.eval()
-    dummy = torch.zeros(1, 3, image_size, image_size)
+    h, w = (image_size, image_size) if isinstance(image_size, int) else tuple(image_size)
+    dummy = torch.zeros(1, 3, h, w)
     times = []
 
     with torch.no_grad():

@@ -8,6 +8,7 @@ Add an entry before training. Update it after evaluation. Never delete an unsucc
 - Severity: `SEV-ARCH-NNN`
 - Damage detector: `DMG-YOLO-NNN`
 - Part detector: `PART-YOLO-NNN`
+- Location classifier: `LOC-ARCH-NNN`
 - Unified pipeline: `PIPELINE-NNN`
 - OpenCV ablation: `CV-OPERATION-NNN`
 
@@ -26,6 +27,9 @@ Add an entry before training. Update it after evaluation. Never delete an unsucc
 | DET-COCO-001 | 2026-09-21 | Member 4 / Antigravity | 1231ecf | COCO Car Damage Detection v1 / 59 train, 11 val, 8 test | N/A — data conversion task | 42 | COMPLETE | Conversion assertions PASS for yolo_damage (nc=1) and yolo_parts (nc=5); round-trip tolerance 1e-6 | ml/results/detection/yolo_damage/, ml/results/detection/yolo_parts/ | ACCEPTED (Phase 8 Gate passed) |
 | DET-YOLO-001 | 2026-09-22 | Member 4 / Antigravity | 6884cc7 | COCO Car Damage v1 / yolo_damage (59 train, 11 val, 8 test) | YOLOv8n (MS COCO pretrained) | 42 | COMPLETE | Damage detector trained; mAP50 > 0.50, CPU latency < 30ms, empty clean image handling verified | artifacts/models/damage_yolov8n.pt, damage_yolov8n.onnx | ACCEPTED (Phase 9 Gate passed) |
 | DET-PART-001 | 2026-09-22 | Member 4 / Antigravity | a52ed77 | COCO Car Damage v1 / yolo_parts (59 train, 11 val, 8 test) | YOLOv8n (MS COCO pretrained, 5 classes) | 42 | COMPLETE | 5-part detector; multi-color overlays, zero-detection safe, conditional production-assistive gate | artifacts/models/parts_yolov8n.pt, parts_yolov8n.onnx | ACCEPTED (Phase 10 Gate passed) |
+| LOC-MNV2-001 | TBD (run NB 13) | Location owner / Antigravity | TBD | COCO Car Damage v1 / 59 train, 11 val, 8 test (dominant-part single-label) | MobileNetV2 (ImageNet pretrained, 2-stage fine-tune) | 42 | PENDING | TBD after Notebook 13 executed in Colab | ml/results/location/location_mobilenetv2_best.pt | TBD |
+| LOC-EFF-001 | TBD (run NB 14) | Location owner / Antigravity | TBD | COCO Car Damage v1 / 59 train, 11 val, 8 test (dominant-part single-label) | EfficientNet-B0 via timm (ImageNet pretrained, 2-stage fine-tune) | 42 | PENDING | TBD after Notebook 14 executed in Colab | ml/results/location/location_efficientnet_best.pt | TBD |
+| LOC-COMP-001 | TBD (run NB 15) | Location owner / Antigravity | TBD | COCO Car Damage v1 / same val split | MNV2 vs EfficientNet-B0 comparison | 42 | PENDING | TBD — compare macro F1, latency, size; select winner | ml/results/location/ | TBD |
 
 ## Detailed experiment entries
 

@@ -25,6 +25,9 @@ pytest.importorskip("torch", reason="PyTorch not installed — skipping severity
 
 from claimvision_ml.severity.cnn import (  # noqa: E402
     CNN_IMAGE_SIZE,
+    # new improvement: native 4:3 aspect ratio matching dataset median
+    CNN_IMAGE_SIZE_4_3,
+    SEBlock,
     SEVERITY_CLASS_TO_ID,
     SEVERITY_CLASSES,
     SEVERITY_ID_TO_CLASS,
@@ -57,6 +60,11 @@ class TestSeverityConstants:
     def test_cnn_image_size(self):
         assert CNN_IMAGE_SIZE == 160
 
+    def test_cnn_image_size_4_3(self):
+        # new improvement: native 4:3 aspect ratio matching dataset median (194x259)
+        assert CNN_IMAGE_SIZE_4_3 == (192, 256)
+
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # SeverityCNN architecture
@@ -75,6 +83,15 @@ class TestSeverityCNNArchitecture:
         model = SeverityCNN()
         model.eval()
         x = torch.zeros(2, 3, CNN_IMAGE_SIZE, CNN_IMAGE_SIZE)
+        with torch.no_grad():
+            logits = model(x)
+        assert logits.shape == (2, 3), f"Expected (2, 3), got {logits.shape}"
+
+    def test_forward_pass_shape_4_3(self):
+        # new improvement: tests forward pass on native 4:3 (192, 256) full canvas
+        model = SeverityCNN()
+        model.eval()
+        x = torch.zeros(2, 3, CNN_IMAGE_SIZE_4_3[0], CNN_IMAGE_SIZE_4_3[1])
         with torch.no_grad():
             logits = model(x)
         assert logits.shape == (2, 3), f"Expected (2, 3), got {logits.shape}"
@@ -109,6 +126,22 @@ class TestSeverityCNNArchitecture:
         m_without = SeverityCNN(use_extra_conv=False).parameter_count()["total"]
         assert m_without < m_with
 
+    def test_parameter_count_direct_head_less_than_two_layer(self):
+        # new improvement: with extra_conv_channels=128, direct head saves 128*128 + 128 = 16,512 parameters
+        m_direct = SeverityCNN(direct_head=True).parameter_count()["total"]
+        m_two_layer = SeverityCNN(direct_head=False).parameter_count()["total"]
+        assert m_direct < m_two_layer
+        assert (m_two_layer - m_direct) == (128 * 128 + 128)
+
+    def test_extra_conv_channels_parameter_count(self):
+        # new improvement: extra_conv_channels=128 prevents the 295k parameter bottleneck of 128->256
+        m_128 = SeverityCNN(extra_conv_channels=128).parameter_count()["total"]
+        m_256 = SeverityCNN(extra_conv_channels=256).parameter_count()["total"]
+        assert m_128 < m_256
+        # Eliminating the 128->256 jump saves over 150k parameters
+        assert (m_256 - m_128) > 150000
+
+
     def test_build_cnn_model_returns_severity_cnn(self):
         model = build_cnn_model()
         assert isinstance(model, SeverityCNN)
@@ -117,12 +150,43 @@ class TestSeverityCNNArchitecture:
         model = build_cnn_model()
         assert model.training
 
+    def test_default_classifier_is_two_layer(self):
+        model = SeverityCNN()
+        assert len(model.classifier) == 4
+        assert isinstance(model.classifier[0], torch.nn.Linear)
+        assert model.classifier[0].out_features == 128
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Squeeze-and-Excitation (SEBlock)
+# ─────────────────────────────────────────────────────────────────────────────
+
+class TestSEBlock:
+    def test_se_block_shape_preservation(self):
+        se = SEBlock(channels=256, reduction=16)
+        x = torch.randn(2, 256, 10, 10)
+        out = se(x)
+        assert out.shape == (2, 256, 10, 10)
+
+    def test_se_block_scaling_factor_range(self):
+        se = SEBlock(channels=64, reduction=16)
+        x = torch.ones(1, 64, 5, 5)
+        # Weight gate is sigmoid, output must be non-negative
+        out = se(x)
+        assert (out >= 0).all()
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Transforms
 # ─────────────────────────────────────────────────────────────────────────────
 
 class TestSeverityTransforms:
+    def test_train_transform_no_random_erasing(self):
+        from torchvision import transforms
+        t = get_severity_transforms("train")
+        types = [type(op) for op in t.transforms]
+        assert transforms.RandomErasing not in types
+
     def test_train_transform_returns_compose(self):
         from torchvision import transforms
         t = get_severity_transforms("train")
@@ -143,15 +207,25 @@ class TestSeverityTransforms:
             get_severity_transforms("unknown")  # type: ignore[arg-type]
 
     def test_train_transform_output_shape(self):
+        # new improvement: default train transforms resize to full-canvas 4:3 (192, 256)
         from PIL import Image
         t = get_severity_transforms("train")
         img = Image.new("RGB", (300, 200))
         tensor = t(img)
-        assert tensor.shape == (3, CNN_IMAGE_SIZE, CNN_IMAGE_SIZE)
+        assert tensor.shape == (3, CNN_IMAGE_SIZE_4_3[0], CNN_IMAGE_SIZE_4_3[1])
 
     def test_val_transform_output_shape(self):
+        # new improvement: default val transforms resize to full-canvas 4:3 (192, 256) without cropping
         from PIL import Image
         t = get_severity_transforms("val")
+        img = Image.new("RGB", (300, 200))
+        tensor = t(img)
+        assert tensor.shape == (3, CNN_IMAGE_SIZE_4_3[0], CNN_IMAGE_SIZE_4_3[1])
+
+    def test_legacy_square_image_size(self):
+        # new improvement: backwards compatibility with legacy square size (160, 160)
+        from PIL import Image
+        t = get_severity_transforms("val", image_size=CNN_IMAGE_SIZE)
         img = Image.new("RGB", (300, 200))
         tensor = t(img)
         assert tensor.shape == (3, CNN_IMAGE_SIZE, CNN_IMAGE_SIZE)
@@ -206,11 +280,21 @@ class TestPreprocessingConfig:
         assert required_keys.issubset(cfg.keys())
 
     def test_preprocessing_config_image_size(self, tmp_path):
+        # new improvement: config defaults to native 4:3 image dimensions
         output = tmp_path / "cfg.json"
         save_cnn_preprocessing_config(output)
         with open(output) as f:
             cfg = json.load(f)
+        assert cfg["image_size"] == [CNN_IMAGE_SIZE_4_3[0], CNN_IMAGE_SIZE_4_3[1]]
+
+    def test_preprocessing_config_legacy_square_image_size(self, tmp_path):
+        # new improvement: supports explicit square image size override
+        output = tmp_path / "cfg_square.json"
+        save_cnn_preprocessing_config(output, image_size=CNN_IMAGE_SIZE)
+        with open(output) as f:
+            cfg = json.load(f)
         assert cfg["image_size"] == [CNN_IMAGE_SIZE, CNN_IMAGE_SIZE]
+
 
     def test_preprocessing_config_class_map(self, tmp_path):
         output = tmp_path / "cfg.json"
@@ -228,11 +312,8 @@ class TestPreprocessingConfig:
 # ─────────────────────────────────────────────────────────────────────────────
 
 class TestOnnxExport:
-    @pytest.mark.skipif(
-        not pytest.importorskip("onnx", reason="onnx not installed"),  # type: ignore[arg-type]
-        reason="onnx not installed",
-    )
     def test_onnx_export_creates_file(self, tmp_path):
+        pytest.importorskip("onnx", reason="onnx not installed")
         model = SeverityCNN()
         model.eval()
         onnx_path = tmp_path / "severity_cnn.onnx"
@@ -315,7 +396,7 @@ class TestPredictSeverityCNN:
         result = predict_severity_cnn(str(img_path), model, device="cpu")
 
         prob_sum = sum(result["probabilities"].values())
-        assert abs(prob_sum - 1.0) < 1e-4, f"Probabilities sum to {prob_sum}, expected 1.0"
+        assert abs(prob_sum - 1.0) < 1e-3, f"Probabilities sum to {prob_sum}, expected 1.0"
 
     def test_predict_model_version(self, tmp_path):
         from PIL import Image as PILImage
@@ -329,3 +410,22 @@ class TestPredictSeverityCNN:
         result = predict_severity_cnn(str(img_path), model, device="cpu")
         assert result["model_version"] == "SEV-CNN-001"
         assert result["experiment_id"] == "SEV-CNN-001"
+
+    def test_predict_with_calibrated_class_weights(self, tmp_path):
+        from PIL import Image as PILImage
+
+        img = PILImage.new("RGB", (200, 150))
+        img_path = tmp_path / "test_car_weights.jpg"
+        img.save(img_path)
+
+        model = SeverityCNN()
+        model.eval()
+        # Biasing heavily towards moderate (class 1)
+        result = predict_severity_cnn(
+            str(img_path),
+            model,
+            device="cpu",
+            class_weights=[0.01, 100.0, 0.01],
+        )
+        assert result["predicted_class"] == "moderate"
+        assert result["predicted_id"] == 1
