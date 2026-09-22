@@ -29,7 +29,7 @@ Current commit: a52ed77 (local changes uncommitted)
 | 7 ViT-Tiny and selection | Member 4 / Antigravity | Complete (ViT-Tiny trained) | Same split available | SEV-VIT-001 trained; Severe recall=100%; ONNX exported; ready for comparison in Notebook 09 |
 | 8 COCO conversion | Member 4 / Antigravity | Complete | Detection annotations available | yolo_damage (nc=1) & yolo_parts (nc=5) datasets created; 78 images across train/val/test converted; assertions PASS; Notebook 10 complete |
 | 9 Damage YOLO | Member 4 / Antigravity | Complete | Conversion accepted | YOLOv8n detector trained; damage.py implemented; 17 unit tests pass; Notebook 11 complete |
-| 10 Part YOLO | Member 4 / Antigravity | In progress | Part labels verified | Part detector & multi-color overlays implemented; 20 unit tests pass; Notebook 12 generated |
+| 10 Part YOLO | Member 4 / Antigravity | Complete | Part labels verified | Notebook 12 executed with NO-GO Gate Decision recorded (59 train / 1 val image insufficient for 5-class YOLO; decoupled architecture selected: Damage YOLO + Location CNN); 20 unit tests pass |
 | 10b Location module scaffold | Location owner / Antigravity | Complete | DET-COCO-001 done | location/ package: dataset.py, mobilenet.py, efficientnet.py, inference.py; 39 tests pass; notebooks 13/14/15 generated |
 | 11a Location MobileNetV2 | Location owner / Antigravity | Complete | Phase 10b complete | LocationMobileNet module, tests, & Notebook 13 implemented |
 | 11b Location EfficientNet | Location owner / Antigravity | Complete | Phase 11a verified | LocationEfficientNet module, tests, & Notebook 14 implemented |

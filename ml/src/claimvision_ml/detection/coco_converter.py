@@ -367,11 +367,14 @@ class COCOtoYOLOConverter:
     @classmethod
     def convert_split(
         cls,
-        coco: dict[str, Any],
-        image_dir: str | Path,
-        out_dir: str | Path,
-        category_map: dict[int, int],
-        class_names: list[str],
+        coco: dict[str, Any] | None = None,
+        image_dir: str | Path = "",
+        out_dir: str | Path = "",
+        category_map: dict[int, int] | None = None,
+        class_names: list[str] | None = None,
+        *,
+        coco_data: dict[str, Any] | None = None,
+        category_id_map: dict[int, int] | None = None,
     ) -> None:
         """Convert one COCO split to YOLO directory layout.
 
@@ -383,18 +386,26 @@ class COCOtoYOLOConverter:
 
         Parameters
         ----------
-        coco:
+        coco or coco_data:
             Loaded COCO dict for this split.
         image_dir:
             Source directory containing the images.
         out_dir:
             Destination root. Created if absent.
-        category_map:
+        category_map or category_id_map:
             ``{coco_category_id: yolo_class_id}``. Annotations whose
             ``category_id`` is not in this map are skipped with a warning.
         class_names:
             List of class name strings in YOLO class-id order.
         """
+        if coco is None:
+            coco = coco_data
+        if coco is None:
+            raise ValueError("Must provide 'coco' or 'coco_data'")
+        if category_map is None:
+            category_map = category_id_map if category_id_map is not None else {}
+        if class_names is None:
+            class_names = []
         image_dir = Path(image_dir)
         out_dir = Path(out_dir)
         images_out = out_dir / "images"
