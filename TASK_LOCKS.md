@@ -32,6 +32,13 @@ This file substitutes for branch isolation because all seven members work direct
 | DET-YOLO-001 | Member 4 / Antigravity | ml/src/claimvision_ml/detection/, ml/tests/test_damage_detector.py, notebooks/11_yolo_damage_training.ipynb, docs/MODEL_CARD_DAMAGE_YOLO_V1.md, docs/EXPERIMENT_LOG.md, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md | 2026-09-22 01:46 | 2026-09-22 04:30 | 6884cc7 | RELEASED |
 | DET-PART-001 | Member 4 / Antigravity | ml/src/claimvision_ml/detection/, ml/tests/test_part_detector.py, notebooks/12_yolo_part_training.ipynb, docs/MODEL_CARD_PART_YOLO_V1.md, docs/EXPERIMENT_LOG.md, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md | 2026-09-22 02:19 | 2026-09-22 05:00 | a52ed77 | ACTIVE |
 | LOC-DATA-001 | Location owner / Antigravity | ml/src/claimvision_ml/location/, ml/tests/test_location_*, notebooks/13_*, notebooks/14_*, notebooks/15_*, scripts/build_notebook_13.py, scripts/build_notebook_14.py, scripts/build_notebook_15.py, docs/DATASET_CARD_LOCATION.md, docs/MODEL_CARD_LOCATION_*, docs/DECISIONS.md, docs/EXPERIMENT_LOG.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md, README.md | 2026-09-22 17:22 | 2026-09-22 19:30 | a52ed77 | ACTIVE |
+| INF-001 | Member 5 / Antigravity | ml/src/claimvision_ml/pipeline/, ml/src/claimvision_ml/costing/, config/cost_table.json, config/decision_thresholds.yaml, ml/tests/test_pipeline_assess.py, ml/tests/test_decision.py, ml/tests/test_cost_engine.py, notebooks/16_unified_inference_demo.ipynb, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md | 2026-09-22 18:25 | 2026-09-22 21:00 | a921611 | ACTIVE |
+| BE-001 | Member 5 / Antigravity | backend/, uploads/, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md | 2026-09-22 18:35 | 2026-09-22 21:30 | a921611 | ACTIVE |
+| FE-001 | Member 6 / Antigravity | frontend/src/, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md | 2026-09-22 19:06 | 2026-09-22 22:00 | a921611 | ACTIVE |
+| FE-002 | Member 6 / Antigravity | frontend/src/, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md | 2026-09-22 19:30 | 2026-09-22 22:30 | a921611 | ACTIVE |
+
+
+
 
 
 ## Lock template

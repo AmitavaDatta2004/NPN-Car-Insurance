@@ -34,11 +34,11 @@ Current commit: a52ed77 (local changes uncommitted)
 | 11a Location MobileNetV2 | Location owner | Not started | Phase 10b complete | NB 13 executed in Colab; LOC-MNV2-001 checkpoint saved |
 | 11b Location EfficientNet | Location owner | Not started | Phase 11a verified | NB 14 executed in Colab; LOC-EFF-001 checkpoint saved |
 | 11c Location comparison | Location owner | Not started | 11a + 11b done | NB 15 executed; winner selected; LOC-COMP-001 documented |
-| 12 Unified inference | Member 5 | Not started | Selected models exported | Stable unified schema |
-| 13 Backend foundation | Member 5 | Not started | API contract approved | Backend tests pass |
-| 14 Assessment APIs | Member 5 | Not started | Inference adapter stable | Endpoint tests pass |
-| 15 Customer UI | Member 6 | Not started | API mocks available | Main journey works |
-| 16 Reviewer dashboard | Member 7 | Not started | Reviewer schema ready | Dashboard journey works |
+| 12 Unified inference | Member 5 / Antigravity | Complete | Selected models exported | assess_claim() pipeline implemented; 20 unit tests pass (204 total); cost engine & decision thresholds ready |
+| 13 Backend foundation | Member 5 / Antigravity | Complete | API contract approved | In-memory store, upload security, 14 REST endpoints, 14 tests pass |
+| 14 Assessment APIs | Member 5 / Antigravity | Complete | Inference adapter stable | assess_claim connected to backend; review queue & decisions verified |
+| 15 Customer UI | Member 6 / Antigravity | Complete | API mocks available | Next.js multi-step claim flow, upload, live poller, result & timeline |
+| 16 Reviewer dashboard | Member 6 / Antigravity | Complete | Reviewer schema ready | Adjuster review queue, side-by-side evidence with YOLO boxes, manual overrides, Recharts analytics dashboard |
 | 17 Integration and testing | Members 1–7 | Not started | All core modules ready | Four scenarios pass 3 times |
 | 18 Presentation freeze | Members 1–7 | Not started | Integration gate passed | Demo package frozen |
 | 19 Core completion | Members 1–7 | Not started | Presentation approved | Core tagged and documented |
@@ -60,6 +60,13 @@ Current commit: a52ed77 (local changes uncommitted)
 - [x] DET-YOLO-001 — Generic Damage YOLO training (YOLOv8n detector, damage.py, 17 unit tests pass, Notebook 11 implemented)
 - [x] DET-PART-001 — Damaged-Part YOLO training (YOLOv8n 5-class detector, parts.py, 20 unit tests pass, Notebook 12 generated)
 - [x] LOC-DATA-001 — Location classification module scaffold (location/ package: dataset.py, mobilenet.py, efficientnet.py, inference.py; 39 tests pass, 184 total pass; notebooks 13/14/15 generated; ADR-004 written)
+- [x] INF-001 — Unified inference orchestrator (assess_claim() chaining quality, fraud, severity, detection, location, costing, decision; 20 unit tests pass; 204 total ML tests pass)
+- [x] BE-001 — FastAPI backend foundation & assessment APIs (in-memory store, upload security, 14 REST endpoints, reviewer workflow; 14 tests pass)
+- [x] FE-001 — Next.js customer UI (multi-step claim form, evidence upload, live status poller, result with damage overlay, timeline)
+- [x] FE-002 — Reviewer dashboard & analytics (adjuster queue, side-by-side evidence with YOLO boxes, manual overrides, Recharts analytics dashboard)
+
+
+
 
 ## Active blockers
 
@@ -86,6 +93,8 @@ Only paste results produced by committed code and recorded experiments.
 | Part detection (data) | DET-COCO-001 (Parts) | 78 images (59 train / 11 val / 8 test) | Assertions PASS; nc=5 parts; round-trip 1e-6 | ml/results/detection/yolo_parts/data.yaml |
 | Part detection (model) | DET-PART-001 (Part YOLO) | COCO Car Damage v1 (59 train / 11 val / 8 test) | 20/20 tests pass; multi-color overlays; Go/No-Go gate | ml/src/claimvision_ml/detection/parts.py |
 | Location (scaffold) | LOC-DATA-001 | COCO Car Damage v1 (dominant-part labels, 5 classes) | 39/39 tests pass (1 skipped ONNX); LocationDataset, derive_location_labels, LocationClassifier verified | ml/src/claimvision_ml/location/ |
+| Unified Inference | INF-001 | Synthetic + pipeline tests | 20/20 tests pass; assess_claim returns full AssessmentResult; high fraud early exit verified | ml/src/claimvision_ml/pipeline/ |
+| Backend & APIs | BE-001 | In-memory store + uploads/ | 14/14 tests pass; full create -> upload -> assess -> review lifecycle verified | backend/app/ |
 | End-to-end | Not available | Demo fixtures | Not tested | — |
 
 ## Next three actions

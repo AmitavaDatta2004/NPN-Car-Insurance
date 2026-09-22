@@ -610,3 +610,160 @@ Acceptance criteria:
 
 Validation commands:
 - Run `notebooks/15_location_model_comparison.ipynb` top-to-bottom in Colab
+
+---
+
+### INF-001 — Unified Inference Pipeline & Orchestrator
+
+- Phase: 12 (Unified Inference)
+- Owner: Member 5 (Backend/ML) / Antigravity
+- Reviewer: Member 1
+- Status: DONE
+- Priority: P0
+- Dependencies: Quality checks (CV-001), Fraud model (ML-001), Severity model (SEV-MNV2-001), Detection model (DET-YOLO-001), Location model (LOC-DATA-001)
+- Files allowed: ml/src/claimvision_ml/pipeline/, ml/src/claimvision_ml/costing/, config/cost_table.json, config/decision_thresholds.yaml, ml/tests/test_pipeline_assess.py, ml/tests/test_decision.py, ml/tests/test_cost_engine.py, notebooks/16_unified_inference_demo.ipynb, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md
+- Files prohibited: fraud/, severity/, detection/, location/ (except importing/reading), backend/, frontend/
+- Objective: implement the unified `assess_claim()` pipeline in `claimvision_ml.pipeline` chaining quality -> fraud -> severity -> detection -> location -> costing -> decision routing. Support mock/heuristic fallback when weights are not locally present. Provide cost engine and configurable decision thresholds. Write comprehensive unit tests.
+
+Acceptance criteria:
+- [x] `config/cost_table.json` created with illustrative repair/replacement costs per part and severity tier (in INR).
+- [x] `config/decision_thresholds.yaml` created with named threshold configurations for blur, fraud risk, cost limits, and confidence.
+- [x] `ml/src/claimvision_ml/costing/` implements `estimate_cost()` returning `CostEstimate` dataclass.
+- [x] `ml/src/claimvision_ml/pipeline/schemas.py` defines `AssessmentResult` and nested dataclasses matching API contracts.
+- [x] `ml/src/claimvision_ml/pipeline/decision.py` implements routing logic returning appropriate routes and reason codes.
+- [x] `ml/src/claimvision_ml/pipeline/assess.py` implements `assess_claim()` with graceful real/mock execution.
+- [x] High fraud risk stops automated damage and costing evaluation and routes to `FRAUD_REVIEW`.
+- [x] Unit tests for cost engine, decision routing, and full pipeline pass (`test_cost_engine.py`, `test_decision.py`, `test_pipeline_assess.py`).
+- [x] All existing test suites pass without regression (204 passed, 5 skipped).
+
+Evidence: 20/20 new tests pass in 0.90s; 204/204 total test suite pass in 55.36s.
+
+Validation commands:
+- `.venv\Scripts\python.exe -m pytest ml/tests/test_cost_engine.py ml/tests/test_decision.py ml/tests/test_pipeline_assess.py -v`
+- `.venv\Scripts\python.exe -m pytest ml/tests/ -q`
+
+---
+
+### BE-001 — FastAPI Backend Foundation & Assessment APIs
+
+- Phase: 13 (Backend Foundation & Assessment APIs)
+- Owner: Member 5 (Backend) / Antigravity
+- Reviewer: Member 1
+- Status: DONE
+- Priority: P0
+- Dependencies: INF-001 DONE (unified assess_claim pipeline available)
+- Files allowed: backend/, uploads/, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md
+- Files prohibited: ml/ (except importing), frontend/
+- Objective: implement the FastAPI backend service with in-memory claim store, upload security validation, all 14 REST endpoints, assessment orchestration, reviewer queue, and summary analytics.
+
+Acceptance criteria:
+- [x] `backend/app/store.py` implements thread-safe in-memory store for claims, images, assessments, reviews, and timeline events.
+- [x] `backend/app/schemas/` defines Pydantic v2 models for claim creation, update, read, assessment response, review correction, and decision.
+- [x] `backend/app/services/upload.py` enforces upload security (MIME whitelist, max 10MB, PIL decode verification, SHA-256 computation).
+- [x] All 14 API endpoints implemented under `/api/v1`:
+  - `GET /health`
+  - `POST /claims`, `PATCH /claims/{id}`, `GET /claims/{id}`, `GET /claims`
+  - `POST /claims/{id}/images`, `DELETE /images/{id}`
+  - `POST /claims/{id}/submit`
+  - `POST /claims/{id}/assess`, `GET /assessments/{id}/status`, `GET /claims/{id}/assessment`, `GET /claims/{id}/timeline`
+  - `GET /reviews/queue`, `PATCH /reviews/{id}`, `POST /reviews/{id}/decision`
+  - `GET /dashboard/summary`
+- [x] Claim state machine enforces valid transitions and records timeline status events.
+- [x] Unit & integration tests in `backend/tests/` verify health, upload security, full claim lifecycle, and reviewer workflow.
+- [x] All backend tests pass (14 passed in 1.05s).
+
+Evidence: 14/14 tests pass in backend/tests/; full create -> upload -> submit -> assess -> review lifecycle verified.
+
+Validation commands:
+- `.venv\Scripts\python.exe -m pytest backend/tests/ -v`
+
+---
+
+### FE-001 — Next.js Customer UI (Policyholder Journey)
+
+- Phase: 15 (Customer UI)
+- Owner: Member 6 (Frontend) / Antigravity
+- Reviewer: Member 1 / Member 7
+- Status: DONE
+- Priority: P0
+- Dependencies: BE-001 DONE (FastAPI backend endpoints and upload handler available)
+- Files allowed: frontend/src/, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md
+- Files prohibited: backend/, ml/
+- Objective: implement the customer-facing claim filing and assessment flow using Next.js App Router, TypeScript strict mode, and Tailwind CSS. Connect directly to backend APIs at `http://127.0.0.1:8000/api/v1`.
+
+Acceptance criteria:
+- [x] `frontend/src/types/` defines TypeScript interfaces for Claim, ClaimImage, TimelineEvent, and Assessment matching the backend schemas.
+- [x] `frontend/src/lib/api.ts` provides a typed fetch client for all backend endpoints with error handling.
+- [x] `frontend/src/components/` implements reusable UI components: Navbar, Button, Card, Badge, Spinner, Alert, ImageUploader, StepIndicator, AssessmentCard, and DamageOverlayViewer.
+- [x] Multi-step claim creation wizard (`/claims/new`):
+  - Step 1: Policy and vehicle details with Zod validation.
+  - Step 2: Guided drag-and-drop image upload with live thumbnail previews and remove actions.
+  - Step 3: Review and declaration before submission.
+- [x] Live assessment processing screen (`/claims/[id]/processing`):
+  - Polls `/api/v1/assessments/{id}/status` every 1.5s with animated progress steps.
+  - Auto-redirects to assessment result screen upon completion.
+- [x] Assessment result screen (`/claims/[id]/result`):
+  - Displays route badge (e.g. Fast-Track Eligible, Fraud Review, Manual Review).
+  - Displays fraud risk meter, severity tier, damaged-part location badge, and estimated cost range (in INR).
+  - Shows side-by-side original evidence photograph and toggleable damage bounding boxes.
+- [x] Claim timeline screen (`/claims/[id]/timeline`):
+  - Chronological audit trail of claim state transitions.
+- [x] Customer claims list (`/claims`):
+  - List of active claims with status badges and links to results/timelines.
+- [x] Landing page (`/`) updated with navigation, feature overview, and "File a Claim" CTA.
+- [x] `npm run build` and `npm run typecheck` succeed with zero TypeScript or lint errors.
+
+Evidence: `npm run typecheck` passed with 0 errors; `next build` generated 6 pages cleanly.
+
+Validation commands:
+- `cd frontend; npm run typecheck`
+- `cd frontend; npm run build`
+
+---
+
+### FE-002 — Reviewer Dashboard & Analytics (Adjuster Workspace)
+
+- Phase: 16 (Reviewer UI & Analytics)
+- Owner: Member 6 (Frontend) / Antigravity
+- Reviewer: Member 1 / Member 7
+- Status: DONE
+- Priority: P0
+- Dependencies: FE-001 DONE, BE-001 DONE (Review and Dashboard endpoints available)
+- Files allowed: frontend/src/, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md
+- Files prohibited: backend/, ml/
+- Objective: implement the adjuster workspace for reviewing flagged claims, inspecting side-by-side evidence with YOLO bounding box overlays, applying manual severity/part overrides without overwriting AI outputs, recording final decisions, and viewing executive KPI charts using Recharts.
+- Inputs:
+  - `/api/v1/reviews/queue`
+  - `/api/v1/reviews/{id}`
+  - `/api/v1/reviews/{id}/decision`
+  - `/api/v1/dashboard/summary`
+
+Acceptance criteria:
+- [x] Reviewer API client methods added in `frontend/src/lib/api.ts` (`getReviewQueue`, `saveReviewCorrection`, `submitReviewDecision`, `getDashboardSummary`).
+- [x] Review Queue page (`/reviewer/queue`):
+  - Displays claims requiring human review (`FRAUD_REVIEW`, `MANUAL_DAMAGE_REVIEW`, etc.).
+  - Filterable by route and status; sortable by date and cost.
+  - Quick-action link to inspect claim workspace.
+- [x] Claim Review Workspace (`/reviewer/claims/[id]`):
+  - Side-by-side visual evidence viewer with toggleable YOLO detection bounding boxes.
+  - AI Model Insights panel detailing fraud score, severity classification, and dominant damaged part (Location CNN).
+  - Itemized repair/replacement cost table.
+  - Reviewer Correction Form allowing manual override of severity tier, damaged parts, notes, and final decision (`APPROVED`, `REJECTED`).
+  - Saves corrections via `PATCH /api/v1/reviews/{id}` and finalizes decisions via `POST /api/v1/reviews/{id}/decision` without mutating original AI outputs.
+- [x] Executive Dashboard (`/reviewer/dashboard`):
+  - KPI summary cards (Total claims, Fast-Track rate, Flagged claims, Average cost range, Adjuster override rate).
+  - Recharts visualizations: Route distribution pie chart, severity breakdown bar chart, and damaged parts bar chart.
+- [x] Responsive layout verified (no horizontal scrolling at 1366x768).
+- [x] `npm run typecheck` and `npm run build` succeed with 0 errors.
+
+Evidence: `npm run typecheck` passed (0 errors); `next build` compiled all 10 customer and reviewer routes cleanly.
+
+Validation commands:
+- `cd frontend; npm run typecheck`
+- `cd frontend; npm run build`
+
+
+
+
+
+

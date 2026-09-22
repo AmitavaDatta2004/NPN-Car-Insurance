@@ -1,14 +1,10 @@
-"""Phase 0 smoke test — verify the FastAPI health endpoint.
-
-Uses FastAPI's TestClient (via httpx) so no running server is needed.
-"""
+"""Health endpoint verification tests."""
 
 import os
 import sys
 
 from fastapi.testclient import TestClient
 
-# Allow running from repo root: pytest backend/tests/
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from backend.main import app  # noqa: E402
@@ -28,6 +24,7 @@ def test_health_body():
     body = response.json()
     assert body["status"] == "ok"
     assert body["service"] == "claimvision-api"
+    assert body["models_loaded"] is True
     assert "version" in body
 
 

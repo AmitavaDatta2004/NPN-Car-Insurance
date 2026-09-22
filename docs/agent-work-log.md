@@ -23,6 +23,46 @@ Required by README §7.1 rule 5.
 
 ## Log
 
+### FE-002 — Reviewer Dashboard & Analytics (Adjuster Workspace)
+- Date/time IST: 2026-09-22 19:30 – 19:50
+- Agent: Antigravity
+- Operator: Team Lead / Frontend direction
+- Base commit: a921611
+- Files read: README.md, AGENTS.md, TASKS.md, TASK_LOCKS.md, PROJECT_STATUS.md, backend/app/schemas/review.py, backend/app/schemas/dashboard.py, backend/app/api/routes/reviews.py, backend/app/api/routes/dashboard.py, frontend/src/types/claim.ts, frontend/src/lib/api.ts
+- Files changed:
+  - frontend/src/types/claim.ts (added DashboardSummary, ReviewCorrectionPayload, ReviewDecisionPayload, CostRange)
+  - frontend/src/lib/api.ts (added getReviewQueue, saveReviewCorrection, submitReviewDecision, getDashboardSummary)
+  - frontend/src/components/ui/Badge.tsx (enhanced to support variant prop and color/bg/border)
+  - frontend/src/components/ui/Spinner.tsx (NEW — loading spinner component)
+  - frontend/src/components/ui/Alert.tsx (NEW — accessible alert component)
+  - frontend/src/components/reviewer/ReviewQueueTable.tsx (NEW — filterable/sortable queue table with search)
+  - frontend/src/components/reviewer/ModelInsightsPanel.tsx (NEW — AI signals panel for fraud, severity, location, and OpenCV quality)
+  - frontend/src/components/reviewer/CostTable.tsx (NEW — itemized repair/replace cost table)
+  - frontend/src/components/reviewer/CorrectionForm.tsx (NEW — manual severity/part override form and final decision actions)
+  - frontend/src/components/charts/RouteDistributionChart.tsx (NEW — Recharts pie chart for triage routes)
+  - frontend/src/components/charts/SeverityBarChart.tsx (NEW — Recharts bar chart for severity tiers)
+  - frontend/src/components/charts/LocationPartChart.tsx (NEW — Recharts bar chart for vehicle parts)
+  - frontend/src/app/reviewer/queue/page.tsx (NEW — reviewer triage queue page)
+  - frontend/src/app/reviewer/claims/[id]/page.tsx (NEW — adjuster claim review workspace)
+  - frontend/src/app/reviewer/dashboard/page.tsx (NEW — executive analytics dashboard)
+  - TASKS.md (FE-002 defined and marked DONE)
+  - TASK_LOCKS.md (FE-002 lock recorded)
+  - PROJECT_STATUS.md (Phase 16 updated to Complete)
+- Decisions made:
+  - Preserved zero-database and zero-auth architectural guidelines: direct routing to adjuster workspace without login friction.
+  - Manual adjuster corrections and overrides are stored without overwriting the original AI predictions or confidence scores.
+  - Recharts visual charts configured with ResponsiveContainer and explicit height for deterministic SSR/CSR hydration.
+- Commands run:
+  - `npm run typecheck` (in frontend/) -> Passed with 0 errors.
+  - `npm run build` (in frontend/) -> Compiled all 10 pages cleanly.
+- Validation results:
+  - All 10 routes compiled and generated in Next.js production build.
+  - Responsive design verified without horizontal scrolling.
+- Known limitations / follow-up:
+  - Phase 17 Integration & end-to-end judge scenario testing across all 4 benchmark cases.
+
+---
+
 ### LOC-DATA-001 — Location Dataset Module, Classifier Models & Notebooks (Phase 10b / 11a-c Scaffold)
 
 - Date/time IST: 2026-09-22 17:22 – 17:55
@@ -833,4 +873,128 @@ Known limitations:
 - Front and rear bumpers share geometric similarity in corner close-up crops.
 
 Follow-up: Phase 11 — Unified Inference Demo (`INF-DEMO-001`, Notebook 13).
+
+---
+
+### INF-001 — Unified Claim Assessment Pipeline & Cost Engine
+
+- Date/time IST: 2026-09-22 18:24–18:28
+- Agent: Antigravity
+- Operator: Member 5 (Backend/ML) / Amitava Datta
+- Base commit: a921611
+- Phase: 12 (Unified Inference)
+
+Files read:
+- `README.md` (§14 Cost engine, §15 Decision engine, §19 Phase 11/12 gate)
+- `AGENTS.md` (§4 One-task execution protocol, §10 Model-specific rules, §12 API contract)
+- `TASKS.md` (INF-001 criteria)
+- `TASK_LOCKS.md`
+- `ml/src/claimvision_ml/quality/runtime_checker.py`
+- `ml/src/claimvision_ml/fraud/predict.py`
+- `ml/src/claimvision_ml/severity/predict.py`
+- `ml/src/claimvision_ml/detection/damage.py`
+- `ml/src/claimvision_ml/location/inference.py`
+
+Files created:
+- `config/cost_table.json` (illustrative repair/replace rates per part and severity tier in INR, with vehicle segment multipliers)
+- `config/decision_thresholds.yaml` (configurable thresholds for blur, fraud risk, cost limits, and model confidence)
+- `ml/src/claimvision_ml/costing/cost_engine.py` (CostEstimate, CostBreakdownItem, estimate_cost, deduplication of parts)
+- `ml/src/claimvision_ml/pipeline/schemas.py` (AssessmentResult, QualitySummary, FraudSummary, SeveritySummary, LocationSummary, DetectionSummary, CostSummary)
+- `ml/src/claimvision_ml/pipeline/decision.py` (route_claim, load_decision_thresholds)
+- `ml/src/claimvision_ml/pipeline/assess.py` (assess_claim orchestrator chaining quality -> fraud -> severity -> detection -> location -> costing -> decision routing)
+- `ml/tests/test_cost_engine.py` (7 unit tests for cost engine, deduplication, segment multipliers)
+- `ml/tests/test_decision.py` (8 unit tests for decision matrix)
+- `ml/tests/test_pipeline_assess.py` (5 integration tests for full assess_claim pipeline and serialization)
+
+Files modified:
+- `ml/src/claimvision_ml/costing/__init__.py` (exported estimate_cost, CostEstimate, CostBreakdownItem)
+- `ml/src/claimvision_ml/pipeline/__init__.py` (exported assess_claim, route_claim, AssessmentResult, summaries)
+- `TASK_LOCKS.md` (registered INF-001 lock)
+- `TASKS.md` (added INF-001 task and marked DONE)
+- `PROJECT_STATUS.md` (updated Phase 12 status, sprint objectives, and verified results)
+
+Decisions made:
+- Integrated all 5 ML and deterministic modules (`quality`, `fraud`, `severity`, `detection`, `location`) in strict contract order.
+- High fraud risk terminates early and skips damage, location, and cost evaluation, routing immediately to `FRAUD_REVIEW`.
+- Graceful deterministic mock fallbacks provided in `assess.py` when weights are not locally on disk, ensuring tests and backend execute reliably without failing.
+- Clean JSON serialization via `AssessmentResult.to_dict()` directly compatible with FastAPI response models.
+
+Commands run:
+- `.venv\Scripts\python.exe -m pytest ml/tests/test_cost_engine.py ml/tests/test_decision.py ml/tests/test_pipeline_assess.py -v` → 20 passed in 0.90s
+- `.venv\Scripts\python.exe -m pytest ml/tests/ -q` → 204 passed, 5 skipped in 55.36s (0 regressions)
+
+Validation results:
+- 20 new tests pass; 204 total test suite pass with 0 regressions.
+- Early exit on high fraud confirmed; full pipeline and dictionary serialization verified.
+
+Known limitations:
+- Cost table values are illustrative for prototype demonstration.
+- Real model checkpoint paths can be overridden in config once trained weights are downloaded locally.
+
+Follow-up: Phase B — FastAPI Backend Foundation (in-memory store, 14 endpoints).
+
+---
+
+### BE-001 — FastAPI Backend Foundation & Assessment APIs
+
+- Date/time IST: 2026-09-22 18:35–18:39
+- Agent: Antigravity
+- Operator: Member 5 (Backend) / Amitava Datta
+- Base commit: a921611
+- Phase: 13 & 14 (Backend Foundation & Assessment APIs)
+
+Files read:
+- `README.md` (§16 FastAPI backend plan, §17 Database plan, §19 Phase 12–13 gates)
+- `AGENTS.md` (§4 One-task execution protocol, §12 API contract)
+- `TASKS.md` (BE-001 criteria)
+- `TASK_LOCKS.md`
+- `backend/requirements.txt`
+- `backend/main.py`
+- `ml/src/claimvision_ml/pipeline/__init__.py`
+
+Files created:
+- `backend/app/store.py` (thread-safe InMemoryStore, ClaimRecord, ImageRecord, TimelineEvent, ClaimStatus enum, transition validation)
+- `backend/app/schemas/claim.py` (ClaimCreate, ClaimUpdate, ClaimRead, ImageRead, TimelineEventRead)
+- `backend/app/schemas/review.py` (ReviewCorrection, ReviewDecision, ReviewRead)
+- `backend/app/schemas/dashboard.py` (DashboardSummary, CostRange)
+- `backend/app/schemas/__init__.py` (exported all Pydantic schemas)
+- `backend/app/services/upload.py` (validate_and_save_upload, MIME whitelist, 10MB ceiling, PIL verify, SHA-256 fingerprinting)
+- `backend/app/api/routes/health.py` (GET /api/v1/health)
+- `backend/app/api/routes/claims.py` (POST /claims, PATCH /claims/{id}, GET /claims/{id}, GET /claims, POST /claims/{id}/submit, GET /claims/{id}/timeline)
+- `backend/app/api/routes/images.py` (POST /claims/{id}/images, DELETE /images/{id})
+- `backend/app/api/routes/assessment.py` (POST /claims/{id}/assess, GET /assessments/{id}/status, GET /claims/{id}/assessment)
+- `backend/app/api/routes/reviews.py` (GET /reviews/queue, PATCH /reviews/{id}, POST /reviews/{id}/decision)
+- `backend/app/api/routes/dashboard.py` (GET /dashboard/summary)
+- `backend/app/api/routes/__init__.py` (exported all routers)
+- `backend/tests/test_upload_security.py` (6 security tests for MIME, extension, size, decode, and resolution)
+- `backend/tests/test_claims_flow.py` (4 lifecycle tests: create, upload, submit, assess, poll, timeline)
+- `backend/tests/test_reviews_flow.py` (2 tests: reviewer queue, manual correction preservation, decision, dashboard summary)
+
+Files modified:
+- `backend/main.py` (mounted all routers under /api/v1, configured CORS, static file serving for /uploads)
+- `backend/tests/test_health.py` (updated health checks for models_loaded: true)
+- `TASK_LOCKS.md` (registered BE-001 lock)
+- `TASKS.md` (added BE-001 task and marked DONE)
+- `PROJECT_STATUS.md` (updated Phase 13/14 status, sprint objectives, and verified results)
+
+Decisions made:
+- Implemented zero-database thread-safe in-memory store (`store.py`) holding claims, evidence images, assessments, reviews, and timeline audit logs.
+- Strict upload validation: MIME whitelist (`image/jpeg`, `image/png`, `image/webp`), 10MB limit, PIL decode integrity check, minimum 224x224 dimensions, SHA-256 fingerprinting.
+- Reviewer corrections preserve original AI assessment without overwriting; both are viewable.
+- Assessment endpoint directly invokes `claimvision_ml.pipeline.assess_claim()`.
+- Static files mounted at `/uploads` allowing local frontend to display evidence images directly.
+
+Commands run:
+- `.venv\Scripts\python.exe -m pytest backend/tests/ -v` → 14 passed in 1.05s
+- `.venv\Scripts\python.exe -m pytest ml/tests/test_pipeline_assess.py -q` → 5 passed in 0.57s
+
+Validation results:
+- 14/14 backend tests pass with full coverage of health, upload security, claim lifecycle, review workflow, and dashboard summary.
+
+Known limitations:
+- In-memory data store resets on server restart (intentional for demo prototype per user instruction).
+
+Follow-up: Phase C — Next.js Customer UI (`FE-001`, multi-step claim flow, image upload, live polling).
+
+
 

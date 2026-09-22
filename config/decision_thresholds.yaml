@@ -1,0 +1,35 @@
+# ClaimVision AI — Configurable Decision & Routing Thresholds
+# All values must be specified here instead of scattered constants in code.
+
+version: "1.0.0"
+updated_at: "2026-09-22"
+
+quality:
+  min_blur_score: 50.0       # Laplacian variance below this is flagged as blurry
+  min_brightness: 40.0       # Grayscale mean below this is flagged as too dark
+  max_brightness: 220.0      # Grayscale mean above this is flagged as overexposed
+  min_contrast: 20.0         # Grayscale standard deviation below this is low contrast
+  min_width: 224             # Minimum image width in pixels
+  min_height: 224            # Minimum image height in pixels
+
+fraud:
+  low_threshold: 0.30        # Below this: "low" risk
+  high_threshold: 0.65       # At or above this: "high" risk -> FRAUD_REVIEW
+  version: "FRD-MNV2-001"
+
+severity:
+  confidence_min: 0.40       # Below this: flag low_severity_confidence -> MANUAL_DAMAGE_REVIEW
+  version: "SEV-MNV2-001"
+
+location:
+  confidence_min: 0.40       # Below this: flag low_location_confidence
+  version: "LOC-MNV2-001"
+
+detection:
+  confidence_threshold: 0.25 # Ultralytics YOLO confidence cutoff
+  iou_threshold: 0.45        # NMS IoU threshold
+  version: "DET-YOLO-001"
+
+routing:
+  fast_track_max_cost: 50000.0   # Maximum total estimated cost (INR) for fast-track
+  require_passed_quality: true

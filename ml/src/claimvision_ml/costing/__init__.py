@@ -1,8 +1,24 @@
 """costing — rule-based repair-cost estimation engine.
 
-Implemented in Phase 11–12 (backend integration).
-Cost table stored in config/cost_table.json (versioned JSON, not in Git for now).
+Task ID : INF-001
+Phase   : 12 (Unified Inference)
 
-Planned public API:
-    estimate_cost(parts, severity, vehicle_segment) -> CostEstimate
+Public API:
+    estimate_cost       — compute itemized repair cost range
+    CostEstimate        — aggregated estimate dataclass
+    CostBreakdownItem   — itemized per-part cost dataclass
 """
+
+from claimvision_ml.costing.cost_engine import (
+    CostBreakdownItem,
+    CostEstimate,
+    estimate_cost,
+    normalize_part_name,
+)
+
+__all__ = [
+    "estimate_cost",
+    "CostEstimate",
+    "CostBreakdownItem",
+    "normalize_part_name",
+]
