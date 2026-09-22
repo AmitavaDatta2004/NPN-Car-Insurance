@@ -13,7 +13,7 @@ This file substitutes for branch isolation because all seven members work direct
 
 ## Active locks
 
-ML-IMPROVE-001: Team lead / Codex; RELEASED 2026-09-22 after ad85f83 was verified on origin/main. Reconciled team commits through d2fcb00.
+ML-IMPROVE-001: Team lead / Codex; ACTIVE from 2026-09-22 until pushed verification; base 72d4658 after team synchronization.
 Scope: severity/detection modules and tests, their training scripts, notebooks 06–12 (including improvement comparison notebooks), README.md, related model cards, docs/EXPERIMENT_LOG.md, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md. Fraud excluded. Team leader assigned work in this conversation, explicitly instructed pulling the overlapping commits and then CONTINUE. This authorizes reconciliation of the improvement patch with DET-PART-001 shared scope while preserving its implementation and lock. Colab provides datasets and training runtime.
 
 | Task ID | Owner | Scope/files | Started IST | Expected release IST | Base commit | State |
