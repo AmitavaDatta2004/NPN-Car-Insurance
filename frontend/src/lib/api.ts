@@ -9,6 +9,7 @@ import {
   ReviewCorrectionPayload,
   ReviewDecisionPayload,
   DashboardSummary,
+  ModelBenchmarkResponse,
   TimelineEvent,
   TriageRoute,
 } from "@/types/claim";
@@ -186,6 +187,20 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   return request<DashboardSummary>("/dashboard/summary");
 }
 
+export async function getModelBenchmarks(): Promise<ModelBenchmarkResponse> {
+  return request<ModelBenchmarkResponse>("/models/benchmark");
+}
+
+export async function setActiveModel(
+  task: string,
+  modelId: string
+): Promise<{ status: string; task: string; active_model: string }> {
+  return request<{ status: string; task: string; active_model: string }>("/models/active", {
+    method: "POST",
+    body: JSON.stringify({ task, model_id: modelId }),
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Formatters & UI Helpers
 // ---------------------------------------------------------------------------
@@ -222,11 +237,13 @@ export function getImageUrl(localPath: string): string {
   // Extract relative path inside uploads/
   const norm = localPath.replace(/\\/g, "/");
   const idx = norm.indexOf("uploads/");
-  if (idx !== -1) {
-    const rel = norm.substring(idx);
-    return `${BACKEND_BASE_URL}/${rel}`;
+  const rel = idx !== -1 ? norm.substring(idx) : `uploads/${norm.split("/").pop()}`;
+
+  // In the browser, prefer same-origin relative URL so Next.js rewrites cleanly proxy it
+  if (typeof window !== "undefined") {
+    return `/${rel}`;
   }
-  return `${BACKEND_BASE_URL}/uploads/${norm.split("/").pop()}`;
+  return `${BACKEND_BASE_URL}/${rel}`;
 }
 
 export function getRouteInfo(route: TriageRoute | string): {
@@ -239,12 +256,12 @@ export function getRouteInfo(route: TriageRoute | string): {
   switch (route) {
     case "FAST_TRACK_ELIGIBLE":
       return {
-        label: "Fast-Track Eligible",
+        label: "Fast-Track Instant Settlement",
         color: "text-emerald-800",
         bg: "bg-emerald-50",
         border: "border-emerald-200",
         description:
-          "Low fraud risk and verified minor/moderate damage. Eligible for immediate straight-through settlement.",
+          "Minor or moderate damage within automated policy limits. Approved for immediate automated settlement.",
       };
     case "FRAUD_REVIEW":
       return {
@@ -257,12 +274,12 @@ export function getRouteInfo(route: TriageRoute | string): {
       };
     case "MANUAL_DAMAGE_REVIEW":
       return {
-        label: "Manual Damage Review",
+        label: "Adjuster Settlement Review",
         color: "text-amber-800",
         bg: "bg-amber-50",
         border: "border-amber-200",
         description:
-          "Severe damage or high repair cost exceeding automated settlement limits. Routed to human adjuster.",
+          "Severe collision damage or high repair estimate detected. Routed to an insurance claims adjuster for final payout approval.",
       };
     case "MORE_EVIDENCE_REQUIRED":
       return {

@@ -77,8 +77,51 @@ export default function ClaimResultPage() {
     );
   }
 
+  const isNotAVehicle =
+    assessment.genai_gate?.is_vehicle === false ||
+    assessment.reason_codes?.includes("not_a_vehicle");
+
+  if (isNotAVehicle) {
+    const detectedObj = assessment.genai_gate?.detected_object || "document/non-vehicle";
+    const reasoning =
+      assessment.genai_gate?.reasoning ||
+      "The uploaded evidence does not contain a motor vehicle. Assessment has been halted.";
+    const modelName = assessment.genai_gate?.model_name || "GenAI Intake Gate";
+
+    return (
+      <main className="mx-auto max-w-xl px-4 py-16 text-center">
+        <Card className="border-rose-200 bg-rose-50/60 py-12 px-6 shadow-sm">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 text-3xl font-bold">
+            ✕
+          </div>
+
+          <h1 className="text-3xl font-black text-rose-950">
+            Not a car
+          </h1>
+
+          <p className="mt-3 text-sm text-slate-600">
+            Please upload a photo of a car.
+          </p>
+
+          <div className="mt-8 flex justify-center gap-3">
+            <Link href="/claims/new">
+              <Button size="md" variant="primary">
+                Upload Car Photo
+              </Button>
+            </Link>
+            <Link href="/claims">
+              <Button size="md" variant="outline">
+                Back
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      </main>
+    );
+  }
+
   const statusBadge = getStatusBadge(claim.status);
-  const primaryImagePath = claim.images[0]?.local_path || "";
+  const primaryImagePath = claim.images[0]?.local_path || assessment.image_path || "";
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">

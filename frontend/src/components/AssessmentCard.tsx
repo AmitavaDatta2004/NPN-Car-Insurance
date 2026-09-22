@@ -12,199 +12,149 @@ interface AssessmentCardProps {
 
 export default function AssessmentCard({ assessment }: AssessmentCardProps) {
   const routeInfo = getRouteInfo(assessment.route);
-  const fraudProb = assessment.fraud?.probability ?? 0.0;
-  const fraudPercent = (fraudProb * 100).toFixed(1);
+  const fraudFlag = assessment.fraud?.flag ?? (assessment.fraud && assessment.fraud.probability > 0.50 ? 1 : 0);
+  const isFraud = fraudFlag === 1;
+  const genai = assessment.genai_gate;
+
+  if (genai && !genai.is_vehicle) {
+    return (
+      <div className="rounded-2xl border border-rose-200 bg-rose-50/70 p-8 text-center shadow-xs">
+        <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 text-2xl font-bold">
+          ✕
+        </div>
+        <h3 className="text-xl font-bold text-rose-900">
+          Not a car
+        </h3>
+        <p className="mt-2 text-sm text-slate-600">
+          Please upload a photo of a car.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Route Decision Banner */}
+      {/* Route Decision Banner - Simple, Non-Technical */}
       <div
         className={`rounded-2xl border p-6 transition-all shadow-sm ${routeInfo.bg} ${routeInfo.border}`}
       >
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              Triage Recommendation
-            </span>
-            <h2 className={`text-2xl font-black tracking-tight ${routeInfo.color}`}>
-              {routeInfo.label}
-            </h2>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-xs border border-slate-200">
-              ⚡ {assessment.inference_ms.toFixed(0)} ms
-            </span>
-          </div>
-        </div>
-        <p className="mt-2 text-sm text-slate-700 leading-relaxed max-w-3xl">
-          {routeInfo.description}
+        <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+          Status
+        </span>
+        <h2 className={`text-2xl font-black tracking-tight mt-0.5 ${routeInfo.color}`}>
+          {isFraud ? "Fraud Detected" : routeInfo.label}
+        </h2>
+        <p className="mt-1.5 text-sm text-slate-700 leading-relaxed max-w-2xl">
+          {isFraud
+            ? "This claim has been flagged for review."
+            : routeInfo.description}
         </p>
-
-        {assessment.reason_codes && assessment.reason_codes.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {assessment.reason_codes.map((code) => (
-              <span
-                key={code}
-                className="inline-flex items-center rounded-md bg-white/80 px-2.5 py-1 text-xs font-medium text-slate-800 border border-slate-200/60"
-              >
-                • {code.replace(/_/g, " ")}
-              </span>
-            ))}
-          </div>
-        )}
       </div>
 
-      {/* 4 Pillars Grid: Fraud, Severity, Location, Cost */}
+      {/* 4 Clean, Simple Result Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* 1. Fraud Risk */}
+        {/* 1. Authenticity: Fraud or No fraud */}
         <Card className="flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase text-slate-500">
-                Fraud Risk
-              </span>
-              <Badge
-                color={
-                  fraudProb >= 0.65
-                    ? "text-rose-800"
-                    : fraudProb >= 0.3
-                    ? "text-amber-800"
-                    : "text-emerald-800"
-                }
-                bg={
-                  fraudProb >= 0.65
-                    ? "bg-rose-100"
-                    : fraudProb >= 0.3
-                    ? "bg-amber-100"
-                    : "bg-emerald-100"
-                }
-              >
-                {assessment.fraud?.risk_level?.toUpperCase() || "LOW"}
-              </Badge>
-            </div>
-            <div className="mt-3">
-              <span className="text-3xl font-bold text-slate-900">
-                {fraudPercent}%
-              </span>
-              <span className="ml-1 text-xs text-slate-500">suspicion score</span>
-            </div>
-            {/* Progress Bar */}
-            <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-100">
-              <div
-                className={`h-full rounded-full transition-all ${
-                  fraudProb >= 0.65
-                    ? "bg-rose-500"
-                    : fraudProb >= 0.3
-                    ? "bg-amber-500"
-                    : "bg-emerald-500"
-                }`}
-                style={{ width: `${Math.min(100, Math.max(5, fraudProb * 100))}%` }}
-              />
-            </div>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase text-slate-500">
+              Authenticity
+            </span>
+            <Badge
+              color={isFraud ? "text-rose-800" : "text-emerald-800"}
+              bg={isFraud ? "bg-rose-100 border border-rose-300" : "bg-emerald-100 border border-emerald-300"}
+            >
+              {isFraud ? "FRAUD" : "NO FRAUD"}
+            </Badge>
           </div>
-          <p className="mt-3 text-[11px] text-slate-400">
-            Model: {assessment.model_versions?.fraud || "FRD-MNV2-001"}
-          </p>
+          <div className="mt-3">
+            <span className={`text-2xl font-black ${isFraud ? "text-rose-700" : "text-emerald-700"}`}>
+              {isFraud ? "Fraud" : "No fraud"}
+            </span>
+            <p className="text-xs text-slate-500 mt-1">
+              {isFraud ? "Flagged for review" : "Image verified"}
+            </p>
+          </div>
         </Card>
 
-        {/* 2. Severity Tier */}
+        {/* 2. Damage Level */}
         <Card className="flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase text-slate-500">
-                Damage Severity
-              </span>
-              <Badge
-                color={
-                  assessment.severity?.predicted_class === "severe"
-                    ? "text-rose-800"
-                    : assessment.severity?.predicted_class === "moderate"
-                    ? "text-amber-800"
-                    : "text-blue-800"
-                }
-                bg={
-                  assessment.severity?.predicted_class === "severe"
-                    ? "bg-rose-100"
-                    : assessment.severity?.predicted_class === "moderate"
-                    ? "bg-amber-100"
-                    : "bg-blue-100"
-                }
-              >
-                {assessment.severity?.predicted_class?.toUpperCase() || "MODERATE"}
-              </Badge>
-            </div>
-            <div className="mt-3">
-              <span className="text-3xl font-bold text-slate-900 capitalize">
-                {assessment.severity?.predicted_class || "—"}
-              </span>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Confidence:{" "}
-                {assessment.severity?.confidence
-                  ? `${(assessment.severity.confidence * 100).toFixed(0)}%`
-                  : "—"}
-              </p>
-            </div>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase text-slate-500">
+              Damage
+            </span>
+            <Badge
+              color={
+                assessment.severity?.predicted_class === "severe"
+                  ? "text-rose-800"
+                  : assessment.severity?.predicted_class === "moderate"
+                  ? "text-amber-800"
+                  : "text-blue-800"
+              }
+              bg={
+                assessment.severity?.predicted_class === "severe"
+                  ? "bg-rose-100 border border-rose-300"
+                  : assessment.severity?.predicted_class === "moderate"
+                  ? "bg-amber-100 border border-amber-300"
+                  : "bg-blue-100 border border-blue-300"
+              }
+            >
+              {assessment.severity?.predicted_class?.toUpperCase() || "MODERATE"}
+            </Badge>
           </div>
-          <p className="mt-3 text-[11px] text-slate-400">
-            Model: {assessment.model_versions?.severity || "SEV-MNV2-001"}
-          </p>
+          <div className="mt-3">
+            <span className="text-2xl font-black text-slate-900 capitalize">
+              {assessment.severity?.predicted_class || "Moderate"}
+            </span>
+            <p className="text-xs text-slate-500 mt-1">
+              Collision severity tier
+            </p>
+          </div>
         </Card>
 
-        {/* 3. Damaged Part Location */}
+        {/* 3. Damaged Part */}
         <Card className="flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase text-slate-500">
-                Primary Damaged Part
-              </span>
-              <Badge color="text-indigo-800" bg="bg-indigo-100">
-                CNN Location
-              </Badge>
-            </div>
-            <div className="mt-3">
-              <span className="text-2xl font-bold text-slate-900 capitalize">
-                {assessment.location?.predicted_part?.replace(/_/g, " ") || "Damage"}
-              </span>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Confidence:{" "}
-                {assessment.location?.confidence
-                  ? `${(assessment.location.confidence * 100).toFixed(0)}%`
-                  : "—"}
-              </p>
-            </div>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase text-slate-500">
+              Damaged Part
+            </span>
+            <Badge color="text-indigo-800" bg="bg-indigo-100">
+              Part
+            </Badge>
           </div>
-          <p className="mt-3 text-[11px] text-slate-400">
-            Model: {assessment.model_versions?.location || "LOC-MNV2-001"}
-          </p>
+          <div className="mt-3">
+            <span className="text-2xl font-bold text-slate-900 capitalize">
+              {assessment.location?.predicted_part?.replace(/_/g, " ") || "Body Damage"}
+            </span>
+            <p className="text-xs text-slate-500 mt-1">
+              Primary impact area
+            </p>
+          </div>
         </Card>
 
-        {/* 4. Cost Range */}
+        {/* 4. Estimated Cost */}
         <Card className="flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase text-slate-500">
-                Estimated Repair Cost
-              </span>
-              <Badge color="text-teal-800" bg="bg-teal-100">
-                INR (₹)
-              </Badge>
-            </div>
-            <div className="mt-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase text-slate-500">
+              Estimated Cost
+            </span>
+            <Badge color="text-teal-800" bg="bg-teal-100">
+              INR (₹)
+            </Badge>
+          </div>
+          <div className="mt-3">
+            <div className="flex items-baseline gap-1">
               <span className="text-2xl font-bold text-slate-900">
                 {assessment.cost ? formatINR(assessment.cost.min_cost) : "₹0"}
               </span>
-              <span className="text-xs text-slate-500 mx-1">to</span>
+              <span className="text-xs text-slate-500">to</span>
               <span className="text-2xl font-bold text-slate-900">
                 {assessment.cost ? formatINR(assessment.cost.max_cost) : "₹0"}
               </span>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Vehicle: {assessment.cost?.vehicle_segment || "compact"}
-              </p>
             </div>
+            <p className="text-xs text-slate-500 mt-1 capitalize">
+              Vehicle: {assessment.cost?.vehicle_segment || "compact"}
+            </p>
           </div>
-          <p className="mt-3 text-[11px] text-slate-400">
-            Rule Table: {assessment.model_versions?.costing || "COST-RULES-001"}
-          </p>
         </Card>
       </div>
 

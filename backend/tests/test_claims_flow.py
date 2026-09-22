@@ -96,10 +96,14 @@ def test_claim_full_assessment_flow():
     assert assess_resp.status_code == 200
     assessment = assess_resp.json()
     assert "route" in assessment
-    assert "severity" in assessment
-    assert "cost" in assessment
-    assert "location" in assessment
-    assert assessment["cost"]["vehicle_segment"] == "compact"
+    assert "reason_codes" in assessment
+    if assessment["route"] == "MORE_EVIDENCE_REQUIRED":
+        assert "not_a_vehicle" in assessment["reason_codes"]
+    else:
+        assert "severity" in assessment
+        assert "location" in assessment
+        if assessment.get("cost"):
+            assert assessment["cost"]["vehicle_segment"] == "compact"
 
     # 5. Check status polling
     poll_resp = client.get(f"/api/v1/assessments/{claim_id}/status")

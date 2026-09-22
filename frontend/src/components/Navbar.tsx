@@ -12,6 +12,7 @@ export default function Navbar() {
     { href: "/claims", label: "My Claims" },
     { href: "/reviewer/queue", label: "Reviewer Queue" },
     { href: "/reviewer/dashboard", label: "Dashboard" },
+    { href: "/reviewer/models", label: "Model Benchmarks" },
   ];
 
   return (

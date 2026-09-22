@@ -37,12 +37,38 @@ class QualitySummary:
 
 
 @dataclass
+class GenAIGateSummary:
+    """Summary of GenAI vehicle intake pre-screening."""
+
+    is_vehicle: bool
+    is_damaged: bool
+    vehicle_type: str | None = None
+    detected_object: str = "vehicle"
+    reasoning: str = ""
+    model_name: str = "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
+    latency_ms: float = 0.0
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "is_vehicle": self.is_vehicle,
+            "is_damaged": self.is_damaged,
+            "vehicle_type": self.vehicle_type,
+            "detected_object": self.detected_object,
+            "reasoning": self.reasoning,
+            "model_name": self.model_name,
+            "latency_ms": round(self.latency_ms, 2),
+        }
+
+
+@dataclass
 class FraudSummary:
-    """Summary of fraud risk classifier."""
+    """Summary of fraud risk classifier with discrete binary verdict."""
 
     probability: float
     risk_level: str  # "low" | "medium" | "high"
     route: str  # "CONTINUE" | "FRAUD_REVIEW"
+    flag: int = 0  # 0 = Genuine, 1 = Suspicious (probability > 0.50)
+    verdict: str = "GENUINE"  # "GENUINE" or "SUSPICIOUS"
     model_version: str = "FRD-MNV2-001"
     warnings: list[str] = field(default_factory=list)
 
@@ -51,6 +77,8 @@ class FraudSummary:
             "probability": round(self.probability, 4),
             "risk_level": self.risk_level,
             "route": self.route,
+            "flag": self.flag,
+            "verdict": self.verdict,
             "model_version": self.model_version,
             "warnings": self.warnings,
         }
@@ -151,6 +179,7 @@ class AssessmentResult:
     route: str
     reason_codes: list[str]
     quality: QualitySummary | None = None
+    genai_gate: GenAIGateSummary | None = None
     fraud: FraudSummary | None = None
     severity: SeveritySummary | None = None
     location: LocationSummary | None = None
@@ -168,6 +197,7 @@ class AssessmentResult:
             "route": self.route,
             "reason_codes": self.reason_codes,
             "quality": self.quality.to_dict() if self.quality else None,
+            "genai_gate": self.genai_gate.to_dict() if self.genai_gate else None,
             "fraud": self.fraud.to_dict() if self.fraud else None,
             "severity": self.severity.to_dict() if self.severity else None,
             "location": self.location.to_dict() if self.location else None,

@@ -772,6 +772,39 @@ Validation commands:
 - `cd frontend; npm run typecheck`
 - `cd frontend; npm run build`
 
+---
+
+### INT-001 — Full-Stack Model Integration, SQLite Database & Model Benchmark Hub
+
+- Phase: 17 (Integration & Benchmarks)
+- Owner: All Members / Antigravity
+- Reviewer: Team Lead
+- Status: DONE
+- Priority: P0
+- Dependencies: FE-002 DONE, BE-001 DONE
+- Files allowed: models/, backend/, frontend/, config/, scripts/, docs/, TASKS.md, TASK_LOCKS.md, PROJECT_STATUS.md
+- Objective: integrate all trained team models from the Google Drive zip into a flat `models/` directory; replace in-memory storage with persistent SQLite via SQLAlchemy 2.0; implement the Model Benchmark & Comparison Hub (`/reviewer/models`); upgrade evidence viewer with an interactive before/after split slider.
+
+Acceptance criteria:
+- [x] Models extracted into flat `models/` directory (Fraud, Severity CNN, Severity MobileNetV2, ViT-Tiny, Location MobileNetV2, Location EfficientNet, YOLO Damage, YOLO Parts).
+- [x] `scripts/verify_models.py` verifies model loading and forward pass on CPU.
+- [x] `config/project.yaml` and `assess.py` configured to load `.pt` weights from `models/`.
+- [x] Persistent SQLite database (`backend/claimvision.db`) implemented with SQLAlchemy 2.0 ORM models and `DatabaseClaimStore`.
+- [x] All 14 backend test cases pass against SQLite.
+- [x] Backend benchmark endpoints (`GET /api/v1/models/benchmark`, `POST /api/v1/models/active`) implemented.
+- [x] Frontend Model Benchmark Hub (`/reviewer/models`) created with side-by-side comparison tables, winner badges, and live model switcher.
+- [x] `DamageOverlayViewer.tsx` upgraded with an interactive before/after split slider and hoverable detection chips.
+- [x] Navigation bar updated with "Model Benchmarks" link.
+- [x] Frontend `npm run typecheck` and `npm run build` succeed with 0 errors.
+
+Evidence: All 14 backend tests pass with SQLite; `verify_models.py` passes on CPU; Next.js builds all 11 routes cleanly.
+
+Validation commands:
+- `.venv\Scripts\python.exe scripts\verify_models.py`
+- `.venv\Scripts\pytest.exe backend/tests/ -v`
+- `cd frontend; npm run typecheck`
+- `cd frontend; npm run build`
+
 
 
 

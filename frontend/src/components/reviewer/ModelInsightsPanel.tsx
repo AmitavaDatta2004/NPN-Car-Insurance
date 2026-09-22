@@ -16,7 +16,9 @@ export default function ModelInsightsPanel({ assessment }: ModelInsightsPanelPro
     );
   }
 
-  const { fraud, severity, location, quality, model_versions, reason_codes } = assessment;
+  const { fraud, severity, location, quality, model_versions, reason_codes, genai_gate } = assessment;
+  const fraudFlag = fraud?.flag ?? (fraud && fraud.probability > 0.50 ? 1 : 0);
+  const isSuspicious = fraudFlag === 1;
 
   return (
     <div className="space-y-4">
@@ -39,7 +41,7 @@ export default function ModelInsightsPanel({ assessment }: ModelInsightsPanelPro
 
       {/* Grid of Model Signals */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Fraud Risk Signal */}
+        {/* Fraud Risk Signal - Discrete Flag 0 Genuine / Flag 1 Suspicious (No Percentages) */}
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-3">
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-semibold text-slate-900 flex items-center gap-1.5">
@@ -51,39 +53,46 @@ export default function ModelInsightsPanel({ assessment }: ModelInsightsPanelPro
               )}
             </h4>
             {fraud && (
-              <Badge
-                variant={
-                  fraud.risk_level === "low"
-                    ? "success"
-                    : fraud.risk_level === "medium"
-                    ? "warning"
-                    : "danger"
-                }
-              >
-                {fraud.risk_level.toUpperCase()} RISK
+              <Badge variant={isSuspicious ? "danger" : "success"}>
+                {isSuspicious ? "FLAG 1 • SUSPICIOUS" : "FLAG 0 • GENUINE"}
               </Badge>
             )}
           </div>
 
           {fraud ? (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-600">Suspicious Probability</span>
-                <span className="font-semibold text-slate-900">
-                  {(fraud.probability * 100).toFixed(1)}%
+                <span className="text-slate-600">Discrete Authenticity Verdict</span>
+                <span className={`font-bold ${isSuspicious ? "text-rose-700" : "text-emerald-700"}`}>
+                  {isSuspicious ? "Flag 1: Suspicious Evidence" : "Flag 0: Genuine Evidence"}
                 </span>
               </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-600">Pipeline Action</span>
+                <span className="font-semibold text-slate-900">
+                  {isSuspicious ? "Escalated to Adjuster Investigation" : "Cleared for Damage Assessment"}
+                </span>
+              </div>
+              {/* Discrete Binary Status Switch Visual */}
+              <div className="grid grid-cols-2 gap-2 text-center text-xs font-bold pt-1">
                 <div
-                  className={`h-full rounded-full transition-all ${
-                    fraud.probability >= 0.65
-                      ? "bg-rose-500"
-                      : fraud.probability >= 0.35
-                      ? "bg-amber-500"
-                      : "bg-emerald-500"
+                  className={`rounded-lg py-1.5 border transition-all ${
+                    !isSuspicious
+                      ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                      : "bg-slate-50 text-slate-400 border-slate-200"
                   }`}
-                  style={{ width: `${Math.min(100, Math.max(5, fraud.probability * 100))}%` }}
-                />
+                >
+                  0 • Genuine
+                </div>
+                <div
+                  className={`rounded-lg py-1.5 border transition-all ${
+                    isSuspicious
+                      ? "bg-rose-600 text-white border-rose-600 shadow-xs"
+                      : "bg-slate-50 text-slate-400 border-slate-200"
+                  }`}
+                >
+                  1 • Suspicious
+                </div>
               </div>
               {fraud.warnings && fraud.warnings.length > 0 && (
                 <div className="mt-2 space-y-1">
@@ -158,16 +167,14 @@ export default function ModelInsightsPanel({ assessment }: ModelInsightsPanelPro
           )}
         </div>
 
-        {/* Location CNN Classification */}
+        {/* Location Classification (EfficientNet-B0) */}
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-3">
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-semibold text-slate-900 flex items-center gap-1.5">
-              <span>📍 Damaged Part Location</span>
-              {location?.model_version && (
-                <span className="font-mono text-[10px] text-slate-400 font-normal">
-                  ({location.model_version})
-                </span>
-              )}
+              <span>📍 Damaged Part (EfficientNet)</span>
+              <span className="font-mono text-[10px] text-slate-400 font-normal">
+                ({location?.model_type === "efficientnet" ? "LOC-EFF-001" : (location?.model_version || "LOC-EFF-001")})
+              </span>
             </h4>
             {location && (
               <span className="inline-flex items-center rounded-md bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-700 border border-indigo-200">

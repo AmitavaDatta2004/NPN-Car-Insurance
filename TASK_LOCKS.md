@@ -36,6 +36,7 @@ This file substitutes for branch isolation because all seven members work direct
 | BE-001 | Member 5 / Antigravity | backend/, uploads/, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md | 2026-09-22 18:35 | 2026-09-22 21:30 | a921611 | ACTIVE |
 | FE-001 | Member 6 / Antigravity | frontend/src/, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md | 2026-09-22 19:06 | 2026-09-22 22:00 | a921611 | ACTIVE |
 | FE-002 | Member 6 / Antigravity | frontend/src/, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md | 2026-09-22 19:30 | 2026-09-22 22:30 | a921611 | ACTIVE |
+| INT-001 | All Members / Antigravity | models/, backend/, frontend/, config/, scripts/, docs/, TASKS.md, TASK_LOCKS.md, PROJECT_STATUS.md | 2026-09-22 22:35 | 2026-09-23 01:00 | a921611 | ACTIVE |
 
 
 

@@ -138,17 +138,22 @@ def load_fraud_model(
             "Run notebook 02_fraud_mobilenetv2_training.ipynb to generate it."
         )
 
-    checkpoint = torch.load(path, map_location=device, weights_only=True)
+    try:
+        checkpoint = torch.load(path, map_location=device, weights_only=False)
+    except Exception:
+        checkpoint = torch.load(path, map_location=device)
 
-    if "model_state_dict" not in checkpoint:
-        raise KeyError(
-            f"Checkpoint at {path} is missing 'model_state_dict'. "
-            "Ensure it was saved with the standard ClaimVision checkpoint format."
-        )
+    if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
+        state_dict = checkpoint["model_state_dict"]
+        dropout = checkpoint.get("dropout", 0.3)
+    elif isinstance(checkpoint, dict):
+        state_dict = checkpoint
+        dropout = 0.3
+    else:
+        raise ValueError(f"Unrecognized checkpoint format in {path}")
 
-    dropout = checkpoint.get("dropout", 0.3)
     model = FraudClassifier(pretrained=False, dropout=dropout)
-    model.load_state_dict(checkpoint["model_state_dict"])
+    model.load_state_dict(state_dict)
     model.to(device)
     model.eval()
     return model

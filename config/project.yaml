@@ -42,3 +42,25 @@ api:
 demo:
   fixture_directory: demo/fixtures
   scenarios: [minor_valid, major_valid, suspicious, poor_quality]
+
+models_dir: models
+
+active_models:
+  fraud:
+    weights: models/fraud_mnv2_optimized_best.pt
+    thresholds: models/optimized_thresholds.json
+    device: cpu
+  severity:
+    model_type: mobilenet_v2
+    weights: models/phase0_severity_mnv2.pt
+    device: cpu
+  location:
+    model_type: efficientnet_b0
+    weights: models/location_efficientnet.pt
+    device: cpu
+  damage:
+    weights: models/damage_yolov8n.pt
+    conf_threshold: 0.25
+  parts:
+    weights: models/parts_yolov8n.pt
+    conf_threshold: 0.25

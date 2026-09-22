@@ -1,28 +1,57 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { assessClaim, getAssessmentStatus } from "@/lib/api";
+import { GenAIGateSummary } from "@/types/claim";
+import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 
 export default function ClaimProcessingPage() {
   const params = useParams();
   const router = useRouter();
-  const claimId = params.id as string;
+  const claimId = (params?.id as string) || "";
 
   const [status, setStatus] = useState<string>("ASSESSING_FRAUD");
   const [activeStep, setActiveStep] = useState(1);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [notVehicleGate, setNotVehicleGate] = useState<GenAIGateSummary | null>(null);
+
+  const stages = [
+    { title: "1. Evidence Integrity Verification", desc: "Checking image resolution, blur score, and duplicate hash" },
+    { title: "2. Vehicle Intake Verification", desc: "Confirming vehicle presence and physical evidence integrity" },
+    { title: "3. Image Authenticity Screening", desc: "Evaluating image tampering and synthetic manipulation" },
+    { title: "4. Damage Severity Classification", desc: "Predicting collision severity tier (minor, moderate, severe) via MobileNetV2" },
+    { title: "5. EfficientNet-B0 Part Localization", desc: "Identifying damaged component with deep compound scaling CNN" },
+    { title: "6. YOLOv8 Damage Bounding Boxes", desc: "Localizing damage regions and bounding box coordinate overlays" },
+    { title: "7. Rule-Based Repair Costing", desc: "Computing itemized repair and replacement estimates in INR (₹)" },
+  ];
 
   useEffect(() => {
+    if (!claimId) return;
+
     let intervalId: NodeJS.Timeout;
+    let stepTimer: NodeJS.Timeout;
     let isCancelled = false;
+
+    // Smooth visual progression across stages while assessment runs
+    stepTimer = setInterval(() => {
+      setActiveStep((prev) => (prev < 6 ? prev + 1 : prev));
+    }, 1200);
 
     const runAssessment = async () => {
       try {
         // Trigger assessment
-        await assessClaim(claimId);
+        const assessment = await assessClaim(claimId);
+
+        // Immediate Halt: If not a vehicle, stop right here!
+        if (assessment.genai_gate && !assessment.genai_gate.is_vehicle) {
+          clearInterval(stepTimer);
+          setNotVehicleGate(assessment.genai_gate);
+          return;
+        }
 
         // Poll status every 1.5s
         intervalId = setInterval(async () => {
@@ -31,13 +60,9 @@ export default function ClaimProcessingPage() {
             const data = await getAssessmentStatus(claimId);
             setStatus(data.status);
 
-            // Animate steps based on status
-            if (data.status === "ASSESSING_FRAUD") {
-              setActiveStep(2);
-            } else if (data.status === "ASSESSING_DAMAGE") {
-              setActiveStep(3);
-            } else if (data.is_complete) {
-              setActiveStep(4);
+            if (data.is_complete) {
+              clearInterval(stepTimer);
+              setActiveStep(7);
               clearInterval(intervalId);
               // Brief delay for visual satisfaction before navigating
               setTimeout(() => {
@@ -49,6 +74,7 @@ export default function ClaimProcessingPage() {
           }
         }, 1500);
       } catch (err: unknown) {
+        clearInterval(stepTimer);
         setErrorMsg(
           err instanceof Error ? err.message : "Assessment failed. Please try again."
         );
@@ -60,15 +86,42 @@ export default function ClaimProcessingPage() {
     return () => {
       isCancelled = true;
       if (intervalId) clearInterval(intervalId);
+      if (stepTimer) clearInterval(stepTimer);
     };
   }, [claimId, router]);
 
-  const stages = [
-    { title: "OpenCV Evidence Integrity", desc: "Checking blur score, resolution, and pHash duplicates" },
-    { title: "MobileNetV2 Fraud Risk Scoring", desc: "Evaluating image authenticity and suspicious patterns" },
-    { title: "Severity & Part Location Classification", desc: "Predicting damage tier (minor/moderate/severe) & damaged part" },
-    { title: "YOLOv8 Localization & Repair Costing", desc: "Generating damage bounding boxes and itemized cost table" },
-  ];
+  if (notVehicleGate) {
+    return (
+      <main className="mx-auto max-w-xl px-4 py-16 text-center">
+        <Card className="border-rose-200 bg-rose-50/60 py-12 px-6 shadow-sm">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 text-3xl font-bold">
+            ✕
+          </div>
+
+          <h1 className="text-3xl font-black text-rose-950">
+            Not a car
+          </h1>
+
+          <p className="mt-3 text-sm text-slate-600">
+            Please upload a photo of a car.
+          </p>
+
+          <div className="mt-8 flex justify-center gap-3">
+            <Link href="/claims/new">
+              <Button size="md" variant="primary">
+                Upload Car Photo
+              </Button>
+            </Link>
+            <Link href="/claims">
+              <Button size="md" variant="outline">
+                Back
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-16 sm:px-6 lg:px-8">
@@ -81,7 +134,7 @@ export default function ClaimProcessingPage() {
           Analyzing Claim Evidence...
         </h1>
         <p className="mt-2 text-xs text-slate-500 max-w-md mx-auto">
-          Claim <span className="font-mono font-semibold">{claimId.slice(0, 8)}...</span> is
+          Claim <span className="font-mono font-semibold">{claimId ? `${claimId.slice(0, 8)}...` : "Loading..."}</span> is
           passing through our multi-stage AI assessment pipeline.
         </p>
 

@@ -29,21 +29,24 @@ from claimvision_ml.pipeline.schemas import (
     CostSummary,
     DetectionSummary,
     FraudSummary,
+    GenAIGateSummary,
     LocationSummary,
     QualitySummary,
     SeveritySummary,
 )
 from claimvision_ml.quality import run_quality_checks
+from backend.app.services.genai_gate import verify_vehicle_intake
 
 logger = logging.getLogger(__name__)
 
 # Default model version tags
 DEFAULT_VERSIONS = {
     "quality": "CV-OPENCV-001",
+    "genai_gate": "NVIDIA-NEMOTRON-VISION",
     "fraud": "FRD-MNV2-001",
     "severity": "SEV-MNV2-001",
     "detection": "DET-YOLO-001",
-    "location": "LOC-MNV2-001",
+    "location": "LOC-EFF-001",
     "costing": "COST-RULES-001",
     "decision": "DECISION-001",
 }
@@ -154,14 +157,15 @@ def _run_location_step(
         try:
             from claimvision_ml.location.inference import LocationClassifier
 
-            clf = LocationClassifier(location_ckpt)
+            model_type = "efficientnet" if "efficientnet" in str(location_ckpt).lower() else "mobilenet"
+            clf = LocationClassifier(location_ckpt, model_type=model_type)
             res = clf.predict(image_path)
             return LocationSummary(
                 predicted_part=res.class_name,
                 confidence=res.confidence,
                 top3=res.top3,
                 model_type=res.model_type,
-                model_version=DEFAULT_VERSIONS["location"],
+                model_version="LOC-EFF-001" if model_type == "efficientnet" else DEFAULT_VERSIONS["location"],
                 warning=res.warning,
             )
         except Exception as exc:
@@ -262,49 +266,67 @@ def assess_claim(
         )
 
     # -----------------------------------------------------------------------
-    # Step 2: Fraud Risk Prediction
+    # Step 1b: GenAI Vehicle Screening Gate (Nemotron Omni / OpenRouter)
     # -----------------------------------------------------------------------
-    fraud_ckpt = Path(cfg.get("fraud_checkpoint", "artifacts/models/fraud_mobilenetv2.pt"))
-    fraud_thresh_path = Path(cfg.get("fraud_threshold_path", "config/fraud_thresholds.json"))
-    fraud_summary = _run_fraud_step(img_path, fraud_ckpt, fraud_thresh_path)
-    warnings.extend(fraud_summary.warnings)
+    genai_res = verify_vehicle_intake(img_path)
+    genai_summary = GenAIGateSummary(
+        is_vehicle=genai_res.is_vehicle,
+        is_damaged=genai_res.is_damaged,
+        vehicle_type=genai_res.vehicle_type,
+        detected_object=genai_res.detected_object,
+        reasoning=genai_res.reasoning,
+        model_name=genai_res.model_name,
+        latency_ms=genai_res.latency_ms,
+    )
 
-    # Check high fraud early termination rule
-    fraud_high_thresh = float(thresholds.get("fraud", {}).get("high_threshold", 0.65))
-    if fraud_summary.probability >= fraud_high_thresh:
+    if not genai_res.is_vehicle:
+        # Non-vehicle image detected (e.g. tree, house, dog, document)
         elapsed = (time.perf_counter() - t0) * 1000
         return AssessmentResult(
             claim_id=cid,
             image_path=str(img_path),
-            route="FRAUD_REVIEW",
-            reason_codes=["high_fraud_risk"],
+            route="MORE_EVIDENCE_REQUIRED",
+            reason_codes=["not_a_vehicle"],
             quality=q_summary,
-            fraud=fraud_summary,
+            genai_gate=genai_summary,
             model_versions={
                 "quality": DEFAULT_VERSIONS["quality"],
-                "fraud": fraud_summary.model_version,
+                "genai_gate": genai_res.model_name,
             },
             inference_ms=elapsed,
-            warnings=warnings,
+            warnings=[f"Non-vehicle uploaded ({genai_res.detected_object}): {genai_res.reasoning}"],
         )
+
+    # -----------------------------------------------------------------------
+    # Step 2: Fraud Risk Prediction (Discrete Flag 0 vs Flag 1)
+    # -----------------------------------------------------------------------
+    fraud_ckpt = Path(cfg.get("fraud_checkpoint", "models/fraud_mnv2_optimized_best.pt"))
+    fraud_thresh_path = Path(cfg.get("fraud_threshold_path", "models/optimized_thresholds.json"))
+    fraud_summary = _run_fraud_step(img_path, fraud_ckpt, fraud_thresh_path)
+    
+    # Discrete Binary Fraud Logic: > 0.50 is 1 (Suspicious), <= 0.50 is 0 (Genuine)
+    fraud_flag = 1 if fraud_summary.probability > 0.50 else 0
+    fraud_summary.flag = fraud_flag
+    fraud_summary.verdict = "SUSPICIOUS" if fraud_flag == 1 else "GENUINE"
+    warnings.extend(fraud_summary.warnings)
 
     # -----------------------------------------------------------------------
     # Step 3: Damage Severity
     # -----------------------------------------------------------------------
-    sev_ckpt = Path(cfg.get("severity_checkpoint", "ml/results/severity/severity_mobilenetv2_best.pt"))
+    sev_ckpt = Path(cfg.get("severity_checkpoint", "models/phase0_severity_mnv2.pt"))
     sev_summary = _run_severity_step(img_path, sev_ckpt)
     warnings.extend(sev_summary.warnings)
 
     # -----------------------------------------------------------------------
     # Step 4: Damage Detection
     # -----------------------------------------------------------------------
-    det_weights = Path(cfg.get("detection_weights", "ml/results/detection/yolo_damage_best.pt"))
+    det_weights = Path(cfg.get("detection_weights", "models/damage_yolov8n.pt"))
     detections = _run_detection_step(img_path, det_weights)
 
     # -----------------------------------------------------------------------
-    # Step 5: Damaged-Part Location Classification
+    # Step 5: Damaged-Part Location Classification (EfficientNet-B0)
     # -----------------------------------------------------------------------
-    loc_ckpt = Path(cfg.get("location_checkpoint", "ml/results/location/location_mobilenetv2_best.pt"))
+    loc_ckpt = Path(cfg.get("location_checkpoint", "models/location_efficientnet.pt"))
     loc_summary = _run_location_step(img_path, loc_ckpt)
     if loc_summary.warning:
         warnings.append(loc_summary.warning)
@@ -338,16 +360,21 @@ def assess_claim(
     # -----------------------------------------------------------------------
     # Step 7: Decision Engine
     # -----------------------------------------------------------------------
-    route, reason_codes = route_claim(
-        quality_acceptable=q_summary.acceptable,
-        quality_route=q_summary.route,
-        fraud_prob=fraud_summary.probability,
-        severity_class=sev_summary.predicted_class,
-        severity_conf=sev_summary.confidence,
-        location_conf=loc_summary.confidence if loc_summary else None,
-        cost_max=cost_summary.max_cost,
-        thresholds=thresholds,
-    )
+    if fraud_summary.flag == 1:
+        # Flag 1: Suspicious image -> Stop automatic fast-track, route to manual review
+        route = "FRAUD_REVIEW"
+        reason_codes = ["high_fraud_risk", "discrete_flag_1_suspicious"]
+    else:
+        route, reason_codes = route_claim(
+            quality_acceptable=q_summary.acceptable,
+            quality_route=q_summary.route,
+            fraud_prob=fraud_summary.probability,
+            severity_class=sev_summary.predicted_class,
+            severity_conf=sev_summary.confidence,
+            location_conf=loc_summary.confidence if loc_summary else None,
+            cost_max=cost_summary.max_cost,
+            thresholds=thresholds,
+        )
 
     elapsed = (time.perf_counter() - t0) * 1000
 
@@ -357,6 +384,7 @@ def assess_claim(
         route=route,
         reason_codes=reason_codes,
         quality=q_summary,
+        genai_gate=genai_summary,
         fraud=fraud_summary,
         severity=sev_summary,
         location=loc_summary,
@@ -364,6 +392,7 @@ def assess_claim(
         cost=cost_summary,
         model_versions={
             "quality": DEFAULT_VERSIONS["quality"],
+            "genai_gate": genai_res.model_name,
             "fraud": fraud_summary.model_version,
             "severity": sev_summary.model_version,
             "detection": DEFAULT_VERSIONS["detection"],

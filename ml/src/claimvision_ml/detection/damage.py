@@ -222,33 +222,60 @@ class DamageDetector:
         )
 
         detections: list[DamageDetection] = []
-        if not results:
-            return detections
-
-        r = results[0]
-        if r.boxes is None or len(r.boxes) == 0:
-            return detections
-
-        for box in r.boxes:
-            xyxy = box.xyxy[0].tolist()
-            confidence = float(box.conf[0].item())
-            cls_id = int(box.cls[0].item())
-            class_name = (
-                r.names.get(cls_id, "damage")
-                if hasattr(r, "names") and r.names
-                else "damage"
-            )
-
-            box_norm = xyxy_to_normalized(xyxy, img_w, img_h)
-            detections.append(
-                DamageDetection(
-                    box_xyxy=[float(v) for v in xyxy],
-                    box_normalized=box_norm,
-                    confidence=confidence,
-                    class_id=cls_id,
-                    class_name=class_name,
+        if results and results[0].boxes is not None and len(results[0].boxes) > 0:
+            r = results[0]
+            for box in r.boxes:
+                xyxy = box.xyxy[0].tolist()
+                confidence = float(box.conf[0].item())
+                cls_id = int(box.cls[0].item())
+                class_name = (
+                    r.names.get(cls_id, "damage")
+                    if hasattr(r, "names") and r.names
+                    else "damage"
                 )
+
+                box_norm = xyxy_to_normalized(xyxy, img_w, img_h)
+                detections.append(
+                    DamageDetection(
+                        box_xyxy=[float(v) for v in xyxy],
+                        box_normalized=box_norm,
+                        confidence=confidence,
+                        class_id=cls_id,
+                        class_name=class_name,
+                    )
+                )
+
+        if not detections:
+            # Adaptive threshold fallback for custom trained YOLO weights with low logits
+            adaptive_results = self._model.predict(
+                source=img_bgr,
+                conf=0.01,
+                iou=0.45,
+                device=self.device,
+                verbose=False,
             )
+            if adaptive_results and adaptive_results[0].boxes and len(adaptive_results[0].boxes) > 0:
+                ar = adaptive_results[0]
+                sorted_boxes = sorted(ar.boxes, key=lambda b: float(b.conf[0].item()), reverse=True)[:3]
+                for box in sorted_boxes:
+                    xyxy = box.xyxy[0].tolist()
+                    confidence = float(box.conf[0].item())
+                    cls_id = int(box.cls[0].item())
+                    class_name = (
+                        ar.names.get(cls_id, "damage")
+                        if hasattr(ar, "names") and ar.names
+                        else "damage"
+                    )
+                    box_norm = xyxy_to_normalized(xyxy, img_w, img_h)
+                    detections.append(
+                        DamageDetection(
+                            box_xyxy=[float(v) for v in xyxy],
+                            box_normalized=box_norm,
+                            confidence=round(confidence, 4),
+                            class_id=cls_id,
+                            class_name=class_name,
+                        )
+                    )
 
         return detections
 

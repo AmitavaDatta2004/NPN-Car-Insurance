@@ -54,12 +54,24 @@ export interface QualitySummary {
   warnings: string[];
 }
 
+export interface GenAIGateSummary {
+  is_vehicle: boolean;
+  is_damaged: boolean;
+  vehicle_type: string;
+  detected_object: string;
+  reasoning: string;
+  model_name: string;
+  latency_ms: number;
+}
+
 export interface FraudSummary {
   probability: number;
   risk_level: "low" | "medium" | "high";
   route: string;
   model_version: string;
   warnings: string[];
+  flag?: number;
+  verdict?: "GENUINE" | "SUSPICIOUS";
 }
 
 export interface SeveritySummary {
@@ -114,6 +126,7 @@ export interface AssessmentResult {
   image_path: string;
   route: TriageRoute;
   reason_codes: string[];
+  genai_gate?: GenAIGateSummary | null;
   quality: QualitySummary | null;
   fraud: FraudSummary | null;
   severity: SeveritySummary | null;
@@ -163,6 +176,29 @@ export interface ReviewDecisionPayload {
   decision: "APPROVED" | "REJECTED" | "REQUEST_INFO";
   notes?: string;
   overrides?: Record<string, unknown>;
+}
+
+export interface ModelBenchmarkItem {
+  id: string;
+  name: string;
+  task: string;
+  architecture: string;
+  weights_file: string;
+  accuracy: number;
+  macro_f1: number;
+  latency_ms: number;
+  parameters_m: number;
+  size_mb: number;
+  is_active: boolean;
+  highlights: string[];
+}
+
+export interface ModelBenchmarkResponse {
+  severity_models: ModelBenchmarkItem[];
+  location_models: ModelBenchmarkItem[];
+  fraud_models: ModelBenchmarkItem[];
+  detection_models: ModelBenchmarkItem[];
+  active_models: Record<string, string>;
 }
 
 export interface Claim {

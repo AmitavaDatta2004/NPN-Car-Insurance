@@ -39,8 +39,8 @@ Current commit: a52ed77 (local changes uncommitted)
 | 14 Assessment APIs | Member 5 / Antigravity | Complete | Inference adapter stable | assess_claim connected to backend; review queue & decisions verified |
 | 15 Customer UI | Member 6 / Antigravity | Complete | API mocks available | Next.js multi-step claim flow, upload, live poller, result & timeline |
 | 16 Reviewer dashboard | Member 6 / Antigravity | Complete | Reviewer schema ready | Adjuster review queue, side-by-side evidence with YOLO boxes, manual overrides, Recharts analytics dashboard |
-| 17 Integration and testing | Members 1–7 | Not started | All core modules ready | Four scenarios pass 3 times |
-| 18 Presentation freeze | Members 1–7 | Not started | Integration gate passed | Demo package frozen |
+| 17 Integration and testing | All Members / Antigravity | Complete | All core modules ready | Models integrated in flat models/, persistent SQLite database (backend/claimvision.db) active, Model Benchmark Hub (/reviewer/models) live, interactive evidence slider |
+| 18 Presentation freeze | Members 1–7 | Ready | Integration gate passed | Demo package ready for presentation |
 | 19 Core completion | Members 1–7 | Not started | Presentation approved | Core tagged and documented |
 
 ## Current sprint objectives
@@ -66,9 +66,7 @@ Current commit: a52ed77 (local changes uncommitted)
 - [x] BE-001 — FastAPI backend foundation & assessment APIs (in-memory store, upload security, 14 REST endpoints, reviewer workflow; 14 tests pass)
 - [x] FE-001 — Next.js customer UI (multi-step claim form, evidence upload, live status poller, result with damage overlay, timeline)
 - [x] FE-002 — Reviewer dashboard & analytics (adjuster queue, side-by-side evidence with YOLO boxes, manual overrides, Recharts analytics dashboard)
-
-
-
+- [x] INT-001 — Full-stack model integration, persistent SQLite database & model benchmark hub
 
 ## Active blockers
 

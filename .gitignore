@@ -39,6 +39,9 @@ notebooks/ml/
 car-damage-dataset/
 .cache/
 uploads/
+models/
+backend/*.db
+backend/*.db-journal
 
 # Never ignore claimvision_ml Python packages
 !ml/src/claimvision_ml/data/

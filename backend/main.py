@@ -18,6 +18,7 @@ from backend.app.api.routes import (
     dashboard_router,
     health_router,
     images_router,
+    models_router,
     reviews_router,
 )
 from backend.app.services.upload import ensure_uploads_dir
@@ -56,3 +57,4 @@ app.include_router(images_router, prefix="/api/v1")
 app.include_router(assessment_router, prefix="/api/v1")
 app.include_router(reviews_router, prefix="/api/v1")
 app.include_router(dashboard_router, prefix="/api/v1")
+app.include_router(models_router, prefix="/api/v1")

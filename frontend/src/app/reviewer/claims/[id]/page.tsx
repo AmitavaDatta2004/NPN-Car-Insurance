@@ -68,7 +68,8 @@ export default function ReviewerClaimWorkspacePage() {
 
   const assessment = claim.assessment;
   const primaryImage = claim.images.length > 0 ? claim.images[0] : null;
-  const imageUrl = primaryImage ? getImageUrl(primaryImage.local_path) : "";
+  const imagePathToDisplay = primaryImage?.local_path || assessment?.image_path || "";
+  const imageUrl = imagePathToDisplay ? getImageUrl(imagePathToDisplay) : "";
   const routeInfo = assessment ? getRouteInfo(assessment.route) : null;
   const statusInfo = getStatusBadge(claim.status);
 
@@ -127,9 +128,9 @@ export default function ReviewerClaimWorkspacePage() {
               Photographic Evidence & YOLO Detections
             </h3>
 
-            {primaryImage ? (
+            {imagePathToDisplay ? (
               <DamageOverlayViewer
-                imagePath={primaryImage.local_path}
+                imagePath={imagePathToDisplay}
                 detections={assessment?.detections || []}
               />
             ) : (

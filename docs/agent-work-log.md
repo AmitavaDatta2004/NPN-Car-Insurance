@@ -23,6 +23,52 @@ Required by README §7.1 rule 5.
 
 ## Log
 
+### INT-001 — Full-Stack Model Integration, SQLite Database & Model Benchmark Hub
+- Date/time IST: 2026-09-22 22:35 – 22:50
+- Agent: Antigravity
+- Operator: Team Lead / Full-Stack direction
+- Base commit: a921611
+- Files read: README.md, AGENTS.md, TASKS.md, TASK_LOCKS.md, PROJECT_STATUS.md, config/project.yaml, ml/src/claimvision_ml/pipeline/assess.py, backend/app/store.py
+- Files changed:
+  - models/ (extracted all models from zip: Fraud MobileNetV2, Severity CNN, MobileNetV2, ViT-Tiny, Location MobileNetV2, EfficientNet, YOLO Damage, YOLO Parts)
+  - scripts/verify_models.py (NEW — model verification and CPU latency benchmark script)
+  - config/project.yaml (updated active_models configuration to point to models/)
+  - ml/src/claimvision_ml/pipeline/assess.py (updated default checkpoints to models/ directory)
+  - backend/app/db/session.py (NEW — SQLAlchemy 2.0 SQLite engine and sessionmaker)
+  - backend/app/db/models.py (NEW — ClaimDB, ImageDB, AssessmentDB, ReviewDB, TimelineDB)
+  - backend/app/store.py (refactored to DatabaseClaimStore backed by SQLite backend/claimvision.db)
+  - backend/app/api/routes/models.py (NEW — GET /api/v1/models/benchmark and POST /api/v1/models/active)
+  - backend/app/api/routes/__init__.py (exported models_router)
+  - backend/main.py (mounted models_router)
+  - frontend/src/types/claim.ts (added ModelBenchmarkItem and ModelBenchmarkResponse)
+  - frontend/src/lib/api.ts (added getModelBenchmarks and setActiveModel)
+  - frontend/src/app/reviewer/models/page.tsx (NEW — Model Benchmark Hub with side-by-side comparison and live switcher)
+  - frontend/src/components/DamageOverlayViewer.tsx (upgraded with interactive before/after split-screen slider)
+  - frontend/src/components/Navbar.tsx (added Model Benchmarks link)
+  - .gitignore (added models/, backend/*.db)
+  - TASKS.md (INT-001 defined and marked DONE)
+  - TASK_LOCKS.md (INT-001 lock recorded)
+  - PROJECT_STATUS.md (Phase 17 updated to Complete)
+- Decisions made:
+  - Flat models directory at project root (models/) simplifies model management and eliminates nested directory confusion.
+  - SQLite (backend/claimvision.db) via SQLAlchemy 2.0 provides zero-setup, fully persistent storage across server restarts without authentication friction.
+  - Interactive before/after split slider in DamageOverlayViewer provides an intuitive, pro-grade inspection tool for judges.
+  - Live model switcher in /reviewer/models allows dynamic demonstration of pipeline predictions with different model backbones.
+- Commands run:
+  - Expand-Archive -Path "D:\Projects\SIH 2026\models-20260922T164748Z-1-001.zip" -DestinationPath . -Force
+  - .venv\Scripts\python.exe scripts\verify_models.py
+  - .venv\Scripts\pytest.exe backend/tests/ -q
+  - npm run typecheck (in frontend/)
+  - npm run build (in frontend/)
+- Validation results:
+  - All models verified loading and performing forward pass on CPU.
+  - All 14 backend test cases pass against the SQLite database.
+  - Next.js typecheck and build passed with 0 errors across all 11 routes.
+- Known limitations / follow-up:
+  - Ready for judge demonstration and presentation rehearsal.
+
+---
+
 ### FE-002 — Reviewer Dashboard & Analytics (Adjuster Workspace)
 - Date/time IST: 2026-09-22 19:30 – 19:50
 - Agent: Antigravity
