@@ -793,3 +793,7 @@ Known limitations:
 
 Follow-up: Phase 11 — Unified Inference Demo (`INF-DEMO-001`, Notebook 13).
 
+
+### ML-IMPROVE-001 publication verification
+
+Implementation ad85f83 was verified on origin/main. Final rebase includes team commits through d2fcb00. The 13 improvement regression tests passed after that rebase; full ML validation earlier passed 158 tests with 4 skips. Edit lock released; Colab accuracy comparisons remain pending.
