@@ -115,20 +115,21 @@ print(f'Classes: {LOCATION_CLASSES}')
 """))
 
 # ── Cell 3 — Load validation dataset ────────────────────────────────────────
-cells.append(code("""# Cell 3 — Load validation dataset (same split used in NB 13 & 14)
-from claimvision_ml.location.dataset import LocationDataset, derive_location_labels
+cells.append(code("""# Cell 3 — Load validation dataset (same stratified split used in NB 13 & 14)
+from claimvision_ml.location.dataset import load_location_splits
 from torch.utils.data import DataLoader
 
 RAW_CANDIDATES = [
     REPO_ROOT / 'data' / 'raw' / 'coco_car_damage' / 'coco-car-damage-detection-dataset' / 'coco-car-damage-detection-dataset',
     REPO_ROOT / 'data' / 'raw' / 'coco_car_damage' / 'coco-car-damage-detection-dataset',
+    REPO_ROOT / 'data' / 'raw' / 'coco_car_damage',
     Path('/content/NPN-Car-Insurance/data/raw/coco_car_damage/coco-car-damage-detection-dataset/coco-car-damage-detection-dataset'),
 ]
-RAW_DIR = next((c for c in RAW_CANDIDATES if (c / 'val').exists()), None)
+RAW_DIR = next((c for c in RAW_CANDIDATES if (c / 'train').exists() and (c / 'val').exists()), None)
 if RAW_DIR is None:
     raise RuntimeError('COCO dataset not found. Run Notebook 00 first.')
 
-val_ds = LocationDataset(RAW_DIR / 'val', RAW_DIR / 'val' / 'COCO_mul_val_annos.json', split='val')
+train_ds, val_ds = load_location_splits(RAW_DIR, val_ratio=0.20, seed=SEED)
 val_loader = DataLoader(val_ds, batch_size=8, shuffle=False, num_workers=0)
 print(repr(val_ds))
 """))
@@ -137,6 +138,8 @@ print(repr(val_ds))
 cells.append(code("""# Cell 4 — Evaluate both models on validation set
 from sklearn.metrics import classification_report, confusion_matrix, f1_score
 import torch.nn.functional as F
+
+labels_list = list(range(len(LOCATION_CLASSES)))
 
 def evaluate_model(model_obj, loader, model_name):
     model_obj.eval()
@@ -147,13 +150,15 @@ def evaluate_model(model_obj, loader, model_name):
             all_preds.extend(logits.argmax(1).tolist())
             all_labels.extend(labels.tolist())
     macro_f1 = f1_score(all_labels, all_preds, average='macro', zero_division=0)
-    acc = sum(p == l for p, l in zip(all_preds, all_labels)) / len(all_labels)
-    report = classification_report(all_labels, all_preds, target_names=LOCATION_CLASSES, digits=4, output_dict=True)
-    cm = confusion_matrix(all_labels, all_preds)
+    acc = sum(p == l for p, l in zip(all_preds, all_labels)) / max(len(all_labels), 1)
+    report = classification_report(
+        all_labels, all_preds, labels=labels_list, target_names=LOCATION_CLASSES, digits=4, zero_division=0, output_dict=True
+    )
+    cm = confusion_matrix(all_labels, all_preds, labels=labels_list)
     print(f'\\n=== {model_name} ===')
     print(f'Accuracy   : {acc:.4f}')
     print(f'Macro F1   : {macro_f1:.4f}')
-    print(classification_report(all_labels, all_preds, target_names=LOCATION_CLASSES, digits=4))
+    print(classification_report(all_labels, all_preds, labels=labels_list, target_names=LOCATION_CLASSES, digits=4, zero_division=0))
     return {'name': model_name, 'macro_f1': macro_f1, 'accuracy': acc, 'report': report, 'cm': cm, 'preds': all_preds, 'labels': all_labels}
 
 results = {}

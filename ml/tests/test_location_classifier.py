@@ -256,3 +256,22 @@ def test_export_location_onnx_creates_file(tmp_path):
     result_path = export_location_onnx(model, out_path)
     assert result_path.exists()
     assert result_path.stat().st_size > 0
+
+
+def test_classification_report_sparse_classes_safe():
+    """Verify that passing labels=list(range(5)) and zero_division=0 prevents ValueError when only 1 class is present."""
+    from sklearn.metrics import classification_report, confusion_matrix
+    from claimvision_ml.location.dataset import LOCATION_CLASSES
+
+    # Only 1 class present in y_true and y_pred
+    y_true = [0]
+    y_pred = [0]
+    labels_list = list(range(len(LOCATION_CLASSES)))
+
+    # Must NOT raise ValueError: Number of classes, 1, does not match size of target_names, 5
+    rpt = classification_report(
+        y_true, y_pred, labels=labels_list, target_names=LOCATION_CLASSES, digits=4, zero_division=0, output_dict=True
+    )
+    assert len(rpt) >= 5
+    cm = confusion_matrix(y_true, y_pred, labels=labels_list)
+    assert cm.shape == (5, 5)
