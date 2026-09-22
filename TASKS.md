@@ -458,7 +458,7 @@ Validation commands:
 - Phase: 10
 - Owner: Member 4 (Detection ML)
 - Reviewer: Member 1 / Member 5
-- Status: IN_PROGRESS
+- Status: DONE
 - Priority: P0
 - Dependencies: DET-YOLO-001 DONE
 - Files allowed: ml/src/claimvision_ml/detection/, ml/tests/test_part_detector.py, notebooks/12_yolo_part_training.ipynb, docs/MODEL_CARD_PART_YOLO_V1.md, docs/EXPERIMENT_LOG.md, docs/agent-work-log.md, PROJECT_STATUS.md, TASKS.md, TASK_LOCKS.md
@@ -471,20 +471,22 @@ Validation commands:
   - `test/`: 8 images (held-out test split)
 
 Acceptance criteria:
-- [ ] `ml/src/claimvision_ml/detection/parts.py` implemented with `PartDetection`, `PartDetector`, `detect_parts`, `export_parts_onnx`, and `get_detected_part_names`.
-- [ ] Public API exposed in `ml/src/claimvision_ml/detection/__init__.py`.
-- [ ] Multi-color visual bounding box overlay drawn cleanly with distinct colors per vehicle part and confidence percentages; original image remains pristine.
-- [ ] No-detection edge case handled gracefully (empty list returned, no exception).
-- [ ] Unit tests in `ml/tests/test_part_detector.py` pass; full test suite passes with 0 regressions.
-- [ ] Notebook 12 (`12_yolo_part_training.ipynb`) implemented with 18 cells adhering to README §10 and AGENTS.md §7.
-- [ ] Per-class performance reviewed (Precision, Recall, AP per class).
-- [ ] Front-vs-rear bumper confusion analyzed.
-- [ ] Bimodal execution support (Google Colab GPU / Local CPU) with dataset auto-sync fallback.
-- [ ] Held-out test set evaluated strictly ONCE.
-- [ ] Explicit production-demo vs. experimental Go/No-Go decision recorded.
-- [ ] Model checkpoints exported: `artifacts/models/parts_yolov8n.pt` and `artifacts/models/parts_yolov8n.onnx`.
-- [ ] `docs/MODEL_CARD_PART_YOLO_V1.md` and `docs/EXPERIMENT_LOG.md` entry created.
-- [ ] `PROJECT_STATUS.md` updated.
+- [x] `ml/src/claimvision_ml/detection/parts.py` implemented with `PartDetection`, `PartDetector`, `detect_parts`, `export_parts_onnx`, and `get_detected_part_names`.
+- [x] Public API exposed in `ml/src/claimvision_ml/detection/__init__.py`.
+- [x] Multi-color visual bounding box overlay drawn cleanly with distinct colors per vehicle part and confidence percentages; original image remains pristine.
+- [x] No-detection edge case handled gracefully (empty list returned, no exception).
+- [x] Unit tests in `ml/tests/test_part_detector.py` pass; full test suite passes with 0 regressions.
+- [x] Notebook 12 (`12_yolo_part_training.ipynb`) implemented with 18 cells adhering to README §10 and AGENTS.md §7.
+- [x] Per-class performance reviewed (Precision, Recall, AP per class).
+- [x] Front-vs-rear bumper confusion analyzed.
+- [x] Bimodal execution support (Google Colab GPU / Local CPU) with dataset auto-sync fallback.
+- [x] Held-out test set evaluated strictly ONCE.
+- [x] Explicit production-demo vs. experimental Go/No-Go decision recorded (NO-GO for YOLO part detection; Decoupled Damage YOLO + Location CNN architecture selected).
+- [x] Model checkpoints exported: `artifacts/models/parts_yolov8n.pt` and `artifacts/models/parts_yolov8n.onnx`.
+- [x] `docs/MODEL_CARD_PART_YOLO_V1.md` and `docs/EXPERIMENT_LOG.md` entry created.
+- [x] `PROJECT_STATUS.md` updated.
+
+Evidence: Option A selected. Bimodal YOLO part detection module and tests pass (54 detection tests green, 252 full suite pass); Notebook 12 executed and documented with explicit NO-GO Gate Decision (59 train / 1 val image insufficient for 5-class bounding box regression; production uses decoupled Damage YOLO + Location CNN architecture). Notebook 12 serves as academic ablation study for judges.
 
 Validation commands:
 - `.venv\Scripts\pytest.exe ml/tests/test_part_detector.py -v`
