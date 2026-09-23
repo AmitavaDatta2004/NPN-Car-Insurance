@@ -17,8 +17,10 @@ import logging
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torchvision import models
 
 from claimvision_ml.severity.dataset import (
@@ -137,14 +139,18 @@ def build_severity_mobilenet(
 
 def save_severity_checkpoint(
     model: SeverityMobileNetV2,
-    save_path: str | Path,
-    epoch: int,
-    metrics: dict[str, Any],
+    save_path: str | Path | None = None,
+    epoch: int = 0,
+    metrics: dict[str, Any] | None = None,
     optimizer: torch.optim.Optimizer | None = None,
     extra_meta: dict[str, Any] | None = None,
+    **kwargs: Any,
 ) -> Path:
     """Save model weights and metadata to a PyTorch .pt checkpoint."""
-    path = Path(save_path)
+    target_path = save_path or kwargs.get("path")
+    if target_path is None:
+        raise ValueError("Must provide save_path or path to save_severity_checkpoint")
+    path = Path(target_path)
     path.parent.mkdir(parents=True, exist_ok=True)
 
     # Convert metrics to plain Python types
@@ -159,6 +165,13 @@ def save_severity_checkpoint(
         elif isinstance(v, (list, dict)):
             clean_metrics[k] = v
 
+    for k in ["val_loss", "val_macro_f1", "val_weighted_f1"]:
+        if k in kwargs and k not in clean_metrics:
+            val = kwargs[k]
+            clean_metrics[k] = val.item() if hasattr(val, "item") else val
+
+    extra = extra_meta or kwargs.get("extra") or {}
+
     checkpoint = {
         "model_architecture": "mobilenet_v2",
         "experiment_id": "SEV-MNV2-001",
@@ -172,7 +185,7 @@ def save_severity_checkpoint(
         "epoch": epoch,
         "metrics": clean_metrics,
         "state_dict": model.state_dict(),
-        "extra_meta": extra_meta or {},
+        "extra_meta": extra,
     }
 
     if optimizer is not None:
@@ -204,11 +217,14 @@ def load_severity_checkpoint(
     num_classes = chk.get("num_classes", 3)
 
     model = SeverityMobileNetV2(pretrained=False, num_classes=num_classes)
-    model.load_state_dict(chk["state_dict"])
+    state_dict = chk.get("state_dict") or chk.get("model_state_dict")
+    if state_dict is None:
+        raise KeyError("No 'state_dict' or 'model_state_dict' found in checkpoint.")
+    model.load_state_dict(state_dict)
     model.to(device)
     model.eval()
 
-    meta = {k: v for k, v in chk.items() if k != "state_dict"}
+    meta = {k: v for k, v in chk.items() if k not in ("state_dict", "model_state_dict")}
     return model, meta
 
 
@@ -289,3 +305,152 @@ def export_onnx(
             logger.info("onnxruntime not installed; skipping ONNX runtime verification")
 
     return path
+
+
+def audit_batchnorm(model: nn.Module) -> dict[str, list[str]]:
+    """Audit BatchNorm layers in a model to verify frozen vs trainable states.
+
+    Identifies whether frozen BatchNorm layers are in train or eval mode.
+
+    Args:
+        model: PyTorch neural network module.
+
+    Returns:
+        Dictionary with lists of trainable_bn, frozen_bn_train, and frozen_bn_eval layer names.
+    """
+    frozen_bn_train: list[str] = []
+    frozen_bn_eval: list[str] = []
+    trainable_bn: list[str] = []
+
+    for name, module in model.named_modules():
+        if not isinstance(module, nn.modules.batchnorm._BatchNorm):
+            continue
+
+        params = list(module.parameters(recurse=False))
+        is_trainable = any(p.requires_grad for p in params)
+
+        if is_trainable:
+            trainable_bn.append(name)
+        elif module.training:
+            frozen_bn_train.append(name)
+        else:
+            frozen_bn_eval.append(name)
+
+    return {
+        "trainable_bn": trainable_bn,
+        "frozen_bn_train": frozen_bn_train,
+        "frozen_bn_eval": frozen_bn_eval,
+    }
+
+
+def set_frozen_batchnorm_eval(model: nn.Module) -> None:
+    """Force all frozen BatchNorm layers into eval mode to preserve pretrained statistics."""
+    for module in model.modules():
+        if isinstance(module, nn.modules.batchnorm._BatchNorm):
+            params = list(module.parameters(recurse=False))
+            if params and not any(p.requires_grad for p in params):
+                module.eval()
+
+
+def make_class_weights(
+    values: list[float] | tuple[float, ...] | torch.Tensor,
+    device: torch.device | str | None = None,
+) -> torch.Tensor:
+    """Construct mean-normalized class weights tensor for severity classification."""
+    weights = torch.tensor(values, dtype=torch.float32, device=device)
+    return weights / weights.mean()
+
+
+class HybridOrdinalLoss(nn.Module):
+    """Hybrid loss combining cross-entropy and smooth L1 ordinal distance penalty.
+
+    Total Loss = CE(logits, labels; class_weights, label_smoothing) + lambda_ordinal * SmoothL1(E[severity], labels)
+
+    Args:
+        class_weights: Tensor of shape (num_classes,) containing class weights.
+        label_smoothing: Cross-entropy label smoothing factor (default 0.05).
+        lambda_ordinal: Weight for the smooth L1 ordinal distance penalty (default 0.2).
+    """
+
+    def __init__(
+        self,
+        class_weights: torch.Tensor,
+        label_smoothing: float = 0.05,
+        lambda_ordinal: float = 0.2,
+    ) -> None:
+        super().__init__()
+        self.register_buffer("class_weights", class_weights.clone().detach())
+        self.label_smoothing = label_smoothing
+        self.lambda_ordinal = lambda_ordinal
+        self.register_buffer("severity_values", torch.tensor([0.0, 1.0, 2.0], dtype=torch.float32))
+
+    def forward(
+        self, logits: torch.Tensor, labels: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Compute hybrid loss and individual components.
+
+        Args:
+            logits: Predicted class logits (B, 3).
+            labels: Ground truth class targets (B,).
+
+        Returns:
+            Tuple of (total_loss, ce_loss, ordinal_loss).
+        """
+        device = logits.device
+        dtype = logits.dtype
+        class_weights = self.class_weights.to(device=device, dtype=dtype)
+        severity_values = self.severity_values.to(device=device, dtype=dtype)
+
+        ce_loss = F.cross_entropy(
+            logits,
+            labels,
+            weight=class_weights,
+            label_smoothing=self.label_smoothing,
+        )
+
+        probabilities = torch.softmax(logits, dim=1)
+        predicted_severity = (probabilities * severity_values.unsqueeze(0)).sum(dim=1)
+        ordinal_loss = F.smooth_l1_loss(predicted_severity, labels.to(device=device, dtype=dtype))
+        total_loss = ce_loss + self.lambda_ordinal * ordinal_loss
+
+        return total_loss, ce_loss, ordinal_loss
+
+
+def compute_ordinal_error_metrics(
+    predictions: list[int] | np.ndarray, labels: list[int] | np.ndarray
+) -> dict[str, float | int]:
+    """Compute ordinal-specific metrics including MAE, extreme errors, and adjacent errors.
+
+    Classes: 0=Minor, 1=Moderate, 2=Severe.
+    Adjacent errors: |y_pred - y_true| == 1 (minor <-> moderate, moderate <-> severe)
+    Extreme errors: |y_pred - y_true| == 2 (minor <-> severe)
+
+    Returns:
+        dict with keys:
+          - severity_mae: Mean Absolute Error between predicted and true severity indices
+          - extreme_error_rate: Fraction of predictions with distance == 2
+          - extreme_errors: Absolute count of minor <-> severe mistakes
+          - adjacent_errors: Absolute count of distance == 1 mistakes
+          - minor_mod_errors: Count of minor predicted as moderate or vice versa
+          - mod_sev_errors: Count of moderate predicted as severe or vice versa
+    """
+    preds = np.asarray(predictions)
+    targets = np.asarray(labels)
+    diffs = np.abs(preds - targets)
+
+    severity_mae = float(np.mean(diffs))
+    extreme_error_rate = float(np.mean(diffs == 2))
+    extreme_errors = int(np.sum(diffs == 2))
+    adjacent_errors = int(np.sum(diffs == 1))
+
+    minor_mod_errors = int(np.sum(((preds == 0) & (targets == 1)) | ((preds == 1) & (targets == 0))))
+    mod_sev_errors = int(np.sum(((preds == 1) & (targets == 2)) | ((preds == 2) & (targets == 1))))
+
+    return {
+        "severity_mae": severity_mae,
+        "extreme_error_rate": extreme_error_rate,
+        "extreme_errors": extreme_errors,
+        "adjacent_errors": adjacent_errors,
+        "minor_mod_errors": minor_mod_errors,
+        "mod_sev_errors": mod_sev_errors,
+    }

@@ -40,19 +40,29 @@ from claimvision_ml.severity.cnn import (
 from claimvision_ml.severity.dataset import (
     IMAGENET_MEAN,
     IMAGENET_STD,
+    LetterboxResize,
     SEVERITY_CLASS_TO_ID,
     SEVERITY_CLASSES,
     SEVERITY_ID_TO_CLASS,
     SeverityDataset,
+    build_letterbox_transforms,
+    create_severity_dataloader,
     get_severity_class_weights,
     get_severity_transforms,
+    resolve_image_path,
+    seed_worker,
 )
 from claimvision_ml.severity.mobilenet import (
+    HybridOrdinalLoss,
     SeverityMobileNetV2,
+    audit_batchnorm,
     build_severity_mobilenet,
+    compute_ordinal_error_metrics,
     export_onnx,
     load_severity_checkpoint,
+    make_class_weights,
     save_severity_checkpoint,
+    set_frozen_batchnorm_eval,
 )
 from claimvision_ml.severity.predict import SeverityResult, predict_severity
 from claimvision_ml.severity.vit import (
@@ -80,6 +90,10 @@ __all__ = [
     "SeverityDataset",
     "get_severity_transforms",
     "get_severity_class_weights",
+    "seed_worker",
+    "create_severity_dataloader",
+    "LetterboxResize",
+    "build_letterbox_transforms",
     # Baseline CNN (Phase 5)
     "CNN_IMAGE_SIZE",
     # new improvement: native 4:3 aspect ratio matching dataset median
@@ -95,9 +109,14 @@ __all__ = [
     "measure_cpu_latency",
     # MobileNetV2 (Phase 6)
     "SeverityMobileNetV2",
+    "audit_batchnorm",
     "build_severity_mobilenet",
     "load_severity_checkpoint",
     "save_severity_checkpoint",
+    "set_frozen_batchnorm_eval",
+    "make_class_weights",
+    "HybridOrdinalLoss",
+    "compute_ordinal_error_metrics",
     "export_onnx",
     "SeverityResult",
     "predict_severity",

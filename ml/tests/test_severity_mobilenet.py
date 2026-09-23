@@ -10,17 +10,24 @@ import torch
 from PIL import Image
 
 from claimvision_ml.severity import (
+    HybridOrdinalLoss,
+    LetterboxResize,
     SEVERITY_CLASSES,
     SeverityDataset,
     SeverityMobileNetV2,
     SeverityResult,
+    audit_batchnorm,
+    build_letterbox_transforms,
     build_severity_mobilenet,
+    compute_ordinal_error_metrics,
     export_onnx,
     get_severity_class_weights,
     get_severity_transforms,
     load_severity_checkpoint,
+    make_class_weights,
     predict_severity,
     save_severity_checkpoint,
+    set_frozen_batchnorm_eval,
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -176,3 +183,156 @@ class TestSeverityPrediction:
         assert isinstance(res, SeverityResult)
         assert res.predicted_class in SEVERITY_CLASSES
         assert res.inference_time_ms > 0.0
+
+
+class TestLetterboxPreprocessing:
+    def test_letterbox_dimensions(self) -> None:
+        # Wide aspect ratio
+        wide_img = Image.new("RGB", (320, 160))
+        lb_224 = LetterboxResize(224)
+        out = lb_224(wide_img)
+        assert out.size == (224, 224)
+
+        # Tall aspect ratio
+        tall_img = Image.new("RGB", (160, 320))
+        lb_288 = LetterboxResize(288)
+        out_tall = lb_288(tall_img)
+        assert out_tall.size == (288, 288)
+
+        # Square
+        sq_img = Image.new("RGB", (200, 200))
+        lb_320 = LetterboxResize(320)
+        out_sq = lb_320(sq_img)
+        assert out_sq.size == (320, 320)
+
+    def test_build_letterbox_transforms(self) -> None:
+        train_tf, eval_tf = build_letterbox_transforms(288)
+        img = Image.new("RGB", (250, 180))
+
+        eval_tensor = eval_tf(img)
+        assert isinstance(eval_tensor, torch.Tensor)
+        assert eval_tensor.shape == (3, 288, 288)
+        assert eval_tensor.dtype == torch.float32
+
+        train_tensor = train_tf(img)
+        assert isinstance(train_tensor, torch.Tensor)
+        assert train_tensor.shape == (3, 288, 288)
+
+    def test_letterbox_invalid_dimensions(self) -> None:
+        lb = LetterboxResize(224)
+        with pytest.raises(ValueError, match="Invalid image dimensions"):
+            lb(Image.new("RGB", (0, 100)))
+
+
+class TestBatchNormAudit:
+    def test_audit_batchnorm_structure(self) -> None:
+        model = build_severity_mobilenet(pretrained=False, num_classes=3)
+        model.freeze_backbone()
+        model.unfreeze_final_blocks(4)
+        model.train()
+
+        audit = audit_batchnorm(model)
+        assert "trainable_bn" in audit
+        assert "frozen_bn_train" in audit
+        assert "frozen_bn_eval" in audit
+        assert isinstance(audit["trainable_bn"], list)
+        assert isinstance(audit["frozen_bn_train"], list)
+        assert isinstance(audit["frozen_bn_eval"], list)
+
+        # In SeverityMobileNetV2, train() automatically keeps frozen BN in eval mode
+        assert len(audit["trainable_bn"]) > 0
+        assert len(audit["frozen_bn_eval"]) > 0
+
+    def test_set_frozen_batchnorm_eval(self) -> None:
+        model = build_severity_mobilenet(pretrained=False, num_classes=3)
+        model.freeze_backbone()
+        model.unfreeze_final_blocks(4)
+
+        # Force all modules into train mode (bypassing overridden train)
+        torch.nn.Module.train(model, True)
+        audit_before = audit_batchnorm(model)
+        assert len(audit_before["frozen_bn_train"]) > 0
+
+        # Apply helper
+        set_frozen_batchnorm_eval(model)
+        audit_after = audit_batchnorm(model)
+        assert len(audit_after["frozen_bn_train"]) == 0
+        assert len(audit_after["frozen_bn_eval"]) == len(audit_before["frozen_bn_train"]) + len(audit_before["frozen_bn_eval"])
+
+
+class TestPhase4And5LossAndMetrics:
+    def test_make_class_weights(self) -> None:
+        values = [0.9146, 1.1281, 0.9572]
+        weights = make_class_weights(values)
+        assert isinstance(weights, torch.Tensor)
+        assert weights.shape == (3,)
+        assert weights.dtype == torch.float32
+        assert torch.isclose(weights.mean(), torch.tensor(1.0), atol=1e-5)
+
+        uniform = make_class_weights([1.0, 1.0, 1.0])
+        assert torch.allclose(uniform, torch.tensor([1.0, 1.0, 1.0]))
+
+    def test_hybrid_ordinal_loss_forward_and_backward(self) -> None:
+        weights = make_class_weights([1.0, 1.0, 1.0])
+        criterion = HybridOrdinalLoss(class_weights=weights, label_smoothing=0.05, lambda_ordinal=0.2)
+
+        logits = torch.randn(4, 3, requires_grad=True)
+        labels = torch.tensor([0, 1, 2, 1], dtype=torch.long)
+
+        total_loss, ce_loss, ordinal_loss = criterion(logits, labels)
+
+        assert total_loss.item() > 0
+        assert ce_loss.item() > 0
+        assert ordinal_loss.item() >= 0
+        assert torch.isclose(total_loss, ce_loss + 0.2 * ordinal_loss, atol=1e-5)
+
+        total_loss.backward()
+        assert logits.grad is not None
+        assert logits.grad.shape == logits.shape
+
+    def test_hybrid_ordinal_loss_zero_lambda(self) -> None:
+        weights = make_class_weights([1.0, 1.0, 1.0])
+        criterion = HybridOrdinalLoss(class_weights=weights, label_smoothing=0.05, lambda_ordinal=0.0)
+
+        logits = torch.randn(4, 3)
+        labels = torch.tensor([0, 1, 2, 1], dtype=torch.long)
+
+        total_loss, ce_loss, _ = criterion(logits, labels)
+        assert torch.isclose(total_loss, ce_loss)
+
+    def test_compute_ordinal_error_metrics(self) -> None:
+        # Perfect predictions
+        preds_perfect = [0, 1, 2]
+        labels_perfect = [0, 1, 2]
+        m_perf = compute_ordinal_error_metrics(preds_perfect, labels_perfect)
+        assert m_perf["severity_mae"] == 0.0
+        assert m_perf["extreme_error_rate"] == 0.0
+        assert m_perf["extreme_errors"] == 0
+        assert m_perf["adjacent_errors"] == 0
+
+        # Mixed predictions
+        # 0 -> 1 (diff 1), 1 -> 2 (diff 1), 0 -> 2 (diff 2), 2 -> 0 (diff 2)
+        preds = [0, 1, 0, 2]
+        targets = [1, 2, 2, 0]
+        m = compute_ordinal_error_metrics(preds, targets)
+        # diffs: [1, 1, 2, 2] -> MAE = 1.5, extreme_rate = 0.5, extreme = 2, adjacent = 2
+        assert m["severity_mae"] == 1.5
+        assert m["extreme_error_rate"] == 0.5
+        assert m["extreme_errors"] == 2
+        assert m["adjacent_errors"] == 2
+        assert m["minor_mod_errors"] == 1
+        assert m["mod_sev_errors"] == 1
+
+    def test_hybrid_ordinal_loss_device_and_dtype_alignment(self) -> None:
+        weights = make_class_weights([1.0, 1.0, 1.0])
+        criterion = HybridOrdinalLoss(class_weights=weights, label_smoothing=0.05, lambda_ordinal=0.2)
+
+        # Test with float64 logits to ensure dtype/device conversion is handled seamlessly
+        logits = torch.randn(4, 3, dtype=torch.float64, requires_grad=True)
+        labels = torch.tensor([0, 1, 2, 1], dtype=torch.long)
+
+        total_loss, ce_loss, ordinal_loss = criterion(logits, labels)
+        assert total_loss.dtype == torch.float64
+        total_loss.backward()
+        assert logits.grad is not None
+
