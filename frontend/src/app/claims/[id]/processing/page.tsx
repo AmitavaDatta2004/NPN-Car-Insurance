@@ -21,12 +21,11 @@ export default function ClaimProcessingPage() {
 
   const stages = [
     { title: "1. Image Quality Verification", desc: "Checking image clarity, brightness, and resolution" },
-    { title: "2. Vehicle Intake Verification", desc: "Confirming vehicle presence in the uploaded photograph" },
-    { title: "3. Fraud Risk Screening", desc: "Checking image authenticity and tamper detection" },
-    { title: "4. Damage Severity Assessment", desc: "Analyzing severity of collision impact" },
-    { title: "5. Damaged Part Identification", desc: "Identifying affected vehicle components" },
-    { title: "6. Damage Localization", desc: "Mapping damage regions on vehicle" },
-    { title: "7. Repair Cost Estimation", desc: "Calculating estimated repair and replacement costs in INR (₹)" },
+    { title: "2. Fraud Risk Screening", desc: "Checking image authenticity and tamper detection" },
+    { title: "3. Damage Severity Assessment", desc: "Analyzing severity of collision impact" },
+    { title: "4. Damaged Part Identification", desc: "Identifying affected vehicle components" },
+    { title: "5. Damage Localization", desc: "Mapping damage regions on vehicle" },
+    { title: "6. Repair Cost Estimation", desc: "Calculating estimated repair and replacement costs in INR (₹)" },
   ];
 
   useEffect(() => {
@@ -38,7 +37,7 @@ export default function ClaimProcessingPage() {
 
     // Smooth visual progression across stages while assessment runs
     stepTimer = setInterval(() => {
-      setActiveStep((prev) => (prev < 6 ? prev + 1 : prev));
+      setActiveStep((prev) => (prev < 5 ? prev + 1 : prev));
     }, 1200);
 
     const runAssessment = async () => {

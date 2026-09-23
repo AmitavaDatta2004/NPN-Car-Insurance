@@ -177,7 +177,7 @@ export default function DamageOverlayViewer({
                         <rect
                           x={`${x}%`}
                           y={`${Math.max(0, y - 5.5)}%`}
-                          width="24"
+                          width="16"
                           height="5.5"
                           fill="#ef4444"
                           rx="1.5"
@@ -190,7 +190,7 @@ export default function DamageOverlayViewer({
                           fontWeight="bold"
                           fontFamily="monospace"
                         >
-                          {det.label.toUpperCase()} {(det.confidence * 100).toFixed(0)}%
+                          {det.label.toUpperCase()}
                         </text>
                       </g>
                     );
@@ -204,7 +204,7 @@ export default function DamageOverlayViewer({
             )}
           </div>
           <p className="text-center text-[11px] text-slate-500">
-            Bounding boxes outline AI-detected vehicle damage areas and confidence.
+            Bounding boxes outline AI-detected vehicle damage areas.
           </p>
         </div>
       )}
@@ -253,7 +253,7 @@ export default function DamageOverlayViewer({
                         <rect
                           x={`${x}%`}
                           y={`${Math.max(0, y - 5.5)}%`}
-                          width="24"
+                          width="16"
                           height="5.5"
                           fill="#ef4444"
                           rx="1.5"
@@ -266,7 +266,7 @@ export default function DamageOverlayViewer({
                           fontWeight="bold"
                           fontFamily="monospace"
                         >
-                          {det.label.toUpperCase()} {(det.confidence * 100).toFixed(0)}%
+                          {det.label.toUpperCase()}
                         </text>
                       </g>
                     );
@@ -371,7 +371,7 @@ export default function DamageOverlayViewer({
                           <rect
                             x={`${x}%`}
                             y={`${Math.max(0, y - 5.5)}%`}
-                            width="24"
+                            width="16"
                             height="5.5"
                             fill="#ef4444"
                             rx="1.5"
@@ -384,7 +384,7 @@ export default function DamageOverlayViewer({
                             fontWeight="bold"
                             fontFamily="monospace"
                           >
-                            {det.label.toUpperCase()} {(det.confidence * 100).toFixed(0)}%
+                            {det.label.toUpperCase()}
                           </text>
                         </g>
                       );
@@ -438,9 +438,6 @@ export default function DamageOverlayViewer({
               >
                 <span className="h-2 w-2 rounded-full bg-rose-500" />
                 <span className="font-semibold capitalize">{det.label}</span>
-                <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-600">
-                  {(det.confidence * 100).toFixed(0)}% conf
-                </span>
               </div>
             ))}
           </div>
