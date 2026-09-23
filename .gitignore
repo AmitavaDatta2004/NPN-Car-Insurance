@@ -39,13 +39,6 @@ notebooks/ml/
 .cache/
 uploads/
 
-# Production models directory allowed for team deployment
-!/models/
-!/models/**
-!/models/*.pt
-!/models/*.onnx
-!/models/*.onnx.data
-!/models/*.json
 !frontend/src/app/reviewer/models/
 backend/*.db
 backend/*.db-journal
@@ -87,4 +80,13 @@ temp/
 !data/**/.gitkeep
 !artifacts/**/.gitkeep
 !artifacts/**/*.json
+
+# Production models directory allowed for team deployment
+!/models/
+!/models/**
+!/models/*.pt
+!/models/*.onnx
+!/models/*.onnx.data
+!/models/*.json
+
 
