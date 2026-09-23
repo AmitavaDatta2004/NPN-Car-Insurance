@@ -1,0 +1,17 @@
+{
+  "version": "v2-optimized",
+  "winning_ablation": "Run 4: + Cosine LR Warmup",
+  "model_version": "FRAUD-MNV2-OPT",
+  "selected_from": "validation_pr_auc",
+  "high_threshold": 0.52,
+  "low_threshold": 0.26,
+  "mode_1_max_f1_threshold": 0.52,
+  "mode_2_high_recall_threshold": 0.29,
+  "val_pr_auc": 0.7392415906555031,
+  "val_recall_at_th": 0.6666666666666666,
+  "test_pr_auc": 0.7957997464219789,
+  "test_recall_mode_1": 0.7887323943661971,
+  "test_f1_mode_1": 0.7225806451612903,
+  "test_recall_mode_2": 0.9295774647887324,
+  "test_f1_mode_2": 0.5523012552301255
+}

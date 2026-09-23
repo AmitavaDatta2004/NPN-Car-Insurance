@@ -1,0 +1,36 @@
+{
+  "model": "SeverityCNN",
+  "experiment_id": "SEV-CNN-001",
+  "image_size": [
+    192,
+    256
+  ],
+  "normalisation": {
+    "mean": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "std": [
+      0.229,
+      0.224,
+      0.225
+    ]
+  },
+  "resize_strategy": "Resize((192, 256)) full-canvas for val/test (no crop)",
+  "training_augmentations": [
+    "Resize((192, 256))",
+    "RandomHorizontalFlip(p=0.5)",
+    "ColorJitter(brightness=0.1, contrast=0.1)"
+  ],
+  "class_map": {
+    "0": "minor",
+    "1": "moderate",
+    "2": "severe"
+  },
+  "classes": [
+    "minor",
+    "moderate",
+    "severe"
+  ]
+}
