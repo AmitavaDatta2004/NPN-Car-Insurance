@@ -20,13 +20,13 @@ export default function ClaimProcessingPage() {
   const [notVehicleGate, setNotVehicleGate] = useState<GenAIGateSummary | null>(null);
 
   const stages = [
-    { title: "1. Evidence Integrity Verification", desc: "Checking image resolution, blur score, and duplicate hash" },
-    { title: "2. Vehicle Intake Verification", desc: "Confirming vehicle presence and physical evidence integrity" },
-    { title: "3. Image Authenticity Screening", desc: "Evaluating image tampering and synthetic manipulation" },
-    { title: "4. Damage Severity Classification", desc: "Predicting collision severity tier (minor, moderate, severe) via MobileNetV2" },
-    { title: "5. EfficientNet-B0 Part Localization", desc: "Identifying damaged component with deep compound scaling CNN" },
-    { title: "6. YOLOv8 Damage Bounding Boxes", desc: "Localizing damage regions and bounding box coordinate overlays" },
-    { title: "7. Rule-Based Repair Costing", desc: "Computing itemized repair and replacement estimates in INR (₹)" },
+    { title: "1. Image Quality Verification", desc: "Checking image clarity, brightness, and resolution" },
+    { title: "2. Vehicle Intake Verification", desc: "Confirming vehicle presence in the uploaded photograph" },
+    { title: "3. Fraud Risk Screening", desc: "Checking image authenticity and tamper detection" },
+    { title: "4. Damage Severity Assessment", desc: "Analyzing severity of collision impact" },
+    { title: "5. Damaged Part Identification", desc: "Identifying affected vehicle components" },
+    { title: "6. Damage Localization", desc: "Mapping damage regions on vehicle" },
+    { title: "7. Repair Cost Estimation", desc: "Calculating estimated repair and replacement costs in INR (₹)" },
   ];
 
   useEffect(() => {

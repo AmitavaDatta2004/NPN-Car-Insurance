@@ -38,7 +38,7 @@ export default function ClaimsListPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Active Claims</h1>
           <p className="text-sm text-slate-500">
-            Real-time list of in-memory insurance claims submitted to ClaimVision AI.
+            List of insurance claims submitted to ClaimVision AI.
           </p>
         </div>
         <div className="flex items-center gap-3">

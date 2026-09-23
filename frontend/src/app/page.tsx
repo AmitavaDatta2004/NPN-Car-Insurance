@@ -6,8 +6,8 @@ export default function HomePage() {
     <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       {/* Hero Section */}
       <div className="text-center max-w-3xl mx-auto">
-        <span className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700 mb-4">
-          Judge Demonstration Prototype
+        <span className="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 mb-4 border border-indigo-200">
+          Automated Damage Assessment
         </span>
         <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl sm:leading-tight">
           Explainable AI-Assisted Vehicle Claim Triage

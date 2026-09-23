@@ -310,6 +310,31 @@ def assess_claim(
     fraud_summary.verdict = "SUSPICIOUS" if fraud_flag == 1 else "GENUINE"
     warnings.extend(fraud_summary.warnings)
 
+    if fraud_flag == 1:
+        # Fraud detected: halt automated assessment immediately.
+        # Do not run severity, damage detection, location, or cost estimation.
+        elapsed = (time.perf_counter() - t0) * 1000
+        return AssessmentResult(
+            claim_id=cid,
+            image_path=str(img_path),
+            route="FRAUD_REVIEW",
+            reason_codes=["high_fraud_risk", "manual_investigation_required"],
+            quality=q_summary,
+            genai_gate=genai_summary,
+            fraud=fraud_summary,
+            severity=None,
+            location=None,
+            detections=[],
+            cost=None,
+            model_versions={
+                "quality": DEFAULT_VERSIONS["quality"],
+                "genai_gate": genai_res.model_name,
+                "fraud": fraud_summary.model_version,
+            },
+            inference_ms=elapsed,
+            warnings=warnings,
+        )
+
     # -----------------------------------------------------------------------
     # Step 3: Damage Severity
     # -----------------------------------------------------------------------
@@ -360,21 +385,16 @@ def assess_claim(
     # -----------------------------------------------------------------------
     # Step 7: Decision Engine
     # -----------------------------------------------------------------------
-    if fraud_summary.flag == 1:
-        # Flag 1: Suspicious image -> Stop automatic fast-track, route to manual review
-        route = "FRAUD_REVIEW"
-        reason_codes = ["high_fraud_risk", "discrete_flag_1_suspicious"]
-    else:
-        route, reason_codes = route_claim(
-            quality_acceptable=q_summary.acceptable,
-            quality_route=q_summary.route,
-            fraud_prob=fraud_summary.probability,
-            severity_class=sev_summary.predicted_class,
-            severity_conf=sev_summary.confidence,
-            location_conf=loc_summary.confidence if loc_summary else None,
-            cost_max=cost_summary.max_cost,
-            thresholds=thresholds,
-        )
+    route, reason_codes = route_claim(
+        quality_acceptable=q_summary.acceptable,
+        quality_route=q_summary.route,
+        fraud_prob=fraud_summary.probability,
+        severity_class=sev_summary.predicted_class,
+        severity_conf=sev_summary.confidence,
+        location_conf=loc_summary.confidence if loc_summary else None,
+        cost_max=cost_summary.max_cost,
+        thresholds=thresholds,
+    )
 
     elapsed = (time.perf_counter() - t0) * 1000
 

@@ -36,10 +36,10 @@ Thumbs.db
 data/raw/
 notebooks/data/
 notebooks/ml/
-car-damage-dataset/
 .cache/
 uploads/
-models/
+/models/
+!frontend/src/app/reviewer/models/
 backend/*.db
 backend/*.db-journal
 

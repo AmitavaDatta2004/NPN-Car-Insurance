@@ -178,6 +178,27 @@ export interface ReviewDecisionPayload {
   overrides?: Record<string, unknown>;
 }
 
+export interface ClassMetric {
+  precision: number;
+  recall: number;
+  f1: number;
+}
+
+export interface ClassificationReportRow {
+  precision: number;
+  recall: number;
+  f1_score: number;
+  support: number;
+}
+
+export interface ClassificationReportData {
+  classes: Record<string, ClassificationReportRow>;
+  accuracy: number;
+  total_support: number;
+  macro_avg: ClassificationReportRow;
+  weighted_avg: ClassificationReportRow;
+}
+
 export interface ModelBenchmarkItem {
   id: string;
   name: string;
@@ -191,6 +212,12 @@ export interface ModelBenchmarkItem {
   size_mb: number;
   is_active: boolean;
   highlights: string[];
+  is_winner?: boolean;
+  winner_reason?: string;
+  class_labels?: string[];
+  confusion_matrix?: number[][];
+  classification_report?: ClassificationReportData;
+  per_class_metrics?: Record<string, ClassMetric>;
 }
 
 export interface ModelBenchmarkResponse {

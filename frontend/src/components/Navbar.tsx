@@ -26,9 +26,6 @@ export default function Navbar() {
             <span className="text-lg font-bold tracking-tight text-slate-900">
               ClaimVision <span className="text-indigo-600">AI</span>
             </span>
-            <span className="hidden ml-2 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 sm:inline-block">
-              Prototype
-            </span>
           </div>
         </Link>
 

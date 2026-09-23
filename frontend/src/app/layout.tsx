@@ -5,7 +5,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "ClaimVision AI — Vehicle Insurance Claim Triage",
   description:
-    "Explainable AI-assisted vehicle insurance claim assessment prototype.",
+    "Intelligent vehicle insurance claim assessment platform.",
 };
 
 export default function RootLayout({
@@ -21,7 +21,7 @@ export default function RootLayout({
         <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <p>
-              ClaimVision AI • Local Judge Demonstration Prototype • Phase 15 Customer UI
+              ClaimVision AI — Intelligent Claim Assessment Platform
             </p>
           </div>
         </footer>

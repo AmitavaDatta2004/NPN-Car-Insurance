@@ -194,7 +194,7 @@ export default function ReviewerDashboardPage() {
           💡 ClaimVision Explainability & Governance Note
         </h3>
         <p className="text-xs text-slate-600 leading-relaxed">
-          ClaimVision AI is an explainable decision-support prototype. High-risk fraud signals and severe damage assessments never trigger automated settlement; they are strictly routed to the Reviewer Queue for SIU and human adjuster confirmation. Adjuster corrections are logged alongside AI findings in an immutable audit timeline, ensuring full traceability and continuous evaluation data.
+          ClaimVision AI is an explainable decision-support system. High-risk fraud signals and severe damage assessments never trigger automated settlement; they are strictly routed to the Reviewer Queue for SIU and human adjuster confirmation. Adjuster corrections are logged alongside AI findings in an immutable audit timeline, ensuring full traceability and continuous evaluation data.
         </p>
       </div>
     </div>

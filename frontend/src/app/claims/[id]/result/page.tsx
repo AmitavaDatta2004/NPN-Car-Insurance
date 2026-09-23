@@ -123,6 +123,11 @@ export default function ClaimResultPage() {
   const statusBadge = getStatusBadge(claim.status);
   const primaryImagePath = claim.images[0]?.local_path || assessment.image_path || "";
 
+  const isFraud =
+    assessment.fraud?.flag === 1 ||
+    assessment.route === "FRAUD_REVIEW" ||
+    (assessment.fraud && assessment.fraud.probability > 0.50);
+
   return (
     <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
       {/* Top Header */}
@@ -162,11 +167,11 @@ export default function ClaimResultPage() {
         </div>
       </div>
 
-      {/* Visual Damage Overlay Viewer */}
-      {primaryImagePath && (
+      {/* Visual Damage Overlay Viewer - Only shown if genuine (NOT fraud) */}
+      {!isFraud && primaryImagePath && (
         <Card>
           <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-3">
-            Evidence Inspection & YOLO Detection
+            Damage Detection
           </h2>
           <DamageOverlayViewer
             imagePath={primaryImagePath}
