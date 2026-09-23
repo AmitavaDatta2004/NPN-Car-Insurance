@@ -25,6 +25,7 @@ from claimvision_ml.severity.vit import (
     load_vit_model,
     predict_severity_vit,
     save_vit_checkpoint,
+    export_vit_onnx,
 )
 
 try:
@@ -171,3 +172,17 @@ def test_predict_severity_vit():
         assert len(res.probabilities) == 3
         assert sum(res.probabilities.values()) == pytest.approx(1.0, rel=1e-3)
         assert res.inference_ms > 0.0
+
+
+@pytest.mark.skipif(not TORCH_AVAILABLE, reason="PyTorch required for ONNX export tests")
+def test_export_vit_onnx():
+    """Verify export_vit_onnx exports a valid ONNX graph and runs verification."""
+    pytest.importorskip("onnx")
+    pytest.importorskip("onnxruntime")
+
+    model = SeverityViTTiny(pretrained=False, num_classes=3)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        onnx_dst = Path(tmpdir) / "test_vit.onnx"
+        result_path = export_vit_onnx(model, onnx_dst, device="cpu", verify=True)
+        assert result_path.is_file()
+        assert result_path.stat().st_size > 0

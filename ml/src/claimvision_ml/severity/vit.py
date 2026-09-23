@@ -271,10 +271,72 @@ if TORCH_AVAILABLE:
 
         return FallbackViT()
 
+    class GeMPool1d(nn.Module):
+        """Learnable Generalized-Mean (GeM) pooling over spatial patch tokens."""
+
+        def __init__(self, p: float = 3.0, eps: float = 1e-6):
+            super().__init__()
+            self.p = nn.Parameter(torch.ones(1) * p)
+            self.eps = eps
+
+        def forward(self, x: torch.Tensor) -> torch.Tensor:
+            # x shape: (B, N, C) where N=196 patches, C=192 embed_dim
+            p_clamped = self.p.clamp(min=1.0)
+            return (x.clamp(min=self.eps).pow(p_clamped).mean(dim=1)).pow(1.0 / p_clamped)
+
+    class DualStreamSeverityViT21k(nn.Module):
+        """Dual-Stream ViT-Tiny with ImageNet-21k AugReg Pretrained Weights and Learnable GeM Pooling."""
+
+        def __init__(
+            self,
+            num_classes: int = 3,
+            drop_path_rate: float = 0.1,
+            pretrained: bool = False,
+        ):
+            super().__init__()
+            self.num_classes = num_classes
+            if TIMM_AVAILABLE:
+                self.backbone = timm.create_model(
+                    "vit_tiny_patch16_224.augreg_in21k_ft_in1k",
+                    pretrained=pretrained,
+                    num_classes=0,
+                    drop_path_rate=drop_path_rate,
+                    dynamic_img_size=True,
+                )
+                embed_dim = self.backbone.embed_dim  # 192
+            else:
+                embed_dim = 192
+                self.backbone = _create_fallback_vit_tiny(pretrained=False, num_classes=0)
+
+            self.norm = getattr(self.backbone, "norm", nn.Identity())
+            self.gem = GeMPool1d(p=3.0)
+            self.head = nn.Sequential(
+                nn.Linear(embed_dim * 2, 128),
+                nn.BatchNorm1d(128),
+                nn.GELU(),
+                nn.Dropout(0.25),
+                nn.Linear(128, num_classes),
+            )
+
+        def forward(self, x: torch.Tensor) -> torch.Tensor:
+            feat = self.backbone.forward_features(x)
+            cls_token = feat[:, 0]
+            patch_tokens = self.gem(feat[:, 1:])
+            combined = torch.cat([cls_token, patch_tokens], dim=-1)
+            return self.head(combined)
+
 else:
     class SeverityViTTiny:  # type: ignore
         def __init__(self, *args, **kwargs):
             raise RuntimeError("PyTorch is required for SeverityViTTiny.")
+
+    class GeMPool1d:  # type: ignore
+        def __init__(self, *args, **kwargs):
+            raise RuntimeError("PyTorch is required for GeMPool1d.")
+
+    class DualStreamSeverityViT21k:  # type: ignore
+        def __init__(self, *args, **kwargs):
+            raise RuntimeError("PyTorch is required for DualStreamSeverityViT21k.")
 
 
 def build_vit_model(
@@ -321,19 +383,24 @@ def save_vit_checkpoint(
 def load_vit_model(
     checkpoint_path: str | Path,
     device: str = "cpu",
-) -> SeverityViTTiny:
-    """Load SeverityViTTiny from a .pt checkpoint."""
+) -> nn.Module:
+    """Load SeverityViTTiny or DualStreamSeverityViT21k from a .pt checkpoint."""
     if not TORCH_AVAILABLE:
         raise RuntimeError("PyTorch is required to load checkpoints.")
 
-    model = SeverityViTTiny(pretrained=False, num_classes=3)
     checkpoint = torch.load(str(checkpoint_path), map_location=device, weights_only=False)
 
     if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
-        model.load_state_dict(checkpoint["model_state_dict"])
+        state_dict = checkpoint["model_state_dict"]
     else:
-        model.load_state_dict(checkpoint)
+        state_dict = checkpoint
 
+    if "gem.p" in state_dict or "head.0.weight" in state_dict:
+        model = DualStreamSeverityViT21k(num_classes=3, pretrained=False)
+    else:
+        model = SeverityViTTiny(pretrained=False, num_classes=3)
+
+    model.load_state_dict(state_dict)
     model.to(device)
     model.eval()
     return model
@@ -355,22 +422,32 @@ def export_vit_onnx(
     model.eval()
     model.to(device)
 
+    try:
+        import onnx  # noqa: F401
+    except ImportError as exc:
+        raise RuntimeError(
+            "The 'onnx' package is required for ONNX export. "
+            "Please install it using: pip install onnx onnxruntime"
+        ) from exc
+
     dummy_input = torch.randn(1, 3, 224, 224, device=device)
 
-    torch.onnx.export(
-        model,
-        dummy_input,
-        str(out),
-        export_params=True,
-        opset_version=18,
-        do_constant_folding=True,
-        input_names=["input"],
-        output_names=["logits"],
-        dynamic_axes={
+    export_kwargs = {
+        "export_params": True,
+        "opset_version": 17,
+        "do_constant_folding": True,
+        "input_names": ["input"],
+        "output_names": ["logits"],
+        "dynamic_axes": {
             "input": {0: "batch_size"},
             "logits": {0: "batch_size"},
         },
-    )
+    }
+
+    try:
+        torch.onnx.export(model, dummy_input, str(out), dynamo=False, **export_kwargs)
+    except TypeError:
+        torch.onnx.export(model, dummy_input, str(out), **export_kwargs)
 
     if verify:
         try:

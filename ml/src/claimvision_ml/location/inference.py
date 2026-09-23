@@ -333,6 +333,14 @@ def export_location_onnx(
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
+    try:
+        import onnx  # noqa: F401
+    except ImportError as exc:
+        raise RuntimeError(
+            "The 'onnx' package is required for ONNX export. "
+            "Please install it using: pip install onnx onnxruntime"
+        ) from exc
+
     model.eval()
     model.cpu()
     dummy = torch.zeros(1, 3, image_size, image_size)
